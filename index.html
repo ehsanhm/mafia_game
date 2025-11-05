@@ -1,0 +1,930 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mafia Game - Role Assigner</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            max-width: 600px;
+            width: 100%;
+            padding: 30px;
+            animation: fadeIn 0.5s ease-in;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 2em;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 0.9em;
+        }
+
+        .input-section {
+            margin-bottom: 30px;
+        }
+
+        label {
+            display: block;
+            color: #555;
+            margin-bottom: 10px;
+            font-weight: 600;
+            font-size: 1.1em;
+        }
+
+        input[type="number"] {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 1.1em;
+            transition: all 0.3s ease;
+        }
+
+        input[type="number"]:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .btn {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 1.1em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            margin-bottom: 15px;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .btn-secondary {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        }
+
+        .info-box {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            padding: 10px;
+            background: white;
+            border-radius: 8px;
+        }
+
+        .info-row:last-child {
+            margin-bottom: 0;
+        }
+
+        .info-label {
+            color: #666;
+            font-weight: 600;
+        }
+
+        .info-value {
+            color: #333;
+            font-weight: 700;
+        }
+
+        .roles-section {
+            margin-top: 30px;
+        }
+
+        .role-card {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 15px;
+            border-left: 5px solid #667eea;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .role-card:hover {
+            transform: translateX(5px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        .role-card.mafia {
+            border-left-color: #f5576c;
+        }
+
+        .role-card.villager {
+            border-left-color: #4facfe;
+        }
+
+        .role-card.doctor {
+            border-left-color: #43e97b;
+        }
+
+        .role-card.detective {
+            border-left-color: #fa709a;
+        }
+
+        .role-card.gundealer {
+            border-left-color: #ff9a56;
+        }
+
+        .role-card.serialkiller {
+            border-left-color: #9b59b6;
+        }
+
+        .player-number {
+            display: inline-block;
+            background: #667eea;
+            color: white;
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            text-align: center;
+            line-height: 35px;
+            font-weight: 700;
+            margin-right: 15px;
+        }
+
+        .role-card.mafia .player-number {
+            background: #f5576c;
+        }
+
+        .role-card.doctor .player-number {
+            background: #43e97b;
+        }
+
+        .role-card.detective .player-number {
+            background: #fa709a;
+        }
+
+        .role-card.gundealer .player-number {
+            background: #ff9a56;
+        }
+
+        .role-card.serialkiller .player-number {
+            background: #9b59b6;
+        }
+
+        .role-name {
+            font-size: 1.3em;
+            font-weight: 700;
+            color: #333;
+            margin-bottom: 5px;
+        }
+
+        .role-description {
+            color: #666;
+            font-size: 0.9em;
+            margin-top: 10px;
+            line-height: 1.5;
+        }
+
+        .role-hidden {
+            filter: blur(10px);
+            user-select: none;
+        }
+
+        .reveal-hint {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 20px;
+            font-weight: 600;
+            pointer-events: none;
+        }
+
+        .error {
+            color: #f5576c;
+            font-size: 0.9em;
+            margin-top: 10px;
+            text-align: center;
+        }
+
+        /* Modal Styles */
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            padding: 20px;
+            overflow-y: auto;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 20px;
+            max-width: 700px;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+            animation: slideDown 0.3s ease;
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-50px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .modal-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 25px 30px;
+            border-radius: 20px 20px 0 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-header h2 {
+            margin: 0;
+            color: white;
+        }
+
+        .close-btn {
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            color: white;
+            font-size: 1.5em;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .close-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: rotate(90deg);
+        }
+
+        .modal-body {
+            padding: 30px;
+        }
+
+        .modal-body h3 {
+            color: #333;
+            margin-top: 25px;
+            margin-bottom: 15px;
+            font-size: 1.3em;
+        }
+
+        .modal-body h3:first-child {
+            margin-top: 0;
+        }
+
+        .modal-body p {
+            color: #666;
+            line-height: 1.8;
+            margin-bottom: 15px;
+        }
+
+        .modal-body ul {
+            color: #666;
+            line-height: 2;
+            padding-left: 25px;
+            margin-bottom: 15px;
+        }
+
+        .role-help {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 15px;
+            border-left: 5px solid #667eea;
+        }
+
+        .role-help.mafia {
+            border-left-color: #f5576c;
+        }
+
+        .role-help.villager {
+            border-left-color: #4facfe;
+        }
+
+        .role-help.doctor {
+            border-left-color: #43e97b;
+        }
+
+        .role-help.detective {
+            border-left-color: #fa709a;
+        }
+
+        .role-help.gundealer {
+            border-left-color: #ff9a56;
+        }
+
+        .role-help.serialkiller {
+            border-left-color: #9b59b6;
+        }
+
+        .role-help h4 {
+            color: #333;
+            margin-top: 0;
+            margin-bottom: 10px;
+            font-size: 1.2em;
+        }
+
+        .role-help p {
+            margin-bottom: 8px;
+            font-size: 0.95em;
+        }
+
+        @media (max-width: 480px) {
+            .container {
+                padding: 20px;
+            }
+
+            h1 {
+                font-size: 1.5em;
+            }
+
+            .role-name {
+                font-size: 1.1em;
+            }
+
+            .player-number {
+                width: 30px;
+                height: 30px;
+                line-height: 30px;
+                font-size: 0.9em;
+            }
+
+            .modal-content {
+                max-height: 95vh;
+            }
+
+            .modal-body {
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎭 Mafia Game</h1>
+        <p class="subtitle">Role Assignment System</p>
+
+        <div id="setupSection">
+            <div class="input-section">
+                <label for="playerCount">Number of Players (6-20):</label>
+                <input type="number" id="playerCount" min="6" max="20" value="8" placeholder="Enter number of players">
+                <p class="error hidden" id="errorMsg"></p>
+            </div>
+
+            <button class="btn" onclick="startGame()">🎲 Assign Roles</button>
+            <button class="btn btn-secondary" onclick="showHelp()">❓ How to Play</button>
+        </div>
+
+        <div id="gameSection" class="hidden">
+            <div class="info-box">
+                <div class="info-row">
+                    <span class="info-label">👥 Total Players:</span>
+                    <span class="info-value" id="totalPlayers">0</span>
+                </div>
+            </div>
+
+            <div class="roles-section">
+                <div id="rolesContainer"></div>
+            </div>
+
+            <button class="btn btn-secondary hidden" id="newGameBtn" onclick="resetGame()">🔄 New Game</button>
+        </div>
+    </div>
+
+    <!-- Help Modal -->
+    <div id="helpModal" class="modal hidden">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>📖 How to Play Mafia</h2>
+                <button class="close-btn" onclick="closeHelp()">✕</button>
+            </div>
+            <div class="modal-body">
+                <h3>🎯 Game Overview</h3>
+                <p>Mafia is a social deduction game where players are secretly assigned roles. The Good team tries to identify and eliminate the Mafia, while the Mafia tries to eliminate the Good players.</p>
+                
+                <h3>⚠️ Game Rules</h3>
+                <div style="background: #fff3cd; border-left: 4px solid #ffc107; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
+                    <p style="color: #856404; margin-bottom: 10px;"><strong>❌ Players are NOT allowed to:</strong></p>
+                    <ul style="color: #856404; margin-bottom: 0;">
+                        <li><strong>Reveal their role</strong> - You cannot tell others what role you are. No exceptions!</li>
+                        <li><strong>Discuss night actions</strong> - You cannot talk about what happened during the night that relates to your role. Examples:
+                            <ul>
+                                <li>Doctor cannot say who they saved</li>
+                                <li>Detective cannot directly say they investigated someone or reveal investigation results</li>
+                                <li>Captain cannot say who they woke up with or who is confirmed innocent</li>
+                                <li>Gun Dealer cannot reveal who received guns</li>
+                                <li>Spy cannot tell anyone (except Mafia during night) what roles they discovered</li>
+                                <li>Any role cannot explicitly state their night activities</li>
+                            </ul>
+                        </li>
+                    </ul>
+                    <p style="color: #856404; margin-top: 10px; margin-bottom: 0;"><strong>✅ You CAN:</strong> Use hints, suspicions, and observations to guide discussions without directly revealing your role or night actions.</p>
+                </div>
+                
+                <h3>🌙 Game Flow</h3>
+                <ul>
+                    <li><strong>Night Phase:</strong> Players close their eyes. Mafia wakes up and chooses someone to eliminate. Serial Killer (if present) chooses someone to eliminate. Special roles perform their actions: Doctor saves someone, Detective/Spy investigate, Vigilante can shoot (limited shots based on game size), Gun Dealer distributes guns, Captain chooses someone to confirm, Poisoner may poison someone.</li>
+                    <li><strong>Day Phase:</strong> Game runner announces who died. Players with guns can choose to shoot before voting. Players discuss and vote to eliminate someone they suspect is Mafia.</li>
+                    <li>Repeat until Mafia is eliminated (Good wins), Mafia equals/outnumbers Good (Mafia wins), or Serial Killer survives with one other person (Serial Killer wins).</li>
+                </ul>
+
+                <h3>👥 Roles</h3>
+                
+                <h4 style="color: #f5576c; margin-top: 20px;">😈 Mafia Team (Evil)</h4>
+                
+                <div class="role-help mafia">
+                    <h4>👔 Godfather</h4>
+                    <p><strong>Team:</strong> Evil (Mafia Leader)</p>
+                    <p><strong>Goal:</strong> Eliminate Good players until Mafia equals or outnumbers them.</p>
+                    <p><strong>Action:</strong> Works with Mafia to eliminate players at night. Appears innocent when investigated by Detective.</p>
+                    <p><strong>Unlocked:</strong> Always (first Mafia member)</p>
+                </div>
+
+                <div class="role-help mafia">
+                    <h4>🕵️ Spy</h4>
+                    <p><strong>Team:</strong> Evil (Mafia Intelligence)</p>
+                    <p><strong>Goal:</strong> Help Mafia identify and eliminate threats.</p>
+                    <p><strong>Action:</strong> Each night, investigate one player to learn their exact role. Share findings with your Mafia team during the night phase when you're awake together.</p>
+                    <p><strong>Unlocked:</strong> Always (2nd Mafia member, minimum 2 Mafia guaranteed)</p>
+                </div>
+
+                <div class="role-help mafia">
+                    <h4>☠️ Poisoner</h4>
+                    <p><strong>Team:</strong> Evil (Mafia Disruptor)</p>
+                    <p><strong>Goal:</strong> Confuse and mislead Good players.</p>
+                    <p><strong>Action:</strong> Can poison one player during the game. Poisoned players receive false information from the game runner (e.g., wrong Detective results).</p>
+                    <p><strong>Unlocked:</strong> 7+ players (3rd Mafia member)</p>
+                </div>
+
+                <div class="role-help mafia">
+                    <h4>😈 Mafia</h4>
+                    <p><strong>Team:</strong> Evil</p>
+                    <p><strong>Goal:</strong> Eliminate Good players until Mafia equals or outnumbers them.</p>
+                    <p><strong>Action:</strong> Each night, work with other Mafia to choose one player to eliminate.</p>
+                    <p><strong>Unlocked:</strong> 14+ players (4th+ Mafia members)</p>
+                </div>
+
+                <h4 style="color: #4facfe; margin-top: 25px;">😇 Good Team</h4>
+
+                <div class="role-help villager">
+                    <h4>👤 Villager</h4>
+                    <p><strong>Team:</strong> Good</p>
+                    <p><strong>Goal:</strong> Identify and vote out all Mafia members.</p>
+                    <p><strong>Action:</strong> No special ability. Use discussion and voting to find Mafia.</p>
+                    <p><strong>Unlocked:</strong> Always</p>
+                </div>
+
+                <div class="role-help doctor">
+                    <h4>💉 Doctor</h4>
+                    <p><strong>Team:</strong> Good</p>
+                    <p><strong>Goal:</strong> Protect Good players from Mafia attacks.</p>
+                    <p><strong>Action:</strong> Each night, choose one player to save from Mafia attack. Cannot save the same person (including yourself) twice in a row.</p>
+                    <p><strong>Unlocked:</strong> 6+ players</p>
+                </div>
+
+                <div class="role-help detective">
+                    <h4>🔍 Detective</h4>
+                    <p><strong>Team:</strong> Good</p>
+                    <p><strong>Goal:</strong> Investigate and identify Mafia members.</p>
+                    <p><strong>Action:</strong> Each night, investigate one player to learn if they are Mafia or not. Beware: Godfather appears innocent!</p>
+                    <p><strong>Unlocked:</strong> 7+ players</p>
+                </div>
+
+                <div class="role-help detective">
+                    <h4>👮 Vigilante</h4>
+                    <p><strong>Team:</strong> Good</p>
+                    <p><strong>Goal:</strong> Eliminate suspected Mafia members.</p>
+                    <p><strong>Action:</strong> During the night phase, you can shoot players. Number of shots scales with game size:</p>
+                    <ul style="margin-top: 5px; margin-bottom: 5px;">
+                        <li>7-14 players: <strong>1 shot</strong></li>
+                        <li>15-17 players: <strong>2 shots</strong></li>
+                        <li>18-20 players: <strong>3 shots</strong></li>
+                    </ul>
+                    <p>Use wisely! Shooting a Good player hurts your team.</p>
+                    <p><strong>Unlocked:</strong> 7+ players</p>
+                </div>
+
+                <div class="role-help gundealer">
+                    <h4>🔫 Gun Dealer</h4>
+                    <p><strong>Team:</strong> Good</p>
+                    <p><strong>Goal:</strong> Provide guns to help eliminate Mafia.</p>
+                    <p><strong>Action:</strong> At the start of the game, secretly choose 2 players to receive guns (one real, one fake). Gun recipients don't know which is real until used. When both guns are used, distribute 2 new guns. You cannot give a gun to yourself. If you die, no more guns are distributed.</p>
+                    <p><strong>Gun Usage:</strong> Players with guns can raise their hand during the day and ask to use their gun. They announce their target, and the gun fires. If it's the real gun, the target is eliminated. If it's fake, nothing happens and everyone knows it was the fake gun.</p>
+                    <p><strong>Unlocked:</strong> 7+ players</p>
+                </div>
+
+                <div class="role-help detective">
+                    <h4>🎖️ Mayor</h4>
+                    <p><strong>Team:</strong> Good</p>
+                    <p><strong>Goal:</strong> Use political power to eliminate Mafia.</p>
+                    <p><strong>Action:</strong> Your vote counts double during day voting. Use your influence through strong arguments and hints to guide the town without revealing your identity.</p>
+                    <p><strong>Unlocked:</strong> 12+ players</p>
+                </div>
+
+                <div class="role-help detective">
+                    <h4>⭐ Captain</h4>
+                    <p><strong>Team:</strong> Good</p>
+                    <p><strong>Goal:</strong> Build a network of confirmed innocent players.</p>
+                    <p><strong>Action:</strong> Each night, choose a person you believe is innocent. If correct, you both wake up together and privately know each other is innocent (cannot directly reveal this during day discussion - use hints and trust). If you choose a Mafia member, you die and all previously confirmed players know a Mafia was chosen (helping narrow down suspects).</p>
+                    <p><strong>Unlocked:</strong> 10+ players</p>
+                </div>
+
+                <h4 style="color: #9b59b6; margin-top: 25px;">🎯 Neutral (Solo)</h4>
+
+                <div class="role-help serialkiller">
+                    <h4>🗡️ Serial Killer</h4>
+                    <p><strong>Team:</strong> Neutral (Lone Wolf)</p>
+                    <p><strong>Goal:</strong> Survive until only 2 people remain (you + 1 other).</p>
+                    <p><strong>Action:</strong> Kill independently each night. When only you and one other person remain alive, you win and both Mafia and Town teams lose!</p>
+                    <p><strong>Strategy:</strong> Stay hidden, eliminate threats, and decide which team to help based on who's easier to beat at the end.</p>
+                    <p><strong>Unlocked:</strong> 9+ players</p>
+                </div>
+
+                <h3>💡 Tips</h3>
+                <ul>
+                    <li><strong>General:</strong> Pay attention to voting patterns and who defends whom</li>
+                    <li><strong>Mafia:</strong> Blend in and appear innocent. Godfather should stay hidden while Spy gathers information during night</li>
+                    <li><strong>Detective:</strong> Remember the Godfather appears innocent - use other clues to identify them. Guide discussion with hints, not direct statements</li>
+                    <li><strong>Vigilante:</strong> In larger games you have multiple shots - pace yourself and don't waste them early. Each mistake costs the Good team</li>
+                    <li><strong>Special Roles:</strong> Use hints, suspicions, and indirect communication to guide votes without revealing your role or night actions</li>
+                    <li><strong>Gun Dealer:</strong> Choose gun recipients wisely - giving guns to Mafia can backfire spectacularly!</li>
+                    <li><strong>Captain:</strong> Build trust carefully with confirmed innocents using subtle coordination - one wrong choice and you're dead</li>
+                    <li><strong>Serial Killer:</strong> Play both sides against each other. Your goal is chaos and survival</li>
+                    <li><strong>Everyone:</strong> Observation, hints, and deduction are key. Remember: no revealing roles or discussing night actions directly!</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const roles = {
+            mafia: {
+                name: 'Mafia',
+                team: 'evil',
+                description: 'You are part of the Mafia. Work with other Mafia members to eliminate townspeople at night. Win by outnumbering good players.',
+                class: 'mafia'
+            },
+            godfather: {
+                name: 'Godfather',
+                team: 'evil',
+                description: 'You are the Godfather, leader of the Mafia. You appear innocent when investigated by the Detective. Work with your Mafia team to eliminate townspeople at night.',
+                class: 'mafia'
+            },
+            spy: {
+                name: 'Spy',
+                team: 'evil',
+                description: 'You are the Mafia Spy. Each night, you can investigate one player to learn their role, helping the Mafia identify threats like the Doctor or Detective.',
+                class: 'mafia'
+            },
+            poisoner: {
+                name: 'Poisoner',
+                team: 'evil',
+                description: 'You are the Mafia Poisoner. You can poison one player during the game. When poisoned, that player receives false information from the game runner (e.g., wrong Detective results).',
+                class: 'mafia'
+            },
+            villager: {
+                name: 'Villager',
+                team: 'good',
+                description: 'You are an innocent Villager. Discuss and vote during the day to eliminate the Mafia. Win by eliminating all Mafia members.',
+                class: 'villager'
+            },
+            doctor: {
+                name: 'Doctor',
+                team: 'good',
+                description: 'You can save one person each night from Mafia attack. You cannot save yourself twice in a row. Help the village survive!',
+                class: 'doctor'
+            },
+            detective: {
+                name: 'Detective',
+                team: 'good',
+                description: 'Each night, you can investigate one player to learn if they are Mafia or not. Use your knowledge wisely to guide the village. Beware of the Godfather who appears innocent!',
+                class: 'detective'
+            },
+            gundealer: {
+                name: 'Gun Dealer',
+                team: 'good',
+                description: 'At the start of the game, secretly choose 2 players to receive guns (one real, one fake). Players can use guns during the day before voting. When both guns are used, give out 2 new guns. You cannot give a gun to yourself. If you die, no more guns are distributed.',
+                class: 'gundealer'
+            },
+            vigilante: {
+                name: 'Vigilante',
+                team: 'good',
+                description: 'You can shoot players during the night phase. You have a limited number of shots based on game size: 1 shot (7-14 players), 2 shots (15-17 players), or 3 shots (18-20 players). Use this power wisely - if you shoot a good person, you could hurt your team!',
+                class: 'detective'
+            },
+            mayor: {
+                name: 'Mayor',
+                team: 'good',
+                description: 'You are the Mayor. During day voting, your vote counts double. Use your influence through strong arguments and hints to guide the town without revealing your identity.',
+                class: 'detective'
+            },
+            captain: {
+                name: 'Captain',
+                team: 'good',
+                description: 'Each night, choose a person you believe is innocent. If correct, you both confirm each other as innocent. If you choose a Mafia member, you die and all previously confirmed players know a Mafia was chosen.',
+                class: 'detective'
+            },
+            serialkiller: {
+                name: 'Serial Killer',
+                team: 'neutral',
+                description: 'You are the Serial Killer, a lone wolf. You kill independently each night. Your goal: be one of the last 2 people alive. When only you and one other person remain, you win and both Mafia and Town lose!',
+                class: 'serialkiller'
+            }
+        };
+
+        let currentPlayerIndex = 0;
+        let playerRoles = [];
+
+        function calculateTeamSize(playerCount) {
+            // Assign Mafia roles based on player count thresholds
+            let godfather = 1; // Always have Godfather
+            let spy = 0, poisoner = 0, mafia = 0;
+            
+            if (playerCount >= 6) {
+                spy = 1; // 2nd Mafia member
+            }
+            if (playerCount >= 7) {
+                poisoner = 1; // 3rd Mafia member
+            }
+            if (playerCount >= 14) {
+                mafia = Math.floor((playerCount - 13) / 3); // 4th+ Mafia members
+            }
+            
+            // Calculate total Mafia count
+            const totalMafiaCount = godfather + spy + poisoner + mafia;
+            
+            // Serial Killer - neutral role
+            let serialkiller = 0;
+            if (playerCount >= 9) {
+                serialkiller = 1;
+            }
+            
+            const goodCount = playerCount - totalMafiaCount - serialkiller;
+            
+            // Determine good roles
+            let doctor = 0, detective = 0, gundealer = 0, vigilante = 0, mayor = 0, captain = 0;
+            
+            if (playerCount >= 6) {
+                doctor = 1;
+            }
+            if (playerCount >= 7) {
+                detective = 1;
+            }
+            if (playerCount >= 7) {
+                vigilante = 1;
+            }
+            if (playerCount >= 7) {
+                gundealer = 1;
+            }
+            if (playerCount >= 12) {
+                mayor = 1;
+            }
+            if (playerCount >= 10) {
+                captain = 1;
+            }
+            
+            const villager = goodCount - doctor - detective - gundealer - vigilante - mayor - captain;
+            
+            return {
+                godfather: godfather,
+                spy: spy,
+                poisoner: poisoner,
+                mafia: mafia,
+                serialkiller: serialkiller,
+                villager: villager,
+                doctor: doctor,
+                detective: detective,
+                gundealer: gundealer,
+                vigilante: vigilante,
+                mayor: mayor,
+                captain: captain,
+                totalGood: goodCount,
+                totalMafia: totalMafiaCount,
+                totalNeutral: serialkiller
+            };
+        }
+
+        function startGame() {
+            const playerCount = parseInt(document.getElementById('playerCount').value);
+            const errorMsg = document.getElementById('errorMsg');
+            
+            if (!playerCount || playerCount < 6 || playerCount > 20) {
+                errorMsg.textContent = 'Please enter a number between 6 and 20';
+                errorMsg.classList.remove('hidden');
+                return;
+            }
+            
+            errorMsg.classList.add('hidden');
+            
+            const teamSize = calculateTeamSize(playerCount);
+            
+            // Create role array
+            let roleArray = [];
+            // Mafia roles
+            for (let i = 0; i < teamSize.godfather; i++) roleArray.push('godfather');
+            for (let i = 0; i < teamSize.spy; i++) roleArray.push('spy');
+            for (let i = 0; i < teamSize.poisoner; i++) roleArray.push('poisoner');
+            for (let i = 0; i < teamSize.mafia; i++) roleArray.push('mafia');
+            // Neutral roles
+            for (let i = 0; i < teamSize.serialkiller; i++) roleArray.push('serialkiller');
+            // Good roles
+            for (let i = 0; i < teamSize.villager; i++) roleArray.push('villager');
+            for (let i = 0; i < teamSize.doctor; i++) roleArray.push('doctor');
+            for (let i = 0; i < teamSize.detective; i++) roleArray.push('detective');
+            for (let i = 0; i < teamSize.gundealer; i++) roleArray.push('gundealer');
+            for (let i = 0; i < teamSize.vigilante; i++) roleArray.push('vigilante');
+            for (let i = 0; i < teamSize.mayor; i++) roleArray.push('mayor');
+            for (let i = 0; i < teamSize.captain; i++) roleArray.push('captain');
+            
+            // Shuffle roles
+            playerRoles = shuffleArray(roleArray);
+            currentPlayerIndex = 0;
+            
+            // Update UI
+            document.getElementById('totalPlayers').textContent = playerCount;
+            
+            // Show game section and first player
+            document.getElementById('setupSection').classList.add('hidden');
+            document.getElementById('gameSection').classList.remove('hidden');
+            
+            showPlayerReveal();
+        }
+
+        function showPlayerReveal() {
+            const rolesContainer = document.getElementById('rolesContainer');
+            const newGameBtn = document.getElementById('newGameBtn');
+            
+            if (currentPlayerIndex >= playerRoles.length) {
+                // All players have seen their roles
+                rolesContainer.innerHTML = `
+                    <div style="text-align: center; padding: 40px 20px;">
+                        <div style="font-size: 3em; margin-bottom: 20px;">🎉</div>
+                        <h2 style="color: #333; margin-bottom: 15px;">All Roles Assigned!</h2>
+                        <p style="color: #666; font-size: 1.1em;">The game can now begin. Good luck!</p>
+                    </div>
+                `;
+                newGameBtn.classList.remove('hidden');
+                return;
+            }
+            
+            // Hide new game button during role reveals
+            newGameBtn.classList.add('hidden');
+            
+            const roleKey = playerRoles[currentPlayerIndex];
+            const role = roles[roleKey];
+            
+            rolesContainer.innerHTML = `
+                <div style="text-align: center; padding: 20px;">
+                    <div style="background: #f8f9fa; border-radius: 15px; padding: 30px; margin-bottom: 20px;">
+                        <div style="font-size: 2.5em; margin-bottom: 15px;">👤</div>
+                        <h2 style="color: #333; margin-bottom: 10px;">Player ${currentPlayerIndex + 1}</h2>
+                        <p style="color: #666;">Click the button below to see your role</p>
+                    </div>
+                    
+                    <div id="roleRevealArea"></div>
+                    
+                    <button class="btn" onclick="revealRole()">🎭 Show My Role</button>
+                </div>
+            `;
+        }
+
+        function revealRole() {
+            const roleKey = playerRoles[currentPlayerIndex];
+            const role = roles[roleKey];
+            
+            const roleRevealArea = document.getElementById('roleRevealArea');
+            roleRevealArea.innerHTML = `
+                <div class="role-card ${role.class}" style="margin-bottom: 20px; cursor: default;">
+                    <div style="text-align: left;">
+                        <div class="role-name" style="font-size: 1.8em; margin-bottom: 15px;">
+                            ${role.name}
+                        </div>
+                        <div class="role-description" style="font-size: 1.1em; line-height: 1.8;">
+                            ${role.description}
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            const rolesContainer = document.getElementById('rolesContainer');
+            const showButton = rolesContainer.querySelector('.btn');
+            showButton.textContent = '✅ I Saw My Role';
+            showButton.onclick = nextPlayer;
+        }
+
+        function nextPlayer() {
+            currentPlayerIndex++;
+            showPlayerReveal();
+        }
+
+        function shuffleArray(array) {
+            const newArray = [...array];
+            for (let i = newArray.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [newArray[i], newArray[j]] = [newArray[j], newArray[i]];
+            }
+            return newArray;
+        }
+
+        function resetGame() {
+            currentPlayerIndex = 0;
+            playerRoles = [];
+            document.getElementById('setupSection').classList.remove('hidden');
+            document.getElementById('gameSection').classList.add('hidden');
+            document.getElementById('rolesContainer').innerHTML = '';
+            document.getElementById('newGameBtn').classList.add('hidden');
+        }
+
+        function showHelp() {
+            document.getElementById('helpModal').classList.remove('hidden');
+        }
+
+        function closeHelp() {
+            document.getElementById('helpModal').classList.add('hidden');
+        }
+
+        // Close modal when clicking outside (wait for DOM to load)
+        window.addEventListener('DOMContentLoaded', function() {
+            document.getElementById('helpModal').addEventListener('click', function(e) {
+                if (e.target === this) {
+                    closeHelp();
+                }
+            });
+        });
+    </script>
+</body>
+</html>
+
