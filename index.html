@@ -9,6 +9,9 @@
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
     
+    <!-- EmailJS SDK -->
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+    
     <style>
         * {
             margin: 0;
@@ -99,6 +102,7 @@
             font-weight: 600;
             cursor: pointer;
             transition: transform 0.2s ease, box-shadow 0.2s ease;
+            text-align: center;
             margin-bottom: 15px;
         }
 
@@ -498,6 +502,7 @@
 
             <button class="btn" onclick="startGame()">🎲 Assign Roles</button>
             <button class="btn btn-secondary" onclick="showHelp()">❓ How to Play</button>
+            <button class="btn btn-secondary" onclick="showFeedback()">💬 Feedback</button>
             <div id="gameCounter">Games Played Worldwide: Loading...</div>
         </div>
 
@@ -559,7 +564,7 @@
                                 <li>Detective cannot directly say they investigated someone or reveal investigation results</li>
                                 <li>Captain cannot say who they woke up with or who is confirmed innocent</li>
                                 <li>Gun Dealer cannot reveal who received guns</li>
-                                <li>Spy cannot tell anyone (except Mafia during night) what roles they discovered</li>
+                                <li>Spy cannot tell anyone (except Mafia during night) who they diffused/blocked</li>
                                 <li>Any role cannot explicitly state their night activities</li>
                             </ul>
                         </li>
@@ -569,8 +574,8 @@
                 
                 <h3>🌙 Game Flow</h3>
                 <ul>
-                    <li><strong>Night Phase:</strong> Players close their eyes. Mafia wakes up and chooses someone to eliminate. Serial Killer (if present) chooses someone to eliminate. Special roles perform their actions: Doctor saves someone, Detective/Spy investigate, Vigilante can shoot (limited shots based on game size), Gun Dealer distributes guns (if no guns currently in play), Captain chooses someone to confirm, Poisoner may poison someone.</li>
-                    <li><strong>Day Phase:</strong> Game runner announces who died. Players with guns can choose to shoot before voting. Players discuss and vote to eliminate someone they suspect is Mafia.</li>
+                    <li><strong>Night Phase:</strong> Players close their eyes. Mafia wakes up and chooses someone to eliminate. Serial Killer (if present) chooses someone to eliminate. Special roles perform their actions: Spy diffuses/blocks one player, Doctor saves someone, Detective investigates, Vigilante can use Shot or Slaughter (1 of each for entire game), Gun Dealer distributes guns (if no guns currently in play), Captain chooses someone to confirm, Poisoner may poison someone.</li>
+                    <li><strong>Day Phase:</strong> Game runner announces who died. Players with guns can choose to shoot before voting (note: regular shots cannot kill Godfather). Players discuss and vote to eliminate someone they suspect is Mafia.</li>
                     <li>Repeat until Mafia is eliminated (Good wins), Mafia equals/outnumbers Good (Mafia wins), or Serial Killer survives with one other person (Serial Killer wins).</li>
                 </ul>
 
@@ -583,14 +588,16 @@
                     <p><strong>Team:</strong> Evil (Mafia Leader)</p>
                     <p><strong>Goal:</strong> Eliminate Good players until Mafia equals or outnumbers them.</p>
                     <p><strong>Action:</strong> Works with Mafia to eliminate players at night. Appears innocent when investigated by Detective.</p>
+                    <p><strong>Special Immunity:</strong> ⚔️ Cannot be killed by regular shots (Gun Dealer guns, Vigilante shots). Can only be killed by Vigilante's Slaughter ability or day voting.</p>
                     <p><strong>Unlocked:</strong> Always (first Mafia member)</p>
                 </div>
 
                 <div class="role-help mafia">
                     <h4>🕵️ Spy</h4>
-                    <p><strong>Team:</strong> Evil (Mafia Intelligence)</p>
-                    <p><strong>Goal:</strong> Help Mafia identify and eliminate threats.</p>
-                    <p><strong>Action:</strong> Each night, investigate one player to learn their exact role. Share findings with your Mafia team during the night phase when you're awake together.</p>
+                    <p><strong>Team:</strong> Evil (Mafia Disruptor)</p>
+                    <p><strong>Goal:</strong> Disable threats and help Mafia succeed.</p>
+                    <p><strong>Action:</strong> Each night, choose one player to "diffuse" (roleblock). That player cannot use their special abilities for that night and the following day. Perfect for neutralizing Doctor, Detective, Vigilante, or Gun Dealer.</p>
+                    <p><strong>Strategy:</strong> Coordinate with your Mafia team. If you block the Doctor, the Mafia's kill will succeed. If you block the Detective, they can't investigate. Discuss targets during the night phase when awake together.</p>
                     <p><strong>Unlocked:</strong> Always (2nd Mafia member, minimum 2 Mafia guaranteed)</p>
                 </div>
 
@@ -640,13 +647,12 @@
                     <h4>👮 Vigilante</h4>
                     <p><strong>Team:</strong> Good</p>
                     <p><strong>Goal:</strong> Eliminate suspected Mafia members.</p>
-                    <p><strong>Action:</strong> During the night phase, you can shoot players. Number of shots scales with game size:</p>
-                    <ul style="margin-top: 5px; margin-bottom: 5px;">
-                        <li>7-14 players: <strong>1 shot</strong></li>
-                        <li>15-17 players: <strong>2 shots</strong></li>
-                        <li>18-25 players: <strong>3 shots</strong></li>
+                    <p><strong>Action:</strong> You have TWO abilities to use during the ENTIRE game:</p>
+                    <ul style="margin-top: 5px; margin-bottom: 10px;">
+                        <li><strong>🔫 Shot (1 use):</strong> Kill any player during night phase. Can be blocked by Doctor. Cannot kill Godfather.</li>
+                        <li><strong>⚔️ Slaughter (1 use):</strong> Powerful kill during night phase. Cannot be blocked. CAN kill Godfather. Use wisely!</li>
                     </ul>
-                    <p>Use wisely! Shooting a Good player hurts your team.</p>
+                    <p><strong>Strategy:</strong> Regular shots won't work on Godfather. Save your Slaughter if you suspect someone is the Godfather. Use wisely - shooting Good players hurts your team!</p>
                     <p><strong>Unlocked:</strong> 7+ players</p>
                 </div>
 
@@ -656,6 +662,7 @@
                     <p><strong>Goal:</strong> Provide guns to help eliminate Mafia.</p>
                     <p><strong>Action:</strong> Each night, secretly choose 2 players to receive guns (one real, one fake). Gun recipients don't know which is real until used. Maximum 2 guns can be in play at once - if previous guns are still unused, you skip that night and wait. You cannot give a gun to yourself. If you die, no more guns are distributed.</p>
                     <p><strong>Gun Usage:</strong> Players with guns can raise their hand during the day and ask to use their gun. They announce their target, and the gun fires. If it's the real gun, the target is eliminated. If it's fake, nothing happens and everyone knows it was the fake gun.</p>
+                    <p><strong>Note:</strong> ⚔️ Regular gun shots cannot kill the Godfather - only Vigilante's Slaughter or voting can eliminate them.</p>
                     <p><strong>Unlocked:</strong> 7+ players</p>
                 </div>
 
@@ -689,15 +696,52 @@
                 <h3>💡 Tips</h3>
                 <ul>
                     <li><strong>General:</strong> Pay attention to voting patterns and who defends whom</li>
-                    <li><strong>Mafia:</strong> Blend in and appear innocent. Godfather should stay hidden while Spy gathers information during night</li>
+                    <li><strong>Mafia:</strong> Blend in and appear innocent. Godfather has immunity to regular shots - only Vigilante's Slaughter or voting can eliminate you. Spy should coordinate with Mafia to block key roles like Doctor or Detective</li>
                     <li><strong>Detective:</strong> Remember the Godfather appears innocent - use other clues to identify them. Guide discussion with hints, not direct statements</li>
-                    <li><strong>Vigilante:</strong> In larger games you have multiple shots - pace yourself and don't waste them early. Each mistake costs the Good team</li>
+                    <li><strong>Vigilante:</strong> You have 1 Shot and 1 Slaughter for the entire game. Save your Slaughter for when you suspect the Godfather - regular shots can't kill them! Each mistake costs the Good team</li>
                     <li><strong>Special Roles:</strong> Use hints, suspicions, and indirect communication to guide votes without revealing your role or night actions</li>
                     <li><strong>Gun Dealer:</strong> Distribute guns every night to trusted players - giving guns to Mafia can backfire spectacularly! Track who still has guns to avoid wasting nights.</li>
                     <li><strong>Captain:</strong> Build trust carefully with confirmed innocents using subtle coordination - one wrong choice and you're dead</li>
                     <li><strong>Serial Killer:</strong> Play both sides against each other. Your goal is chaos and survival</li>
                     <li><strong>Everyone:</strong> Observation, hints, and deduction are key. Remember: no revealing roles or discussing night actions directly!</li>
                 </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- Feedback Modal -->
+    <div id="feedbackModal" class="modal hidden">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>💬 Send Feedback</h2>
+                <button class="close-btn" onclick="closeFeedback()">✕</button>
+            </div>
+            <div class="modal-body">
+                <p style="color: #666; margin-bottom: 20px;">Have questions, suggestions, or ideas to improve the game? We'd love to hear from you!</p>
+                
+                <form id="feedbackForm" onsubmit="submitFeedback(event)">
+                    <div style="margin-bottom: 20px;">
+                        <label for="feedbackName" style="display: block; margin-bottom: 8px; font-weight: 600; color: #333;">Name (Optional)</label>
+                        <input type="text" id="feedbackName" placeholder="Your name" 
+                               style="width: 100%; padding: 12px; border: 2px solid #ddd; border-radius: 8px; font-size: 1em;">
+                    </div>
+                    
+                    <div style="margin-bottom: 20px;">
+                        <label for="feedbackEmail" style="display: block; margin-bottom: 8px; font-weight: 600; color: #333;">Email (Optional)</label>
+                        <input type="email" id="feedbackEmail" placeholder="your.email@example.com" 
+                               style="width: 100%; padding: 12px; border: 2px solid #ddd; border-radius: 8px; font-size: 1em;">
+                    </div>
+                    
+                    <div style="margin-bottom: 20px;">
+                        <label for="feedbackMessage" style="display: block; margin-bottom: 8px; font-weight: 600; color: #333;">Message *</label>
+                        <textarea id="feedbackMessage" required placeholder="Share your thoughts, questions, or suggestions..." 
+                                  style="width: 100%; min-height: 150px; padding: 12px; border: 2px solid #ddd; border-radius: 8px; font-size: 1em; resize: vertical; font-family: inherit;"></textarea>
+                    </div>
+                    
+                    <p id="feedbackStatus" class="hidden" style="padding: 12px; border-radius: 8px; margin-bottom: 15px; text-align: center; font-weight: 600;"></p>
+                    
+                    <button type="submit" class="btn" id="submitFeedbackBtn">📤 Send Feedback</button>
+                </form>
             </div>
         </div>
     </div>
@@ -722,6 +766,46 @@
             database = firebase.database();
         } catch (error) {
             console.error("Firebase initialization error:", error);
+        }
+
+        // ========================================
+        // EMAIL NOTIFICATION SETUP (Optional)
+        // ========================================
+        // To receive email notifications when users submit feedback:
+        //
+        // 1. Sign up FREE at https://www.emailjs.com
+        // 2. Go to "Email Services" and connect your email (Gmail recommended)
+        // 3. Go to "Email Templates" and create a new template with these variables:
+        //    - {{feedback_number}} - Feedback count (e.g., "Feedback #15")
+        //    - {{from_name}} - User's name
+        //    - {{from_email}} - User's email
+        //    - {{message}} - Feedback message
+        //    - {{to_email}} - Your email (contact.ehm@gmail.com)
+        //
+        //    Example template:
+        //    Subject: 🎮 Mafia Game Feedback #{{feedback_number}}
+        //    
+        //    Feedback #{{feedback_number}}
+        //    From: {{from_name}}
+        //    Email: {{from_email}}
+        //    
+        //    Message:
+        //    {{message}}
+        //
+        // 4. Copy your Public Key, Service ID, and Template ID from the dashboard
+        // 5. Replace the values below:
+        //
+        const EMAILJS_PUBLIC_KEY = 'qw_grGhV3it_4-RwE'; // Get from EmailJS Dashboard > Account
+        const EMAILJS_SERVICE_ID = 'service_f65c74d'; // Get from EmailJS > Email Services
+        const EMAILJS_TEMPLATE_ID = 'template_gna5het'; // Get from EmailJS > Email Templates
+        //
+        // Free tier: 200 emails/month (more than enough for feedback!)
+        // ========================================
+        
+        try {
+            emailjs.init(EMAILJS_PUBLIC_KEY);
+        } catch (error) {
+            console.error("EmailJS initialization error:", error);
         }
 
         // Global counter using Firebase
@@ -760,13 +844,13 @@
             godfather: {
                 name: 'Godfather',
                 team: 'evil',
-                description: 'You are the Godfather, leader of the Mafia. You appear innocent when investigated by the Detective. Work with your Mafia team to eliminate townspeople at night.',
+                description: 'You are the Godfather, leader of the Mafia. You appear innocent when investigated by the Detective. SPECIAL IMMUNITY: ⚔️ You cannot be killed by regular shots (Gun Dealer guns, Vigilante shots) - only by Vigilante\'s Slaughter ability or day voting. Work with your Mafia team to eliminate townspeople at night.',
                 class: 'mafia'
             },
             spy: {
                 name: 'Spy',
                 team: 'evil',
-                description: 'You are the Mafia Spy. Each night, you can investigate one player to learn their role, helping the Mafia identify threats like the Doctor or Detective.',
+                description: 'You are the Mafia Spy. Each night, choose one player to "diffuse" (roleblock). That player cannot use their special abilities for that night and the following day. Coordinate with your Mafia team - if you block the Doctor, the Mafia kill will succeed. If you block the Detective, they can\'t investigate. Perfect for neutralizing threats!',
                 class: 'mafia'
             },
             poisoner: {
@@ -796,13 +880,13 @@
             gundealer: {
                 name: 'Gun Dealer',
                 team: 'good',
-                description: 'Each night, secretly choose 2 players to receive guns (one real, one fake). Players can use guns during the day before voting. Maximum 2 guns in play at once - if previous guns are still unused, skip that night. You cannot give a gun to yourself. If you die, no more guns are distributed.',
+                description: 'Each night, secretly choose 2 players to receive guns (one real, one fake). Players can use guns during the day before voting. Maximum 2 guns in play at once - if previous guns are still unused, skip that night. You cannot give a gun to yourself. If you die, no more guns are distributed. NOTE: Regular gun shots cannot kill the Godfather.',
                 class: 'gundealer'
             },
             vigilante: {
                 name: 'Vigilante',
                 team: 'good',
-                description: 'You can shoot players during the night phase. You have a limited number of shots based on game size: 1 shot (7-14 players), 2 shots (15-17 players), or 3 shots (18-25 players). Use this power wisely - if you shoot a good person, you could hurt your team!',
+                description: 'You have TWO powerful abilities for the ENTIRE game: (1) 🔫 SHOT: Kill any player during night phase. Can be blocked by Doctor. Cannot kill Godfather. (2) ⚔️ SLAUGHTER: Unstoppable kill during night phase. Cannot be blocked. CAN kill Godfather. Use wisely! Regular shots won\'t work on the Godfather - save your Slaughter if you suspect someone is the Godfather.',
                 class: 'vigilante'
             },
             mayor: {
@@ -1074,11 +1158,119 @@
             document.getElementById('helpModal').classList.add('hidden');
         }
 
+        function showFeedback() {
+            document.getElementById('feedbackModal').classList.remove('hidden');
+        }
+
+        function closeFeedback() {
+            document.getElementById('feedbackModal').classList.add('hidden');
+            // Reset form after a delay
+            setTimeout(() => {
+                document.getElementById('feedbackForm').reset();
+                document.getElementById('feedbackStatus').classList.add('hidden');
+            }, 300);
+        }
+
+        function submitFeedback(event) {
+            event.preventDefault();
+            
+            const name = document.getElementById('feedbackName').value.trim();
+            const email = document.getElementById('feedbackEmail').value.trim();
+            const message = document.getElementById('feedbackMessage').value.trim();
+            const submitBtn = document.getElementById('submitFeedbackBtn');
+            const statusEl = document.getElementById('feedbackStatus');
+            
+            if (!message) {
+                statusEl.textContent = '⚠️ Please enter a message';
+                statusEl.style.background = '#fff3cd';
+                statusEl.style.color = '#856404';
+                statusEl.classList.remove('hidden');
+                return;
+            }
+            
+            // Disable button and show loading
+            submitBtn.disabled = true;
+            submitBtn.textContent = '📤 Sending...';
+            
+            // Save to Firebase
+            if (database) {
+                // First, increment the feedback counter
+                const counterRef = database.ref('feedbackCounter');
+                counterRef.transaction((currentValue) => {
+                    return (currentValue || 0) + 1;
+                }).then((result) => {
+                    const feedbackNumber = result.snapshot.val();
+                    
+                    // Then save the feedback with the counter
+                    const feedbackRef = database.ref('mafiagameFeedback');
+                    return feedbackRef.push({
+                        number: feedbackNumber,
+                        name: name || 'Anonymous',
+                        email: email || 'Not provided',
+                        message: message,
+                        timestamp: new Date().toISOString(),
+                        date: new Date().toLocaleString()
+                    }).then(() => feedbackNumber);
+                })
+                .then((feedbackNumber) => {
+                    // Send email notification via EmailJS with count
+                    if (EMAILJS_PUBLIC_KEY !== 'YOUR_PUBLIC_KEY') {
+                        emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, {
+                            feedback_number: feedbackNumber,
+                            from_name: name || 'Anonymous',
+                            from_email: email || 'Not provided',
+                            message: message,
+                            to_email: 'contact.ehm@gmail.com'
+                        }).catch((error) => {
+                            console.error('EmailJS error:', error);
+                        });
+                    }
+                    
+                    statusEl.textContent = '✅ Thank you! Your feedback has been sent successfully!';
+                    statusEl.style.background = '#d4edda';
+                    statusEl.style.color = '#155724';
+                    statusEl.classList.remove('hidden');
+                    
+                    // Reset form
+                    document.getElementById('feedbackForm').reset();
+                    
+                    // Close modal after 2 seconds
+                    setTimeout(() => {
+                        closeFeedback();
+                    }, 2000);
+                })
+                .catch((error) => {
+                    console.error('Error submitting feedback:', error);
+                    statusEl.textContent = '❌ Error sending feedback. Please try again.';
+                    statusEl.style.background = '#f8d7da';
+                    statusEl.style.color = '#721c24';
+                    statusEl.classList.remove('hidden');
+                })
+                .finally(() => {
+                    submitBtn.disabled = false;
+                    submitBtn.textContent = '📤 Send Feedback';
+                });
+            } else {
+                statusEl.textContent = '❌ Firebase not configured. Please try email instead.';
+                statusEl.style.background = '#f8d7da';
+                statusEl.style.color = '#721c24';
+                statusEl.classList.remove('hidden');
+                submitBtn.disabled = false;
+                submitBtn.textContent = '📤 Send Feedback';
+            }
+        }
+
         // Close modals when clicking outside (wait for DOM to load)
         window.addEventListener('DOMContentLoaded', function() {
             document.getElementById('helpModal').addEventListener('click', function(e) {
                 if (e.target === this) {
                     closeHelp();
+                }
+            });
+            
+            document.getElementById('feedbackModal').addEventListener('click', function(e) {
+                if (e.target === this) {
+                    closeFeedback();
                 }
             });
             
