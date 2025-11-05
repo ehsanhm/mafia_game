@@ -174,11 +174,15 @@
         }
 
         .role-card.detective {
-            border-left-color: #fa709a;
+            border-left-color: #6f42c1;
         }
 
         .role-card.gundealer {
-            border-left-color: #ff9a56;
+            border-left-color: #20c997;
+        }
+
+        .role-card.vigilante {
+            border-left-color: #00b4d8;
         }
 
         .role-card.serialkiller {
@@ -207,11 +211,15 @@
         }
 
         .role-card.detective .player-number {
-            background: #fa709a;
+            background: #6f42c1;
         }
 
         .role-card.gundealer .player-number {
-            background: #ff9a56;
+            background: #20c997;
+        }
+
+        .role-card.vigilante .player-number {
+            background: #00b4d8;
         }
 
         .role-card.serialkiller .player-number {
@@ -255,6 +263,33 @@
             font-size: 0.9em;
             margin-top: 10px;
             text-align: center;
+        }
+
+        .close-game-btn {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: #f5576c;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            font-size: 1.5em;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 8px rgba(245, 87, 108, 0.3);
+            z-index: 10;
+        }
+
+        .close-game-btn:hover {
+            background: #e04560;
+            transform: rotate(90deg) scale(1.1);
+            box-shadow: 0 4px 12px rgba(245, 87, 108, 0.5);
+        }
+
+        .close-game-btn:active {
+            transform: rotate(90deg) scale(0.95);
         }
 
         /* Modal Styles */
@@ -379,11 +414,15 @@
         }
 
         .role-help.detective {
-            border-left-color: #fa709a;
+            border-left-color: #6f42c1;
         }
 
         .role-help.gundealer {
-            border-left-color: #ff9a56;
+            border-left-color: #20c997;
+        }
+
+        .role-help.vigilante {
+            border-left-color: #00b4d8;
         }
 
         .role-help.serialkiller {
@@ -434,7 +473,7 @@
 </head>
 <body>
     <div class="container">
-        <h1>🎭 Mafia Game</h1>
+        <h1>🎭 Mafia Game 🔱</h1>
         <p class="subtitle">Role Assignment System</p>
 
         <div id="setupSection">
@@ -449,6 +488,8 @@
         </div>
 
         <div id="gameSection" class="hidden">
+            <button class="close-game-btn" onclick="cancelGame()" title="Cancel and start over">✕</button>
+            
             <div class="info-box">
                 <div class="info-row">
                     <span class="info-label">👥 Total Players:</span>
@@ -461,6 +502,24 @@
             </div>
 
             <button class="btn btn-secondary hidden" id="newGameBtn" onclick="resetGame()">🔄 New Game</button>
+        </div>
+    </div>
+
+    <!-- Confirmation Modal -->
+    <div id="confirmModal" class="modal hidden">
+        <div class="modal-content" style="max-width: 400px;">
+            <div class="modal-header" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
+                <h2 style="font-size: 1.3em;">⚠️ Cancel Game?</h2>
+            </div>
+            <div class="modal-body">
+                <p style="font-size: 1.1em; text-align: center; margin-bottom: 20px;">
+                    Are you sure you want to cancel this game and start over?
+                </p>
+                <div style="display: flex; gap: 10px;">
+                    <button class="btn" style="flex: 1; background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);" onclick="confirmCancel()">Yes, Cancel</button>
+                    <button class="btn" style="flex: 1; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);" onclick="closeConfirm()">No, Continue</button>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -496,7 +555,7 @@
                 
                 <h3>🌙 Game Flow</h3>
                 <ul>
-                    <li><strong>Night Phase:</strong> Players close their eyes. Mafia wakes up and chooses someone to eliminate. Serial Killer (if present) chooses someone to eliminate. Special roles perform their actions: Doctor saves someone, Detective/Spy investigate, Vigilante can shoot (limited shots based on game size), Gun Dealer distributes guns, Captain chooses someone to confirm, Poisoner may poison someone.</li>
+                    <li><strong>Night Phase:</strong> Players close their eyes. Mafia wakes up and chooses someone to eliminate. Serial Killer (if present) chooses someone to eliminate. Special roles perform their actions: Doctor saves someone, Detective/Spy investigate, Vigilante can shoot (limited shots based on game size), Gun Dealer distributes guns (if no guns currently in play), Captain chooses someone to confirm, Poisoner may poison someone.</li>
                     <li><strong>Day Phase:</strong> Game runner announces who died. Players with guns can choose to shoot before voting. Players discuss and vote to eliminate someone they suspect is Mafia.</li>
                     <li>Repeat until Mafia is eliminated (Good wins), Mafia equals/outnumbers Good (Mafia wins), or Serial Killer survives with one other person (Serial Killer wins).</li>
                 </ul>
@@ -563,7 +622,7 @@
                     <p><strong>Unlocked:</strong> 7+ players</p>
                 </div>
 
-                <div class="role-help detective">
+                <div class="role-help vigilante">
                     <h4>👮 Vigilante</h4>
                     <p><strong>Team:</strong> Good</p>
                     <p><strong>Goal:</strong> Eliminate suspected Mafia members.</p>
@@ -581,7 +640,7 @@
                     <h4>🔫 Gun Dealer</h4>
                     <p><strong>Team:</strong> Good</p>
                     <p><strong>Goal:</strong> Provide guns to help eliminate Mafia.</p>
-                    <p><strong>Action:</strong> At the start of the game, secretly choose 2 players to receive guns (one real, one fake). Gun recipients don't know which is real until used. When both guns are used, distribute 2 new guns. You cannot give a gun to yourself. If you die, no more guns are distributed.</p>
+                    <p><strong>Action:</strong> Each night, secretly choose 2 players to receive guns (one real, one fake). Gun recipients don't know which is real until used. Maximum 2 guns can be in play at once - if previous guns are still unused, you skip that night and wait. You cannot give a gun to yourself. If you die, no more guns are distributed.</p>
                     <p><strong>Gun Usage:</strong> Players with guns can raise their hand during the day and ask to use their gun. They announce their target, and the gun fires. If it's the real gun, the target is eliminated. If it's fake, nothing happens and everyone knows it was the fake gun.</p>
                     <p><strong>Unlocked:</strong> 7+ players</p>
                 </div>
@@ -620,7 +679,7 @@
                     <li><strong>Detective:</strong> Remember the Godfather appears innocent - use other clues to identify them. Guide discussion with hints, not direct statements</li>
                     <li><strong>Vigilante:</strong> In larger games you have multiple shots - pace yourself and don't waste them early. Each mistake costs the Good team</li>
                     <li><strong>Special Roles:</strong> Use hints, suspicions, and indirect communication to guide votes without revealing your role or night actions</li>
-                    <li><strong>Gun Dealer:</strong> Choose gun recipients wisely - giving guns to Mafia can backfire spectacularly!</li>
+                    <li><strong>Gun Dealer:</strong> Distribute guns every night to trusted players - giving guns to Mafia can backfire spectacularly! Track who still has guns to avoid wasting nights.</li>
                     <li><strong>Captain:</strong> Build trust carefully with confirmed innocents using subtle coordination - one wrong choice and you're dead</li>
                     <li><strong>Serial Killer:</strong> Play both sides against each other. Your goal is chaos and survival</li>
                     <li><strong>Everyone:</strong> Observation, hints, and deduction are key. Remember: no revealing roles or discussing night actions directly!</li>
@@ -676,14 +735,14 @@
             gundealer: {
                 name: 'Gun Dealer',
                 team: 'good',
-                description: 'At the start of the game, secretly choose 2 players to receive guns (one real, one fake). Players can use guns during the day before voting. When both guns are used, give out 2 new guns. You cannot give a gun to yourself. If you die, no more guns are distributed.',
+                description: 'Each night, secretly choose 2 players to receive guns (one real, one fake). Players can use guns during the day before voting. Maximum 2 guns in play at once - if previous guns are still unused, skip that night. You cannot give a gun to yourself. If you die, no more guns are distributed.',
                 class: 'gundealer'
             },
             vigilante: {
                 name: 'Vigilante',
                 team: 'good',
                 description: 'You can shoot players during the night phase. You have a limited number of shots based on game size: 1 shot (7-14 players), 2 shots (15-17 players), or 3 shots (18-20 players). Use this power wisely - if you shoot a good person, you could hurt your team!',
-                class: 'detective'
+                class: 'vigilante'
             },
             mayor: {
                 name: 'Mayor',
@@ -865,10 +924,27 @@
             const roleKey = playerRoles[currentPlayerIndex];
             const role = roles[roleKey];
             
+            // Determine team display
+            let teamBadge = '';
+            let teamColor = '';
+            if (role.team === 'good') {
+                teamBadge = '😇 Good Team';
+                teamColor = '#4facfe';
+            } else if (role.team === 'evil') {
+                teamBadge = '😈 Mafia Team';
+                teamColor = '#f5576c';
+            } else if (role.team === 'neutral') {
+                teamBadge = '🎯 Neutral (Solo)';
+                teamColor = '#9b59b6';
+            }
+            
             const roleRevealArea = document.getElementById('roleRevealArea');
             roleRevealArea.innerHTML = `
                 <div class="role-card ${role.class}" style="margin-bottom: 20px; cursor: default;">
                     <div style="text-align: left;">
+                        <div style="display: inline-block; background: ${teamColor}; color: white; padding: 5px 15px; border-radius: 20px; font-size: 0.9em; margin-bottom: 10px; font-weight: 600;">
+                            ${teamBadge}
+                        </div>
                         <div class="role-name" style="font-size: 1.8em; margin-bottom: 15px;">
                             ${role.name}
                         </div>
@@ -908,6 +984,19 @@
             document.getElementById('newGameBtn').classList.add('hidden');
         }
 
+        function cancelGame() {
+            document.getElementById('confirmModal').classList.remove('hidden');
+        }
+
+        function confirmCancel() {
+            closeConfirm();
+            resetGame();
+        }
+
+        function closeConfirm() {
+            document.getElementById('confirmModal').classList.add('hidden');
+        }
+
         function showHelp() {
             document.getElementById('helpModal').classList.remove('hidden');
         }
@@ -916,11 +1005,17 @@
             document.getElementById('helpModal').classList.add('hidden');
         }
 
-        // Close modal when clicking outside (wait for DOM to load)
+        // Close modals when clicking outside (wait for DOM to load)
         window.addEventListener('DOMContentLoaded', function() {
             document.getElementById('helpModal').addEventListener('click', function(e) {
                 if (e.target === this) {
                     closeHelp();
+                }
+            });
+            
+            document.getElementById('confirmModal').addEventListener('click', function(e) {
+                if (e.target === this) {
+                    closeConfirm();
                 }
             });
         });
