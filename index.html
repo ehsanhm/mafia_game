@@ -4,6 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Mafia Game - Role Assigner</title>
+    
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+    
     <style>
         * {
             margin: 0;
@@ -292,6 +297,14 @@
             transform: rotate(90deg) scale(0.95);
         }
 
+        #gameCounter {
+            margin-top: 20px;
+            font-size: 0.9em;
+            color: #888;
+            text-align: center;
+            padding: 10px;
+        }
+
         /* Modal Styles */
         .modal {
             position: fixed;
@@ -478,13 +491,14 @@
 
         <div id="setupSection">
             <div class="input-section">
-                <label for="playerCount">Number of Players (6-20):</label>
-                <input type="number" id="playerCount" min="6" max="20" value="8" placeholder="Enter number of players">
+                <label for="playerCount">Number of Players (6-25):</label>
+                <input type="number" id="playerCount" min="6" max="25" value="8" placeholder="Enter number of players">
                 <p class="error hidden" id="errorMsg"></p>
             </div>
 
             <button class="btn" onclick="startGame()">🎲 Assign Roles</button>
             <button class="btn btn-secondary" onclick="showHelp()">❓ How to Play</button>
+            <div id="gameCounter">Games Played Worldwide: Loading...</div>
         </div>
 
         <div id="gameSection" class="hidden">
@@ -630,7 +644,7 @@
                     <ul style="margin-top: 5px; margin-bottom: 5px;">
                         <li>7-14 players: <strong>1 shot</strong></li>
                         <li>15-17 players: <strong>2 shots</strong></li>
-                        <li>18-20 players: <strong>3 shots</strong></li>
+                        <li>18-25 players: <strong>3 shots</strong></li>
                     </ul>
                     <p>Use wisely! Shooting a Good player hurts your team.</p>
                     <p><strong>Unlocked:</strong> 7+ players</p>
@@ -689,6 +703,53 @@
     </div>
 
     <script>
+        // Firebase Configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyBSTuzqrJ0ik2CTfKq0GOc7lEVUYtxCX0E",
+            authDomain: "spy-game-12f96.firebaseapp.com",
+            databaseURL: "https://spy-game-12f96-default-rtdb.firebaseio.com",
+            projectId: "spy-game-12f96",
+            storageBucket: "spy-game-12f96.firebasestorage.app",
+            messagingSenderId: "22301781663",
+            appId: "1:22301781663:web:23f31448a872e41203fcaa",
+            measurementId: "G-DE4QRR88RH"
+        };
+
+        // Initialize Firebase
+        let database;
+        try {
+            firebase.initializeApp(firebaseConfig);
+            database = firebase.database();
+        } catch (error) {
+            console.error("Firebase initialization error:", error);
+        }
+
+        // Global counter using Firebase
+        function updateGlobalCounter() {
+            if (!database) {
+                document.getElementById('gameCounter').textContent = 'Games Played Worldwide: Setup Required';
+                return;
+            }
+
+            const counterRef = database.ref('mafiaGameCounter');
+            counterRef.on('value', (snapshot) => {
+                const count = snapshot.val() || 0;
+                document.getElementById('gameCounter').textContent = `Games Played Worldwide: ${count.toLocaleString()}`;
+            });
+        }
+
+        function incrementGlobalCounter() {
+            if (!database) return;
+
+            const counterRef = database.ref('mafiaGameCounter');
+            counterRef.transaction((currentValue) => {
+                return (currentValue || 0) + 1;
+            });
+        }
+
+        // Load counter when page loads
+        window.addEventListener('load', updateGlobalCounter);
+
         const roles = {
             mafia: {
                 name: 'Mafia',
@@ -741,7 +802,7 @@
             vigilante: {
                 name: 'Vigilante',
                 team: 'good',
-                description: 'You can shoot players during the night phase. You have a limited number of shots based on game size: 1 shot (7-14 players), 2 shots (15-17 players), or 3 shots (18-20 players). Use this power wisely - if you shoot a good person, you could hurt your team!',
+                description: 'You can shoot players during the night phase. You have a limited number of shots based on game size: 1 shot (7-14 players), 2 shots (15-17 players), or 3 shots (18-25 players). Use this power wisely - if you shoot a good person, you could hurt your team!',
                 class: 'vigilante'
             },
             mayor: {
@@ -766,6 +827,7 @@
 
         let currentPlayerIndex = 0;
         let playerRoles = [];
+        let gameCountIncremented = false;
 
         function calculateTeamSize(playerCount) {
             // Assign Mafia roles based on player count thresholds
@@ -840,8 +902,8 @@
             const playerCount = parseInt(document.getElementById('playerCount').value);
             const errorMsg = document.getElementById('errorMsg');
             
-            if (!playerCount || playerCount < 6 || playerCount > 20) {
-                errorMsg.textContent = 'Please enter a number between 6 and 20';
+            if (!playerCount || playerCount < 6 || playerCount > 25) {
+                errorMsg.textContent = 'Please enter a number between 6 and 25';
                 errorMsg.classList.remove('hidden');
                 return;
             }
@@ -887,6 +949,12 @@
             const newGameBtn = document.getElementById('newGameBtn');
             
             if (currentPlayerIndex >= playerRoles.length) {
+                // All players have seen their roles - increment counter only once
+                if (!gameCountIncremented) {
+                    incrementGlobalCounter();
+                    gameCountIncremented = true;
+                }
+                
                 // All players have seen their roles
                 rolesContainer.innerHTML = `
                     <div style="text-align: center; padding: 40px 20px;">
@@ -915,12 +983,15 @@
                     
                     <div id="roleRevealArea"></div>
                     
-                    <button class="btn" onclick="revealRole()">🎭 Show My Role</button>
+                    <button class="btn" id="showRoleBtn" onclick="revealRole()">🎭 Show My Role</button>
                 </div>
             `;
         }
 
         function revealRole() {
+            // Hide the "Show My Role" button
+            document.getElementById('showRoleBtn').style.display = 'none';
+            
             const roleKey = playerRoles[currentPlayerIndex];
             const role = roles[roleKey];
             
@@ -940,6 +1011,7 @@
             
             const roleRevealArea = document.getElementById('roleRevealArea');
             roleRevealArea.innerHTML = `
+                <button class="btn" onclick="nextPlayer()" style="margin-bottom: 20px;">✅ I Saw My Role</button>
                 <div class="role-card ${role.class}" style="margin-bottom: 20px; cursor: default;">
                     <div style="text-align: left;">
                         <div style="display: inline-block; background: ${teamColor}; color: white; padding: 5px 15px; border-radius: 20px; font-size: 0.9em; margin-bottom: 10px; font-weight: 600;">
@@ -954,11 +1026,6 @@
                     </div>
                 </div>
             `;
-            
-            const rolesContainer = document.getElementById('rolesContainer');
-            const showButton = rolesContainer.querySelector('.btn');
-            showButton.textContent = '✅ I Saw My Role';
-            showButton.onclick = nextPlayer;
         }
 
         function nextPlayer() {
@@ -978,6 +1045,7 @@
         function resetGame() {
             currentPlayerIndex = 0;
             playerRoles = [];
+            gameCountIncremented = false; // Reset counter flag
             document.getElementById('setupSection').classList.remove('hidden');
             document.getElementById('gameSection').classList.add('hidden');
             document.getElementById('rolesContainer').innerHTML = '';
