@@ -975,7 +975,7 @@
             
             rolesContainer.innerHTML = `
                 <div style="text-align: center; padding: 20px;">
-                    <div style="background: #f8f9fa; border-radius: 15px; padding: 30px; margin-bottom: 20px;">
+                    <div id="instructionBox" style="background: #f8f9fa; border-radius: 15px; padding: 30px; margin-bottom: 20px;">
                         <div style="font-size: 2.5em; margin-bottom: 15px;">👤</div>
                         <h2 style="color: #333; margin-bottom: 10px;">Player ${currentPlayerIndex + 1}</h2>
                         <p style="color: #666;">Click the button below to see your role</p>
@@ -989,7 +989,8 @@
         }
 
         function revealRole() {
-            // Hide the "Show My Role" button
+            // Hide the instruction box and "Show My Role" button
+            document.getElementById('instructionBox').style.display = 'none';
             document.getElementById('showRoleBtn').style.display = 'none';
             
             const roleKey = playerRoles[currentPlayerIndex];
@@ -1011,7 +1012,6 @@
             
             const roleRevealArea = document.getElementById('roleRevealArea');
             roleRevealArea.innerHTML = `
-                <button class="btn" onclick="nextPlayer()" style="margin-bottom: 20px;">✅ I Saw My Role</button>
                 <div class="role-card ${role.class}" style="margin-bottom: 20px; cursor: default;">
                     <div style="text-align: left;">
                         <div style="display: inline-block; background: ${teamColor}; color: white; padding: 5px 15px; border-radius: 20px; font-size: 0.9em; margin-bottom: 10px; font-weight: 600;">
@@ -1025,6 +1025,7 @@
                         </div>
                     </div>
                 </div>
+                <button class="btn" onclick="nextPlayer()" style="margin-top: 20px;">✅ I Saw My Role</button>
             `;
         }
 
