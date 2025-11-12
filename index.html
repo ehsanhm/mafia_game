@@ -21,7 +21,7 @@
 
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+            background: linear-gradient(135deg, #2d3561 0%, #3e2753 50%, #4a2c5e 100%);
             min-height: 100vh;
             padding: 20px;
             display: flex;
@@ -38,7 +38,7 @@
         .container {
             background: white;
             border-radius: 20px;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
             max-width: 700px;
             width: 100%;
             padding: 30px;
@@ -63,7 +63,7 @@
             position: fixed;
             top: 20px;
             left: 20px;
-            background: linear-gradient(135deg, #e94560 0%, #c41e3a 100%);
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
             border: none;
             border-radius: 25px;
@@ -72,13 +72,13 @@
             font-weight: 600;
             cursor: pointer;
             transition: all 0.3s ease;
-            box-shadow: 0 4px 15px rgba(233, 69, 96, 0.4);
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
             z-index: 2000;
         }
 
         .language-toggle:hover {
             transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(233, 69, 96, 0.6);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
         }
 
         h1 {
@@ -111,7 +111,7 @@
         .btn {
             width: 100%;
             padding: 15px;
-            background: linear-gradient(135deg, #e94560 0%, #c41e3a 100%);
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
             border: none;
             border-radius: 10px;
@@ -125,7 +125,7 @@
 
         .btn:hover {
             transform: translateY(-2px);
-            box-shadow: 0 10px 20px rgba(233, 69, 96, 0.4);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.4);
         }
 
         .btn:active {
@@ -133,11 +133,11 @@
         }
 
         .btn-secondary {
-            background: linear-gradient(135deg, #0f3460 0%, #16213e 100%);
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
         }
 
         .btn-secondary:hover {
-            box-shadow: 0 10px 20px rgba(15, 52, 96, 0.4);
+            box-shadow: 0 10px 20px rgba(245, 87, 108, 0.4);
         }
 
         .roles-section {
@@ -149,7 +149,7 @@
             border-radius: 10px;
             padding: 20px;
             margin-bottom: 15px;
-            border-left: 5px solid #e94560;
+            border-left: 5px solid #667eea;
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
             cursor: pointer;
             transition: all 0.3s ease;
@@ -157,7 +157,7 @@
 
         body.rtl .role-card {
             border-left: none;
-            border-right: 5px solid #e94560;
+            border-right: 5px solid #667eea;
         }
 
         .role-card:hover {
@@ -170,11 +170,11 @@
         }
 
         .role-card.mafia {
-            border-left-color: #c41e3a;
+            border-left-color: #f5576c;
         }
 
         body.rtl .role-card.mafia {
-            border-right-color: #c41e3a;
+            border-right-color: #f5576c;
         }
 
         .role-card.citizen {
@@ -186,16 +186,16 @@
         }
 
         .role-card.independent {
-            border-left-color: #9b59b6;
+            border-left-color: #8b5cf6;
         }
 
         body.rtl .role-card.independent {
-            border-right-color: #9b59b6;
+            border-right-color: #8b5cf6;
         }
 
         .player-number {
             display: inline-block;
-            background: #e94560;
+            background: #667eea;
             color: white;
             width: 35px;
             height: 35px;
@@ -212,7 +212,7 @@
         }
 
         .role-card.mafia .player-number {
-            background: #c41e3a;
+            background: #f5576c;
         }
 
         .role-card.citizen .player-number {
@@ -220,7 +220,7 @@
         }
 
         .role-card.independent .player-number {
-            background: #9b59b6;
+            background: #8b5cf6;
         }
 
         .role-name {
@@ -241,23 +241,26 @@
             position: absolute;
             top: 20px;
             right: 20px;
-            background: #c41e3a;
+            background: #f5576c;
             color: white;
             border: none;
-            border-radius: 50%;
-            width: 40px;
-            height: 40px;
-            font-size: 1.5em;
+            border-radius: 20px;
+            width: 70px;
+            height: 36px;
+            font-size: 1.3em;
             cursor: pointer;
             transition: all 0.3s ease;
-            box-shadow: 0 2px 8px rgba(196, 30, 58, 0.3);
+            box-shadow: 0 2px 8px rgba(245, 87, 108, 0.3);
             z-index: 10;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
         .close-game-btn:hover {
-            background: #a01829;
-            transform: rotate(90deg) scale(1.1);
-            box-shadow: 0 4px 12px rgba(196, 30, 58, 0.5);
+            background: #e04560;
+            transform: scale(1.05);
+            box-shadow: 0 4px 12px rgba(245, 87, 108, 0.5);
         }
 
         #gameCounter {
@@ -310,13 +313,16 @@
         }
 
         .modal-header {
-            background: linear-gradient(135deg, #e94560 0%, #c41e3a 100%);
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
             padding: 25px 30px;
             border-radius: 20px 20px 0 0;
             display: flex;
             justify-content: space-between;
             align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 10;
         }
 
         .modal-header h2 {
@@ -334,6 +340,10 @@
             border-radius: 50%;
             cursor: pointer;
             transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
         }
 
         .close-btn:hover {
@@ -386,20 +396,20 @@
             border-radius: 10px;
             padding: 20px;
             margin-bottom: 15px;
-            border-left: 5px solid #e94560;
+            border-left: 5px solid #667eea;
         }
 
         body.rtl .role-help {
             border-left: none;
-            border-right: 5px solid #e94560;
+            border-right: 5px solid #667eea;
         }
 
         .role-help.mafia {
-            border-left-color: #c41e3a;
+            border-left-color: #f5576c;
         }
 
         body.rtl .role-help.mafia {
-            border-right-color: #c41e3a;
+            border-right-color: #f5576c;
         }
 
         .role-help.citizen {
@@ -411,11 +421,11 @@
         }
 
         .role-help.independent {
-            border-left-color: #9b59b6;
+            border-left-color: #8b5cf6;
         }
 
         body.rtl .role-help.independent {
-            border-right-color: #9b59b6;
+            border-right-color: #8b5cf6;
         }
 
         .team-badge {
@@ -428,7 +438,7 @@
         }
 
         .team-badge.mafia {
-            background: #c41e3a;
+            background: #f5576c;
             color: white;
         }
 
@@ -438,7 +448,7 @@
         }
 
         .team-badge.independent {
-            background: #9b59b6;
+            background: #8b5cf6;
             color: white;
         }
 
@@ -459,6 +469,18 @@
                 left: 15px;
             }
 
+            .close-game-btn {
+                width: 60px;
+                height: 32px;
+                font-size: 1.1em;
+            }
+
+            .close-btn {
+                width: 36px;
+                height: 36px;
+                font-size: 1.3em;
+            }
+
             .modal-body {
                 padding: 20px;
             }
@@ -472,10 +494,10 @@
     </button>
 
     <div class="container">
-        <h1 id="mainTitle">🎭 Mafia: Godfather 🔱</h1>
-        <p class="subtitle" id="subtitle">Role Assignment System</p>
-
         <div id="setupSection">
+            <h1 id="mainTitle">🎭 Mafia: Godfather 🔱</h1>
+            <p class="subtitle" id="subtitle">Role Assignment System</p>
+
             <div class="input-section" style="margin-bottom: 20px;">
                 <label for="playerCount" style="display: block; color: #333; margin-bottom: 10px; font-weight: 600; font-size: 1.1em;">
                     <span id="playerCountLabel">Number of Players (6-15):</span>
@@ -497,9 +519,6 @@
             </button>
             <button class="btn btn-secondary" onclick="showHelp()">
                 <span id="howToPlayBtn">📖 How to Play</span>
-            </button>
-            <button class="btn btn-secondary" onclick="showCards()">
-                <span id="cardsBtn">🃏 Last Move Cards</span>
             </button>
             <button class="btn btn-secondary" onclick="showFeedback()">
                 <span id="feedbackBtn">💬 Feedback</span>
@@ -528,19 +547,6 @@
                 <button class="close-btn" onclick="closeHelp()">✕</button>
             </div>
             <div class="modal-body" id="helpContent">
-                <!-- Content will be populated by JavaScript based on language -->
-            </div>
-        </div>
-    </div>
-
-    <!-- Last Move Cards Modal -->
-    <div id="cardsModal" class="modal hidden">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h2 id="cardsTitle">🃏 Last Move Cards</h2>
-                <button class="close-btn" onclick="closeCards()">✕</button>
-            </div>
-            <div class="modal-body" id="cardsContent">
                 <!-- Content will be populated by JavaScript based on language -->
             </div>
         </div>
@@ -650,12 +656,10 @@
                 playerInfo: '11 Players: 3 Mafia • 7 Citizens • 1 Independent',
                 assignBtn: '🎲 Assign Roles',
                 howToPlayBtn: '📖 How to Play',
-                cardsBtn: '🃏 Last Move Cards',
                 feedbackBtn: '💬 Feedback',
                 newGameText: '🔄 New Game',
                 langButtonText: 'فارسی',
                 helpTitle: '📖 How to Play - Mafia: Godfather',
-                cardsTitle: '🃏 Last Move Cards',
                 feedbackTitle: '💬 Send Feedback',
                 feedbackIntro: 'Have questions, suggestions, or ideas to improve the game? We\'d love to hear from you!',
                 nameLabel: 'Name (Optional)',
@@ -671,7 +675,11 @@
                 sawRoleBtn: '✅ I Saw My Role',
                 allAssigned: 'All Roles Assigned!',
                 gameBegin: 'The game can now begin. Good luck!',
-                gamesPlayed: 'Games Played Worldwide:'
+                gamesPlayed: 'Games Played Worldwide:',
+                drawCard: '🃏 Draw Card',
+                cardDrawn: 'Card Drawn:',
+                noCardsLeft: 'No cards left!',
+                cardsRemaining: 'cards remaining'
             },
             fa: {
                 mainTitle: '🎭 مافیا: پدرخوانده 🔱',
@@ -680,12 +688,10 @@
                 playerInfo: '۱۱ بازیکن: ۳ مافیا - ۷ شهروند - ۱ مستقل',
                 assignBtn: '🎲 تخصیص نقش‌ها',
                 howToPlayBtn: '📖 آموزش بازی',
-                cardsBtn: '🃏 کارت‌های حرکت آخر',
                 feedbackBtn: '💬 بازخورد',
                 newGameText: '🔄 بازی جدید',
                 langButtonText: 'English',
                 helpTitle: '📖 آموزش بازی - مافیا: پدرخوانده',
-                cardsTitle: '🃏 کارت‌های حرکت آخر',
                 feedbackTitle: '💬 ارسال بازخورد',
                 feedbackIntro: 'سوال، پیشنهاد یا ایده‌ای برای بهبود بازی دارید؟ خوشحال می‌شویم نظرتان را بشنویم!',
                 nameLabel: 'نام (اختیاری)',
@@ -701,7 +707,11 @@
                 sawRoleBtn: '✅ نقشم را دیدم',
                 allAssigned: 'همه نقش‌ها تخصیص داده شد!',
                 gameBegin: 'بازی می‌تواند شروع شود. موفق باشید!',
-                gamesPlayed: 'بازی‌های انجام شده در سراسر جهان:'
+                gamesPlayed: 'بازی‌های انجام شده در سراسر جهان:',
+                drawCard: '🃏 کشیدن کارت',
+                cardDrawn: 'کارت کشیده شده:',
+                noCardsLeft: 'کارتی باقی نمانده!',
+                cardsRemaining: 'کارت باقی‌مانده'
             }
         };
 
@@ -824,6 +834,25 @@
         let currentPlayerIndex = 0;
         let playerRoles = [];
         let gameCountIncremented = false;
+        let availableCards = [];
+        let drawnCard = null;
+
+        const cardDeck = {
+            en: [
+                { name: '🔒 Handcuff Card', description: 'Target one player - they lose their ability/power for the upcoming night.' },
+                { name: '🎭 Face-Off Card', description: 'Swap roles with another player and return to the game! They are permanently eliminated.' },
+                { name: '🤐 Silence of the Lambs', description: 'Silence chosen players for the entire next day. They can only vote.' },
+                { name: '🎯 Identity Reveal', description: 'The narrator reveals the exact role of the targeted player and they are eliminated.' },
+                { name: '🧠 Beautiful Mind', description: 'Try to identify Nostradamus. If correct, they are eliminated and YOU become Nostradamus!' }
+            ],
+            fa: [
+                { name: '🔒 کارت دستبند', description: 'یک بازیکن را هدف بگیرید - توانایی/قدرت خود را برای شب آینده از دست می‌دهد.' },
+                { name: '🎭 کارت تغییر چهره', description: 'نقش را با بازیکن دیگری عوض کنید و به بازی برگردید! آن‌ها برای همیشه حذف می‌شوند.' },
+                { name: '🤐 کارت سکوت بره‌ها', description: 'بازیکنان انتخابی را برای کل روز بعد ساکت کنید. فقط می‌توانند رای بدهند.' },
+                { name: '🎯 کارت افشای هویت', description: 'راوی نقش دقیق بازیکن هدف را فاش می‌کند و از بازی حذف می‌شود.' },
+                { name: '🧠 کارت ذهن زیبا', description: 'سعی کنید نوستراداموس را شناسایی کنید. اگر درست باشد، حذف می‌شود و شما تبدیل به نوستراداموس می‌شوید!' }
+            ]
+        };
 
         function calculateTeamSize(playerCount) {
             // Godfather dynamic role assignment (6-15 players)
@@ -933,12 +962,10 @@
             updatePlayerInfo(); // Update player info with current language
             document.getElementById('assignBtn').textContent = t.assignBtn;
             document.getElementById('howToPlayBtn').textContent = t.howToPlayBtn;
-            document.getElementById('cardsBtn').textContent = t.cardsBtn;
             document.getElementById('feedbackBtn').textContent = t.feedbackBtn;
             document.getElementById('newGameText').textContent = t.newGameText;
             document.getElementById('langButtonText').textContent = t.langButtonText;
             document.getElementById('helpTitle').textContent = t.helpTitle;
-            document.getElementById('cardsTitle').textContent = t.cardsTitle;
             document.getElementById('feedbackTitle').textContent = t.feedbackTitle;
             document.getElementById('feedbackIntro').textContent = t.feedbackIntro;
             document.getElementById('nameLabel').textContent = t.nameLabel;
@@ -952,7 +979,6 @@
             
             // Update help content
             updateHelpContent();
-            updateCardsContent();
             
             // If game is in progress, refresh the current screen
             if (playerRoles.length > 0 && !document.getElementById('gameSection').classList.contains('hidden')) {
@@ -1121,6 +1147,34 @@
                         <p><strong>Goal:</strong> Survive to the end with your chosen (or forced) team to win</p>
                     </div>
 
+                    <h3>🃏 Last Move Cards</h3>
+                    <p>When eliminated by voting, players draw one card before leaving. The narrator executes the card's effect.</p>
+                    
+                    <div class="role-help" style="border-left-color: #667eea;">
+                        <h4>🔒 Handcuff Card</h4>
+                        <p><strong>Effect:</strong> Target one player - they lose their ability/power for the upcoming night.</p>
+                    </div>
+
+                    <div class="role-help" style="border-left-color: #667eea;">
+                        <h4>🎭 Face-Off Card</h4>
+                        <p><strong>Effect:</strong> Swap roles with another player and return to the game! They are permanently eliminated (not even half-dead). You take their entire role, abilities, and team. Cannot be resurrected.</p>
+                    </div>
+
+                    <div class="role-help" style="border-left-color: #667eea;">
+                        <h4>🤐 Silence of the Lambs Card</h4>
+                        <p><strong>Effect:</strong> Silence chosen players for the entire next day. They can only vote, no talking or gestures.</p>
+                    </div>
+
+                    <div class="role-help" style="border-left-color: #667eea;">
+                        <h4>🎯 Identity Reveal Card</h4>
+                        <p><strong>Effect:</strong> The narrator reveals the exact role of the targeted player and they are eliminated from the game.</p>
+                    </div>
+
+                    <div class="role-help" style="border-left-color: #667eea;">
+                        <h4>🧠 Beautiful Mind Card</h4>
+                        <p><strong>Effect:</strong> Try to identify Nostradamus. If correct, they are eliminated and YOU become the new Nostradamus!</p>
+                    </div>
+
                     <h3>💡 Strategy Tips</h3>
                     <ul>
                         <li><strong>Godfather:</strong> Use Sixth Sense wisely - it's your most powerful tool</li>
@@ -1221,6 +1275,34 @@
                         <p><strong>هدف:</strong> تا آخر با تیم انتخابی (یا اجباری) خود زنده بمانید تا برنده شوید</p>
                     </div>
 
+                    <h3>🃏 کارت‌های حرکت آخر</h3>
+                    <p>وقتی با رای‌گیری حذف می‌شوید، قبل از خروج یک کارت انتخاب می‌کنید. راوی اثر کارت را اجرا می‌کند.</p>
+                    
+                    <div class="role-help" style="border-right-color: #667eea;">
+                        <h4>🔒 کارت دستبند</h4>
+                        <p><strong>اثر:</strong> یک بازیکن را هدف بگیرید - توانایی/قدرت خود را برای شب آینده از دست می‌دهد.</p>
+                    </div>
+
+                    <div class="role-help" style="border-right-color: #667eea;">
+                        <h4>🎭 کارت تغییر چهره</h4>
+                        <p><strong>اثر:</strong> نقش را با بازیکن دیگری عوض کنید و به بازی برگردید! آن‌ها برای همیشه حذف می‌شوند (حتی نیم‌مرده نیستند). تمام نقش، توانایی‌ها و تیم آن‌ها را می‌گیرید. قابل احضار نیست.</p>
+                    </div>
+
+                    <div class="role-help" style="border-right-color: #667eea;">
+                        <h4>🤐 کارت سکوت بره‌ها</h4>
+                        <p><strong>اثر:</strong> بازیکنان انتخابی را برای کل روز بعد ساکت کنید. فقط می‌توانند رای بدهند، بدون صحبت یا حرکت.</p>
+                    </div>
+
+                    <div class="role-help" style="border-right-color: #667eea;">
+                        <h4>🎯 کارت افشای هویت</h4>
+                        <p><strong>اثر:</strong> راوی نقش دقیق بازیکن هدف را فاش می‌کند و از بازی حذف می‌شود.</p>
+                    </div>
+
+                    <div class="role-help" style="border-right-color: #667eea;">
+                        <h4>🧠 کارت ذهن زیبا</h4>
+                        <p><strong>اثر:</strong> سعی کنید نوستراداموس را شناسایی کنید. اگر درست باشد، حذف می‌شود و شما تبدیل به نوستراداموس جدید می‌شوید!</p>
+                    </div>
+
                     <h3>💡 نکات استراتژیک</h3>
                     <ul>
                         <li><strong>پدرخوانده:</strong> از حس ششم با دقت استفاده کنید - قدرتمندترین ابزار شماست</li>
@@ -1229,110 +1311,6 @@
                         <li><strong>شهروندان:</strong> هرگز نگویید "من فقط یک شهروند ساده‌ام" - هدف حس ششم می‌شوید</li>
                         <li><strong>نوستراداموس:</strong> انتخاب تیمتان می‌تواند کل بازی را تعیین کند</li>
                         <li><strong>همه:</strong> کارت‌های حرکت آخر می‌توانند همه چیز را تغییر دهند - استراتژیک استفاده کنید!</li>
-                    </ul>
-                `;
-            }
-        }
-
-        function updateCardsContent() {
-            const cardsContent = document.getElementById('cardsContent');
-            
-            if (currentLang === 'en') {
-                cardsContent.innerHTML = `
-                    <h3>🃏 About Last Move Cards</h3>
-                    <p>When a player is eliminated by voting during the day, they can choose one "Last Move Card" before leaving the game. The narrator will execute the card's effect.</p>
-
-                    <div class="role-help" style="border-left-color: #e94560;">
-                        <h4>🔒 Handcuff Card</h4>
-                        <p><strong>Effect:</strong> Target one player - they lose their ability/power for the upcoming night.</p>
-                        <p><strong>Strategy:</strong> Use on suspected power roles to neutralize them.</p>
-                    </div>
-
-                    <div class="role-help" style="border-left-color: #e94560;">
-                        <h4>🎭 Face-Off Card</h4>
-                        <p><strong>Effect:</strong> Completely swap roles with another player and return to the game!</p>
-                        <p><strong>How it works:</strong> Game enters night phase. You point to someone. They are COMPLETELY eliminated from the game (not even half-dead). You take their entire role, abilities, and team allegiance. The narrator shows you your new role card.</p>
-                        <p><strong>Critical:</strong> The chosen player is permanently eliminated - they cannot be resurrected by Constantine or any other means. No return whatsoever!</p>
-                        <p><strong>Strategy:</strong> Ultimate survival or revenge card. Choose someone whose role you want, or eliminate a key player!</p>
-                    </div>
-
-                    <div class="role-help" style="border-left-color: #e94560;">
-                        <h4>🤐 Silence of the Lambs Card</h4>
-                        <p><strong>Effect:</strong> Silence chosen players for the entire next day. They can only vote, no talking or gestures.</p>
-                        <p><strong>Number of targets:</strong> Based on remaining players (e.g., if 8 players remain, silence 2 players)</p>
-                        <p><strong>Mafia tip:</strong> Smart mafia can silence teammates to make others think they're citizens!</p>
-                    </div>
-
-                    <div class="role-help" style="border-left-color: #e94560;">
-                        <h4>🎯 Identity Reveal Card</h4>
-                        <p><strong>Effect:</strong> The narrator reveals the exact role of the targeted player and they are eliminated from the game.</p>
-                        <p><strong>Strategy:</strong> Use for revenge or to expose someone you strongly suspect!</p>
-                    </div>
-
-                    <div class="role-help" style="border-left-color: #e94560;">
-                        <h4>🧠 Beautiful Mind Card</h4>
-                        <p><strong>Effect:</strong> Try to identify Nostradamus. Point to someone and guess if they're Nostradamus.</p>
-                        <p><strong>Success:</strong> If correct, Nostradamus is eliminated and YOU take their place - becoming the new Nostradamus with all their powers!</p>
-                        <p><strong>Failure:</strong> If you guess wrong, nothing happens and you simply leave the game as planned.</p>
-                        <p><strong>Reward:</strong> Second chance at life by becoming the powerful independent role!</p>
-                    </div>
-
-                    <h3>💡 Card Strategy Tips</h3>
-                    <ul>
-                        <li><strong>Handcuff:</strong> Best used on confirmed power roles or highly suspected threats</li>
-                        <li><strong>Face-Off:</strong> Ultimate revenge or survival card - choose wisely!</li>
-                        <li><strong>Silence:</strong> Can be used to protect mafia teammates or disable vocal citizens</li>
-                        <li><strong>Identity Reveal:</strong> Great for confirmation or taking down suspected enemies</li>
-                        <li><strong>Beautiful Mind:</strong> High risk, high reward - only use if confident about Nostradamus</li>
-                    </ul>
-                `;
-            } else {
-                cardsContent.innerHTML = `
-                    <h3>🃏 درباره کارت‌های حرکت آخر</h3>
-                    <p>وقتی یک بازیکن در طول روز با رای‌گیری حذف می‌شود، قبل از خروج از بازی می‌تواند یک "کارت حرکت آخر" انتخاب کند. راوی اثر کارت را اجرا می‌کند.</p>
-
-                    <div class="role-help" style="border-right-color: #e94560;">
-                        <h4>🔒 کارت دستبند</h4>
-                        <p><strong>اثر:</strong> یک بازیکن را هدف بگیرید - توانایی/قدرت خود را برای شب آینده از دست می‌دهد.</p>
-                        <p><strong>استراتژی:</strong> روی نقش‌های قدرتمند مشکوک استفاده کنید تا خنثی شوند.</p>
-                    </div>
-
-                    <div class="role-help" style="border-right-color: #e94560;">
-                        <h4>🎭 کارت تغییر چهره (Face-Off)</h4>
-                        <p><strong>اثر:</strong> نقش را کاملاً با بازیکن دیگری عوض کنید و به بازی برگردید!</p>
-                        <p><strong>چگونه کار می‌کند:</strong> بازی وارد فاز شب می‌شود. به کسی اشاره می‌کنید. آن‌ها به طور کامل از بازی حذف می‌شوند (حتی نیم‌مرده نیستند). شما تمام نقش، توانایی‌ها و وابستگی تیمی او را می‌گیرید. راوی کارت نقش جدیدتان را به شما نشان می‌دهد.</p>
-                        <p><strong>حیاتی:</strong> بازیکن انتخابی برای همیشه حذف می‌شود - حتی نمی‌تواند توسط کنستانتین یا هیچ وسیله دیگری احضار شود. هیچ بازگشتی وجود ندارد!</p>
-                        <p><strong>استراتژی:</strong> کارت نهایی بقا یا انتقام. کسی را انتخاب کنید که نقشش را می‌خواهید، یا یک بازیکن کلیدی را حذف کنید!</p>
-                    </div>
-
-                    <div class="role-help" style="border-right-color: #e94560;">
-                        <h4>🤐 کارت سکوت بره‌ها</h4>
-                        <p><strong>اثر:</strong> بازیکنان انتخابی را برای کل روز بعد ساکت کنید. فقط می‌توانند رای بدهند، بدون صحبت یا حرکت.</p>
-                        <p><strong>تعداد هدف:</strong> بر اساس بازیکنان باقی‌مانده (مثلاً اگر ۸ بازیکن باقی مانده، ۲ بازیکن را ساکت کنید)</p>
-                        <p><strong>نکته مافیا:</strong> مافیای باهوش می‌تواند هم‌تیمی‌ها را ساکت کند تا دیگران فکر کنند شهروند هستند!</p>
-                    </div>
-
-                    <div class="role-help" style="border-right-color: #e94560;">
-                        <h4>🎯 کارت افشای هویت</h4>
-                        <p><strong>اثر:</strong> راوی نقش دقیق بازیکن هدف را فاش می‌کند و از بازی حذف می‌شود.</p>
-                        <p><strong>استراتژی:</strong> برای انتقام یا افشای کسی که به شدت مشکوک هستید استفاده کنید!</p>
-                    </div>
-
-                    <div class="role-help" style="border-right-color: #e94560;">
-                        <h4>🧠 کارت ذهن زیبا</h4>
-                        <p><strong>اثر:</strong> سعی کنید نوستراداموس را شناسایی کنید. به کسی اشاره کنید و حدس بزنید که نوستراداموس است یا نه.</p>
-                        <p><strong>موفقیت:</strong> اگر درست حدس بزنید، نوستراداموس حذف می‌شود و شما جای او را می‌گیرید - تبدیل به نوستراداموس جدید با تمام قدرت‌هایش می‌شوید!</p>
-                        <p><strong>شکست:</strong> اگر اشتباه حدس بزنید، اتفاقی نمی‌افتد و طبق برنامه از بازی خارج می‌شوید.</p>
-                        <p><strong>پاداش:</strong> شانس دوم برای زندگی با تبدیل شدن به نقش مستقل قدرتمند!</p>
-                    </div>
-
-                    <h3>💡 نکات استراتژی کارت‌ها</h3>
-                    <ul>
-                        <li><strong>دستبند:</strong> بهترین استفاده روی نقش‌های قدرتمند تأیید شده یا تهدیدات بسیار مشکوک</li>
-                        <li><strong>تغییر چهره:</strong> کارت انتقام یا بقای نهایی - با دقت انتخاب کنید!</li>
-                        <li><strong>سکوت:</strong> می‌تواند برای محافظت از هم‌تیمی‌های مافیا یا غیرفعال کردن شهروندان پرحرف استفاده شود</li>
-                        <li><strong>افشای هویت:</strong> عالی برای تأیید یا از بین بردن دشمنان مشکوک</li>
-                        <li><strong>ذهن زیبا:</strong> ریسک بالا، پاداش بالا - فقط در صورت اطمینان از نوستراداموس استفاده کنید</li>
                     </ul>
                 `;
             }
@@ -1376,6 +1354,10 @@
             playerRoles = shuffleArray(roleArray);
             currentPlayerIndex = 0;
             
+            // Initialize card deck
+            availableCards = [...cardDeck[currentLang]];
+            drawnCard = null;
+            
             document.getElementById('setupSection').classList.add('hidden');
             document.getElementById('gameSection').classList.remove('hidden');
             
@@ -1393,11 +1375,27 @@
                     gameCountIncremented = true;
                 }
                 
+                const cardsLeft = availableCards.length;
+                const cardDisplay = drawnCard ? `
+                    <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 20px; border-radius: 15px; margin: 20px 0; box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);">
+                        <h3 style="margin: 0 0 10px 0; color: white;">${t.cardDrawn}</h3>
+                        <p style="font-size: 1.3em; font-weight: 700; margin: 10px 0; color: white;">${drawnCard.name}</p>
+                        <p style="margin: 10px 0 0 0; opacity: 0.95; color: white;">${drawnCard.description}</p>
+                    </div>
+                ` : '';
+                
                 rolesContainer.innerHTML = `
                     <div style="text-align: center; padding: 40px 20px;">
                         <div style="font-size: 3em; margin-bottom: 20px;">🎉</div>
                         <h2 style="color: #333; margin-bottom: 15px;">${t.allAssigned}</h2>
-                        <p style="color: #666; font-size: 1.1em;">${t.gameBegin}</p>
+                        <p style="color: #666; font-size: 1.1em; margin-bottom: 30px;">${t.gameBegin}</p>
+                        
+                        <div style="margin-top: 30px;">
+                            ${cardDisplay}
+                            <button class="btn btn-secondary" onclick="drawCard()" id="drawCardBtn" ${cardsLeft === 0 ? 'disabled' : ''} style="${cardsLeft === 0 ? 'opacity: 0.5; cursor: not-allowed;' : ''}">
+                                ${cardsLeft > 0 ? t.drawCard + ` (${cardsLeft} ${t.cardsRemaining})` : t.noCardsLeft}
+                            </button>
+                        </div>
                     </div>
                 `;
                 newGameBtn.classList.remove('hidden');
@@ -1466,6 +1464,22 @@
             showPlayerReveal();
         }
 
+        function drawCard() {
+            if (availableCards.length === 0) {
+                return; // No cards left
+            }
+            
+            // Draw a random card
+            const randomIndex = Math.floor(Math.random() * availableCards.length);
+            drawnCard = availableCards[randomIndex];
+            
+            // Remove the drawn card from available cards
+            availableCards.splice(randomIndex, 1);
+            
+            // Refresh the display
+            showPlayerReveal();
+        }
+
         function shuffleArray(array) {
             const newArray = [...array];
             for (let i = newArray.length - 1; i > 0; i--) {
@@ -1479,6 +1493,8 @@
             currentPlayerIndex = 0;
             playerRoles = [];
             gameCountIncremented = false;
+            availableCards = [];
+            drawnCard = null;
             document.getElementById('setupSection').classList.remove('hidden');
             document.getElementById('gameSection').classList.add('hidden');
             document.getElementById('rolesContainer').innerHTML = '';
@@ -1504,14 +1520,6 @@
 
         function closeHelp() {
             document.getElementById('helpModal').classList.add('hidden');
-        }
-
-        function showCards() {
-            document.getElementById('cardsModal').classList.remove('hidden');
-        }
-
-        function closeCards() {
-            document.getElementById('cardsModal').classList.add('hidden');
         }
 
         function showFeedback() {
@@ -1638,10 +1646,6 @@
         window.addEventListener('DOMContentLoaded', function() {
             document.getElementById('helpModal').addEventListener('click', function(e) {
                 if (e.target === this) closeHelp();
-            });
-            
-            document.getElementById('cardsModal').addEventListener('click', function(e) {
-                if (e.target === this) closeCards();
             });
             
             document.getElementById('feedbackModal').addEventListener('click', function(e) {
