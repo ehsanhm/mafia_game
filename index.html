@@ -507,7 +507,7 @@
                        oninput="updatePlayerInfo()"
                        onfocus="this.style.borderColor='#e94560'; this.style.boxShadow='0 0 0 3px rgba(233, 69, 96, 0.1)';"
                        onblur="this.style.borderColor='#e0e0e0'; this.style.boxShadow='none';">
-                <p class="error hidden" id="errorMsg" style="color: #c41e3a; font-size: 0.9em; margin-top: 10px; text-align: center;"></p>
+                <p class="error hidden" id="errorMsg" style="color: #ee3d72; font-size: 0.9em; margin-top: 10px; text-align: center;"></p>
             </div>
 
             <div class="info-badge" id="playerInfo">
@@ -1013,7 +1013,7 @@
                 let teamColor = '';
                 if (role.team === 'mafia') {
                     teamBadge = currentLang === 'en' ? '😈 Mafia Team' : '😈 تیم مافیا';
-                    teamColor = '#c41e3a';
+                    teamColor = '#ee3d72';
                 } else if (role.team === 'citizen') {
                     teamBadge = currentLang === 'en' ? '😇 Citizens Team' : '😇 تیم شهروندان';
                     teamColor = '#4facfe';
@@ -1431,7 +1431,7 @@
             let teamColor = '';
             if (role.team === 'mafia') {
                 teamBadge = currentLang === 'en' ? '😈 Mafia Team' : '😈 تیم مافیا';
-                teamColor = '#c41e3a';
+                teamColor = '#ee3d72';
             } else if (role.team === 'citizen') {
                 teamBadge = currentLang === 'en' ? '😇 Citizens Team' : '😇 تیم شهروندان';
                 teamColor = '#4facfe';
