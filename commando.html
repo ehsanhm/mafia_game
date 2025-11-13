@@ -1,0 +1,1791 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mafia: Commando - Role Assigner</title>
+    
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+    
+    <!-- EmailJS SDK -->
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #2d3561 0%, #3e2753 50%, #4a2c5e 100%);
+            min-height: 100vh;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        /* RTL Support for Farsi */
+        body.rtl {
+            direction: rtl;
+            font-family: Tahoma, 'Segoe UI', Arial, sans-serif;
+        }
+
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            max-width: 700px;
+            width: 100%;
+            padding: 30px;
+            animation: fadeIn 0.5s ease-in;
+            position: relative;
+            margin-top: 80px;
+        }
+
+        .back-home-btn {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 25px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 0.9em;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+            z-index: 2000;
+            cursor: pointer;
+        }
+
+        .back-home-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.5);
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Language Toggle Button */
+        .language-toggle {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 25px;
+            padding: 10px 20px;
+            font-size: 0.9em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+            z-index: 2000;
+        }
+
+        .language-toggle:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.5);
+        }
+
+        h1 {
+            text-align: center;
+            color: #1a1a2e;
+            margin-bottom: 10px;
+            font-size: 2em;
+            margin-top: 20px;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 0.9em;
+        }
+
+        .info-badge {
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            color: #333;
+            padding: 15px;
+            border-radius: 15px;
+            text-align: center;
+            margin-bottom: 30px;
+            font-weight: 600;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            border: 2px solid #dee2e6;
+        }
+
+        .btn {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 1.1em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            text-align: center;
+            margin-bottom: 15px;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .btn-secondary {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        }
+
+        .btn-secondary:hover {
+            box-shadow: 0 10px 20px rgba(245, 87, 108, 0.4);
+        }
+
+        .roles-section {
+            margin-top: 30px;
+        }
+
+        .role-card {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 15px;
+            border-left: 5px solid #667eea;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        body.rtl .role-card {
+            border-left: none;
+            border-right: 5px solid #667eea;
+        }
+
+        .role-card:hover {
+            transform: translateX(5px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        body.rtl .role-card:hover {
+            transform: translateX(-5px);
+        }
+
+        .role-card.mafia {
+            border-left-color: #f5576c;
+        }
+
+        body.rtl .role-card.mafia {
+            border-right-color: #f5576c;
+        }
+
+        .role-card.citizen {
+            border-left-color: #4facfe;
+        }
+
+        body.rtl .role-card.citizen {
+            border-right-color: #4facfe;
+        }
+
+        .player-number {
+            display: inline-block;
+            background: #667eea;
+            color: white;
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            text-align: center;
+            line-height: 35px;
+            font-weight: 700;
+            margin-right: 15px;
+        }
+
+        body.rtl .player-number {
+            margin-right: 0;
+            margin-left: 15px;
+        }
+
+        .role-card.mafia .player-number {
+            background: #f5576c;
+        }
+
+        .role-card.citizen .player-number {
+            background: #4facfe;
+        }
+
+        .role-name {
+            font-size: 1.3em;
+            font-weight: 700;
+            color: #333;
+            margin-bottom: 5px;
+        }
+
+        .role-description {
+            color: #666;
+            font-size: 0.9em;
+            margin-top: 10px;
+            line-height: 1.6;
+        }
+
+        .close-game-btn {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: #f5576c;
+            color: white;
+            border: none;
+            border-radius: 20px;
+            width: 70px;
+            height: 36px;
+            font-size: 1.3em;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 8px rgba(245, 87, 108, 0.3);
+            z-index: 10;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .close-game-btn:hover {
+            background: #e04560;
+            transform: scale(1.05);
+            box-shadow: 0 4px 12px rgba(245, 87, 108, 0.5);
+        }
+
+        #gameCounter {
+            margin-top: 20px;
+            font-size: 0.9em;
+            color: #888;
+            text-align: center;
+            padding: 10px;
+        }
+
+        /* Modal Styles */
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            padding: 20px;
+            overflow-y: auto;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 20px;
+            max-width: 800px;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+            animation: slideDown 0.3s ease;
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-50px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .modal-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 25px 30px;
+            border-radius: 20px 20px 0 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        .modal-header h2 {
+            margin: 0;
+            color: white;
+        }
+
+        .close-btn {
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            color: white;
+            font-size: 1.5em;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .close-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: rotate(90deg);
+        }
+
+        .modal-body {
+            padding: 30px;
+        }
+
+        .modal-body h3 {
+            color: #1a1a2e;
+            margin-top: 25px;
+            margin-bottom: 15px;
+            font-size: 1.3em;
+        }
+
+        .modal-body h3:first-child {
+            margin-top: 0;
+        }
+
+        .modal-body h4 {
+            color: #333;
+            margin-top: 15px;
+            margin-bottom: 10px;
+            font-size: 1.1em;
+        }
+
+        .modal-body p {
+            color: #666;
+            line-height: 1.8;
+            margin-bottom: 15px;
+        }
+
+        .modal-body ul {
+            color: #666;
+            line-height: 2;
+            padding-left: 25px;
+            margin-bottom: 15px;
+        }
+
+        body.rtl .modal-body ul {
+            padding-left: 0;
+            padding-right: 25px;
+        }
+
+        .role-help {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 15px;
+            border-left: 5px solid #667eea;
+        }
+
+        body.rtl .role-help {
+            border-left: none;
+            border-right: 5px solid #667eea;
+        }
+
+        .role-help.mafia {
+            border-left-color: #f5576c;
+        }
+
+        body.rtl .role-help.mafia {
+            border-right-color: #f5576c;
+        }
+
+        .role-help.citizen {
+            border-left-color: #4facfe;
+        }
+
+        body.rtl .role-help.citizen {
+            border-right-color: #4facfe;
+        }
+
+        .team-badge {
+            display: inline-block;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.9em;
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+
+        .team-badge.mafia {
+            background: #f5576c;
+            color: white;
+        }
+
+        .team-badge.citizen {
+            background: #4facfe;
+            color: white;
+        }
+
+        @media (max-width: 480px) {
+            .container {
+                padding: 20px;
+                margin-top: 70px;
+            }
+
+            h1 {
+                font-size: 1.5em;
+            }
+
+            .language-toggle,
+            .back-home-btn {
+                padding: 8px 15px;
+                font-size: 0.8em;
+                top: 15px;
+            }
+
+            .language-toggle {
+                right: 15px;
+            }
+
+            .back-home-btn {
+                left: 15px;
+            }
+
+            .close-game-btn {
+                width: 60px;
+                height: 32px;
+                font-size: 1.1em;
+            }
+
+            .close-btn {
+                width: 36px;
+                height: 36px;
+                font-size: 1.3em;
+            }
+
+            .modal-body {
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Global Language Toggle (Fixed Position) -->
+    <button class="language-toggle" onclick="toggleLanguage()">
+        <span id="langButtonText">فارسی</span>
+    </button>
+
+    <!-- Back to Home Button (Fixed Position) -->
+    <a href="index.html" class="back-home-btn">
+        <span>🏠</span>
+        <span id="backHomeText">Back to Home</span>
+    </a>
+
+    <div class="container">
+        <div id="setupSection">
+            <h1 id="mainTitle">🎖️ Mafia: Commando 🎯</h1>
+            <p class="subtitle" id="subtitle">Commando Scenario - Role Assignment System</p>
+
+            <div class="input-section" style="margin-bottom: 20px;">
+                <label for="playerCount" style="display: block; color: #333; margin-bottom: 10px; font-weight: 600; font-size: 1.1em;">
+                    <span id="playerCountLabel">Number of Players (10-15):</span>
+                </label>
+                <input type="number" id="playerCount" min="10" max="15" value="10" placeholder="Enter number of players"
+                       style="width: 100%; padding: 15px; border: 2px solid #e0e0e0; border-radius: 10px; font-size: 1.1em; transition: all 0.3s ease;"
+                       oninput="updatePlayerInfo()"
+                       onfocus="this.style.borderColor='#e94560'; this.style.boxShadow='0 0 0 3px rgba(233, 69, 96, 0.1)';"
+                       onblur="this.style.borderColor='#e0e0e0'; this.style.boxShadow='none';">
+                <p class="error hidden" id="errorMsg" style="color: #ee3d72; font-size: 0.9em; margin-top: 10px; text-align: center;"></p>
+            </div>
+
+            <div class="info-badge" id="playerInfo">
+                10 Players: 3 Mafia • 7 Citizens
+            </div>
+
+            <button class="btn" onclick="startGame()">
+                <span id="assignBtn">🎲 Assign Roles</span>
+            </button>
+            <button class="btn btn-secondary" onclick="showHelp()">
+                <span id="howToPlayBtn">📖 How to Play</span>
+            </button>
+            <button class="btn btn-secondary" onclick="showFeedback()">
+                <span id="feedbackBtn">💬 Feedback</span>
+            </button>
+            <div id="gameCounter">Games Played Worldwide: Loading...</div>
+        </div>
+
+        <div id="gameSection" class="hidden">
+            <button class="close-game-btn" onclick="cancelGame()" title="Cancel and start over">✕</button>
+            
+            <div class="roles-section">
+                <div id="rolesContainer"></div>
+            </div>
+
+            <button class="btn btn-secondary hidden" id="newGameBtn" onclick="resetGame()">
+                <span id="newGameText">🔄 New Game</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- Help Modal -->
+    <div id="helpModal" class="modal hidden">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="helpTitle">📖 How to Play - Mafia: Commando</h2>
+                <button class="close-btn" onclick="closeHelp()">✕</button>
+            </div>
+            <div class="modal-body" id="helpContent">
+                <!-- Content will be populated by JavaScript based on language -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Feedback Modal -->
+    <div id="feedbackModal" class="modal hidden">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="feedbackTitle">💬 Send Feedback</h2>
+                <button class="close-btn" onclick="closeFeedback()">✕</button>
+            </div>
+            <div class="modal-body">
+                <p id="feedbackIntro" style="color: #666; margin-bottom: 20px;">Have questions, suggestions, or ideas to improve the game? We'd love to hear from you!</p>
+                
+                <form id="feedbackForm" onsubmit="submitFeedback(event)">
+                    <div style="margin-bottom: 20px;">
+                        <label for="feedbackName" id="nameLabel" style="display: block; margin-bottom: 8px; font-weight: 600; color: #333;">Name (Optional)</label>
+                        <input type="text" id="feedbackName" placeholder="Your name" 
+                               style="width: 100%; padding: 12px; border: 2px solid #ddd; border-radius: 8px; font-size: 1em;">
+                    </div>
+                    
+                    <div style="margin-bottom: 20px;">
+                        <label for="feedbackEmail" id="emailLabel" style="display: block; margin-bottom: 8px; font-weight: 600; color: #333;">Email (Optional)</label>
+                        <input type="email" id="feedbackEmail" placeholder="your.email@example.com" 
+                               style="width: 100%; padding: 12px; border: 2px solid #ddd; border-radius: 8px; font-size: 1em;">
+                    </div>
+                    
+                    <div style="margin-bottom: 20px;">
+                        <label for="feedbackMessage" id="messageLabel" style="display: block; margin-bottom: 8px; font-weight: 600; color: #333;">Message *</label>
+                        <textarea id="feedbackMessage" required placeholder="Share your thoughts..." 
+                                  style="width: 100%; min-height: 150px; padding: 12px; border: 2px solid #ddd; border-radius: 8px; font-size: 1em; resize: vertical; font-family: inherit;"></textarea>
+                    </div>
+                    
+                    <p id="feedbackStatus" class="hidden" style="padding: 12px; border-radius: 8px; margin-bottom: 15px; text-align: center; font-weight: 600;"></p>
+                    
+                    <button type="submit" class="btn" id="submitFeedbackBtn">
+                        <span id="sendBtn">📤 Send Feedback</span>
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Confirmation Modal -->
+    <div id="confirmModal" class="modal hidden">
+        <div class="modal-content" style="max-width: 400px;">
+            <div class="modal-header">
+                <h2 id="confirmTitle" style="font-size: 1.3em;">⚠️ Cancel Game?</h2>
+            </div>
+            <div class="modal-body">
+                <p id="confirmText" style="font-size: 1.1em; text-align: center; margin-bottom: 20px;">
+                    Are you sure you want to cancel this game and start over?
+                </p>
+                <div style="display: flex; gap: 10px;">
+                    <button class="btn" style="flex: 1;" onclick="confirmCancel()">
+                        <span id="yesBtn">Yes, Cancel</span>
+                    </button>
+                    <button class="btn btn-secondary" style="flex: 1;" onclick="closeConfirm()">
+                        <span id="noBtn">No, Continue</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Firebase Configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyBSTuzqrJ0ik2CTfKq0GOc7lEVUYtxCX0E",
+            authDomain: "spy-game-12f96.firebaseapp.com",
+            databaseURL: "https://spy-game-12f96-default-rtdb.firebaseio.com",
+            projectId: "spy-game-12f96",
+            storageBucket: "spy-game-12f96.firebasestorage.app",
+            messagingSenderId: "22301781663",
+            appId: "1:22301781663:web:23f31448a872e41203fcaa",
+            measurementId: "G-DE4QRR88RH"
+        };
+
+        // Initialize Firebase
+        let database;
+        try {
+            firebase.initializeApp(firebaseConfig);
+            database = firebase.database();
+        } catch (error) {
+            console.error("Firebase initialization error:", error);
+        }
+
+        const EMAILJS_PUBLIC_KEY = 'qw_grGhV3it_4-RwE';
+        const EMAILJS_SERVICE_ID = 'service_f65c74d';
+        const EMAILJS_TEMPLATE_ID = 'template_gna5het';
+        
+        try {
+            emailjs.init(EMAILJS_PUBLIC_KEY);
+        } catch (error) {
+            console.error("EmailJS initialization error:", error);
+        }
+
+        // Language System
+        let currentLang = localStorage.getItem('language') || 'fa';
+
+        const translations = {
+            en: {
+                mainTitle: '🎖️ Mafia: Commando 🎯',
+                subtitle: 'Commando Scenario - Role Assignment System',
+                playerCountLabel: 'Number of Players (10-15):',
+                playerInfo: '10 Players: 3 Mafia • 7 Citizens',
+                assignBtn: '🎲 Assign Roles',
+                howToPlayBtn: '📖 How to Play',
+                feedbackBtn: '💬 Feedback',
+                newGameText: '🔄 New Game',
+                langButtonText: 'فارسی',
+                helpTitle: '📖 How to Play - Mafia: Commando',
+                feedbackTitle: '💬 Send Feedback',
+                feedbackIntro: 'Have questions, suggestions, or ideas to improve the game? We\'d love to hear from you!',
+                nameLabel: 'Name (Optional)',
+                emailLabel: 'Email (Optional)',
+                messageLabel: 'Message *',
+                sendBtn: '📤 Send Feedback',
+                confirmTitle: '⚠️ Cancel Game?',
+                confirmText: 'Are you sure you want to cancel this game and start over?',
+                yesBtn: 'Yes, Cancel',
+                noBtn: 'No, Continue',
+                playerLabel: 'Player',
+                showRoleBtn: '🎭 Show My Role',
+                sawRoleBtn: '✅ I Saw My Role',
+                allAssigned: 'All Roles Assigned!',
+                gameBegin: 'The game can now begin. Good luck!',
+                gamesPlayed: 'Games Played Worldwide:'
+            },
+            fa: {
+                mainTitle: '🎖️ مافیا: تکاور 🎯',
+                subtitle: 'سناریو تکاور - سیستم تخصیص نقش‌ها',
+                playerCountLabel: 'تعداد بازیکنان (۱۰-۱۵):',
+                playerInfo: '۱۰ بازیکن: ۳ مافیا - ۷ شهروند',
+                assignBtn: '🎲 تخصیص نقش‌ها',
+                howToPlayBtn: '📖 آموزش بازی',
+                feedbackBtn: '💬 بازخورد',
+                newGameText: '🔄 بازی جدید',
+                langButtonText: 'English',
+                helpTitle: '📖 آموزش بازی - مافیا: تکاور',
+                feedbackTitle: '💬 ارسال بازخورد',
+                feedbackIntro: 'سوال، پیشنهاد یا ایده‌ای برای بهبود بازی دارید؟ خوشحال می‌شویم نظرتان را بشنویم!',
+                nameLabel: 'نام (اختیاری)',
+                emailLabel: 'ایمیل (اختیاری)',
+                messageLabel: 'پیام *',
+                sendBtn: '📤 ارسال بازخورد',
+                confirmTitle: '⚠️ لغو بازی؟',
+                confirmText: 'آیا مطمئن هستید که می‌خواهید این بازی را لغو کنید و از نو شروع کنید؟',
+                yesBtn: 'بله، لغو کن',
+                noBtn: 'خیر، ادامه بده',
+                playerLabel: 'بازیکن',
+                showRoleBtn: '🎭 نمایش نقش من',
+                sawRoleBtn: '✅ نقشم را دیدم',
+                allAssigned: 'همه نقش‌ها تخصیص داده شد!',
+                gameBegin: 'بازی می‌تواند شروع شود. موفق باشید!',
+                gamesPlayed: 'بازی‌های انجام شده در سراسر جهان:'
+            }
+        };
+
+        // Role definitions for Commando scenario
+        const roles = {
+            en: {
+                // Mafia Team
+                godfather: {
+                    name: 'Mafia Boss',
+                    team: 'mafia',
+                    description: 'You are the Mafia Boss. You lead the mafia team and decide who to shoot each night. Detective investigations always show you as innocent. The Commando cannot eliminate you - if shot by Commando, neither of you dies.',
+                    class: 'mafia'
+                },
+                nato: {
+                    name: 'NATO',
+                    team: 'mafia',
+                    description: 'You are NATO. Once per game, guess a player\'s exact role. If correct, they are eliminated the next day regardless of protection. When you use this ability, mafia cannot shoot that night. It\'s announced publicly that NATO was used.',
+                    class: 'mafia'
+                },
+                hostageTaker: {
+                    name: 'Hostage Taker',
+                    team: 'mafia',
+                    description: 'You are the Hostage Taker. You know your mafia teammates only on night 1. Each night, take one player hostage - they cannot use their ability that night. If Guard protects them, hostage fails. Cannot select the same person 2 consecutive nights.',
+                    class: 'mafia'
+                },
+                // Citizens Team
+                detective: {
+                    name: 'Detective',
+                    team: 'citizen',
+                    description: 'You are the Detective. Each night, investigate one player to learn if they are mafia. The Mafia Boss always shows as innocent.',
+                    class: 'citizen'
+                },
+                doctor: {
+                    name: 'Doctor',
+                    team: 'citizen',
+                    description: 'You are the Doctor. Each night, save players from mafia attacks. With ≤7 players: save 1 person. With ≥8 players: save 2 people. You cannot save yourself. If NATO is used, your ability has no effect but you still wake.',
+                    class: 'citizen'
+                },
+                commando: {
+                    name: 'Commando',
+                    team: 'citizen',
+                    description: 'You are the Commando. If mafia shoots you at night, you can shoot once before dying. If you shoot mafia (except Boss), they die. If you shoot a citizen, you die instead. If you shoot Boss, neither dies.',
+                    class: 'citizen'
+                },
+                guard: {
+                    name: 'Guard',
+                    team: 'citizen',
+                    description: 'You are the Guard. Each night, protect players from being taken hostage. With ≤7 players: protect 1. With ≥8 players: protect 2. If your choice matches Hostage Taker, hostage fails. You have armor during the day - if it breaks, you lose night ability.',
+                    class: 'citizen'
+                },
+                gunsmith: {
+                    name: 'Gunsmith',
+                    team: 'citizen',
+                    description: 'You are the Gunsmith. Each night, give 2 guns to players - some are real (war guns), others fake (practice guns). Real guns kill when fired during day, revealing role. Fake guns do nothing. Can only give real gun to same player once.',
+                    class: 'citizen'
+                },
+                citizen: {
+                    name: 'Simple Citizen',
+                    team: 'citizen',
+                    description: 'You are a Simple Citizen. You have no special abilities, but your voice and vote are crucial. During the day, help identify mafia members through discussion.',
+                    class: 'citizen'
+                }
+            },
+            fa: {
+                // تیم مافیا
+                godfather: {
+                    name: 'رئیس مافیا',
+                    team: 'mafia',
+                    description: 'شما رئیس مافیا هستید. رهبری تیم مافیا با شماست و انتخاب شات شب با شماست. استعلام کارآگاه همیشه برای شما منفی است. تکاور نمی‌تواند شما را حذف کند - اگر تکاور به شما شلیک کند، هیچ کدام نمی‌میرید.',
+                    class: 'mafia'
+                },
+                nato: {
+                    name: 'ناتو',
+                    team: 'mafia',
+                    description: 'شما ناتو هستید. یک بار در بازی می‌توانید نقش دقیق یک بازیکن را حدس بزنید. اگر درست باشد، روز بعد از بازی خارج می‌شود بدون توجه به محافظت. شبی که ناتویی می‌کنید، مافیا حق شات ندارد. به صورت علنی اعلام می‌شود که ناتو استفاده شد.',
+                    class: 'mafia'
+                },
+                hostageTaker: {
+                    name: 'گروگان‌گیر',
+                    team: 'mafia',
+                    description: 'شما گروگان‌گیر هستید. فقط در شب اول یارهایتان را می‌شناسید. هر شب یک بازیکن را گروگان می‌گیرید - آن‌ها نمی‌توانند از قابلیتشان استفاده کنند. اگر نگهبان از آن‌ها محافظت کند، گروگان‌گیری ناموفق است. نمی‌توانید ۲ شب پیاپی یک نفر را انتخاب کنید.',
+                    class: 'mafia'
+                },
+                // تیم شهروندان
+                detective: {
+                    name: 'کارآگاه',
+                    team: 'citizen',
+                    description: 'شما کارآگاه هستید. هر شب از یک بازیکن استعلام بگیرید که مافیاست یا خیر. استعلام رئیس مافیا همیشه منفی است.',
+                    class: 'citizen'
+                },
+                doctor: {
+                    name: 'پزشک',
+                    team: 'citizen',
+                    description: 'شما پزشک هستید. هر شب بازیکنان را از حمله مافیا نجات دهید. با ≤۷ بازیکن: ۱ نفر نجات دهید. با ≥۸ بازیکن: ۲ نفر نجات دهید. نمی‌توانید خودتان را نجات دهید. اگر ناتو استفاده شود، قابلیتتان تاثیری ندارد اما همچنان بیدار می‌شوید.',
+                    class: 'citizen'
+                },
+                commando: {
+                    name: 'تکاور',
+                    team: 'citizen',
+                    description: 'شما تکاور هستید. اگر مافیا شب شما را شات کند، می‌توانید یک بار قبل از مرگ شلیک کنید. اگر به مافیا (به جز رئیس) شلیک کنید، می‌میرند. اگر به شهروند شلیک کنید، خودتان می‌میرید. اگر به رئیس شلیک کنید، هیچ کدام نمی‌میرند.',
+                    class: 'citizen'
+                },
+                guard: {
+                    name: 'نگهبان',
+                    team: 'citizen',
+                    description: 'شما نگهبان هستید. هر شب بازیکنان را از گروگان‌گیری محافظت کنید. با ≤۷ بازیکن: از ۱ نفر محافظت کنید. با ≥۸ بازیکن: از ۲ نفر. اگر انتخابتان با گروگان‌گیر یکی باشد، گروگان‌گیری ناموفق است. در روز زره دارید - اگر بشکند، قابلیت شب را از دست می‌دهید.',
+                    class: 'citizen'
+                },
+                gunsmith: {
+                    name: 'تفنگدار',
+                    team: 'citizen',
+                    description: 'شما تفنگدار هستید. هر شب ۲ تفنگ به بازیکنان بدهید - بعضی واقعی (جنگی) و بعضی تقلبی (مشقی). تفنگ واقعی در روز با شلیک، بازیکن را با اعلام نقش می‌کشد. تفنگ مشقی کاری نمی‌کند. فقط یک بار به هر بازیکن تفنگ جنگی بدهید.',
+                    class: 'citizen'
+                },
+                citizen: {
+                    name: 'شهروند ساده',
+                    team: 'citizen',
+                    description: 'شما یک شهروند ساده هستید. توانایی خاصی ندارید، اما صدا و رأی شما حیاتی است. در روز به شناسایی مافیا کمک کنید.',
+                    class: 'citizen'
+                }
+            }
+        };
+
+        let currentPlayerIndex = 0;
+        let playerRoles = [];
+        let gameCountIncremented = false;
+
+        function calculateTeamSize(playerCount) {
+            // Commando scenario: 10-15 players
+            // Fixed 3 mafia (Boss, NATO, Hostage Taker)
+            // 5 special citizens (Detective, Doctor, Commando, Guard, Gunsmith) + simple citizens
+            
+            const godfather = 1;
+            const nato = 1;
+            const hostageTaker = 1;
+            
+            const detective = 1;
+            const doctor = 1;
+            const commando = 1;
+            const guard = 1;
+            const gunsmith = 1;
+            
+            // Calculate simple citizens: total - 3 mafia - 5 special citizens
+            const citizen = playerCount - 8; // 3 mafia + 5 special citizens = 8
+            
+            const totalMafiaCount = godfather + nato + hostageTaker;
+            const totalCitizensCount = playerCount - totalMafiaCount;
+            
+            return {
+                godfather: godfather,
+                nato: nato,
+                hostageTaker: hostageTaker,
+                detective: detective,
+                doctor: doctor,
+                commando: commando,
+                guard: guard,
+                gunsmith: gunsmith,
+                citizen: citizen,
+                totalMafia: totalMafiaCount,
+                totalCitizens: totalCitizensCount
+            };
+        }
+
+        function updatePlayerInfo() {
+            const playerCount = parseInt(document.getElementById('playerCount').value);
+            const errorMsg = document.getElementById('errorMsg');
+            
+            if (!playerCount || playerCount < 10 || playerCount > 15) {
+                errorMsg.textContent = currentLang === 'en' 
+                    ? 'Please enter a number between 10 and 15' 
+                    : 'لطفاً عددی بین ۱۰ تا ۱۵ وارد کنید';
+                errorMsg.classList.remove('hidden');
+                return;
+            }
+            
+            errorMsg.classList.add('hidden');
+            
+            const teamSize = calculateTeamSize(playerCount);
+            const playerInfoEl = document.getElementById('playerInfo');
+            
+            if (currentLang === 'en') {
+                playerInfoEl.textContent = `${playerCount} Players: ${teamSize.totalMafia} Mafia • ${teamSize.totalCitizens} Citizens`;
+            } else {
+                // Convert numbers to Farsi
+                const persianDigits = ['۰', '۱', '۲', '۳', '۴', '۵', '۶', '۷', '۸', '۹'];
+                const toFarsi = (num) => String(num).split('').map(d => persianDigits[parseInt(d)]).join('');
+                playerInfoEl.textContent = `${toFarsi(playerCount)} بازیکن: ${toFarsi(teamSize.totalMafia)} مافیا - ${toFarsi(teamSize.totalCitizens)} شهروند`;
+            }
+        }
+
+        function toggleLanguage() {
+            currentLang = currentLang === 'en' ? 'fa' : 'en';
+            localStorage.setItem('language', currentLang);
+            updateLanguage();
+        }
+
+        function updateLanguage() {
+            const t = translations[currentLang];
+            document.body.className = currentLang === 'fa' ? 'rtl' : '';
+            
+            // Update all UI text
+            document.getElementById('mainTitle').textContent = t.mainTitle;
+            document.getElementById('subtitle').textContent = t.subtitle;
+            document.getElementById('playerCountLabel').textContent = t.playerCountLabel;
+            updatePlayerInfo();
+            document.getElementById('assignBtn').textContent = t.assignBtn;
+            document.getElementById('howToPlayBtn').textContent = t.howToPlayBtn;
+            document.getElementById('feedbackBtn').textContent = t.feedbackBtn;
+            document.getElementById('newGameText').textContent = t.newGameText;
+            document.getElementById('langButtonText').textContent = t.langButtonText;
+            document.getElementById('helpTitle').textContent = t.helpTitle;
+            document.getElementById('feedbackTitle').textContent = t.feedbackTitle;
+            document.getElementById('feedbackIntro').textContent = t.feedbackIntro;
+            document.getElementById('nameLabel').textContent = t.nameLabel;
+            document.getElementById('emailLabel').textContent = t.emailLabel;
+            document.getElementById('messageLabel').textContent = t.messageLabel;
+            document.getElementById('sendBtn').textContent = t.sendBtn;
+            document.getElementById('confirmTitle').textContent = t.confirmTitle;
+            document.getElementById('confirmText').textContent = t.confirmText;
+            document.getElementById('yesBtn').textContent = t.yesBtn;
+            document.getElementById('noBtn').textContent = t.noBtn;
+            
+            // Update help content
+            updateHelpContent();
+            
+            // If game is in progress, refresh the current screen
+            if (playerRoles.length > 0 && !document.getElementById('gameSection').classList.contains('hidden')) {
+                refreshCurrentGameScreen();
+            }
+        }
+
+        function refreshCurrentGameScreen() {
+            if (currentPlayerIndex >= playerRoles.length) {
+                const t = translations[currentLang];
+                const rolesContainer = document.getElementById('rolesContainer');
+                rolesContainer.innerHTML = `
+                    <div style="text-align: center; padding: 40px 20px;">
+                        <div style="font-size: 3em; margin-bottom: 20px;">🎉</div>
+                        <h2 style="color: #333; margin-bottom: 15px;">${t.allAssigned}</h2>
+                        <p style="color: #666; font-size: 1.1em;">${t.gameBegin}</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            const roleRevealArea = document.getElementById('roleRevealArea');
+            if (roleRevealArea && roleRevealArea.innerHTML.trim() !== '') {
+                const roleKey = playerRoles[currentPlayerIndex];
+                const role = roles[currentLang][roleKey];
+                const t = translations[currentLang];
+                
+                let teamBadge = '';
+                let teamColor = '';
+                if (role.team === 'mafia') {
+                    teamBadge = currentLang === 'en' ? '😈 Mafia Team' : '😈 تیم مافیا';
+                    teamColor = '#ee3d72';
+                } else if (role.team === 'citizen') {
+                    teamBadge = currentLang === 'en' ? '😇 Citizens Team' : '😇 تیم شهروندان';
+                    teamColor = '#4facfe';
+                }
+                
+                roleRevealArea.innerHTML = `
+                    <div class="role-card ${role.class}" style="margin-bottom: 20px; cursor: default;">
+                        <div style="text-align: ${currentLang === 'fa' ? 'right' : 'left'};">
+                            <div style="display: inline-block; background: ${teamColor}; color: white; padding: 5px 15px; border-radius: 20px; font-size: 0.9em; margin-bottom: 10px; font-weight: 600;">
+                                ${teamBadge}
+                            </div>
+                            <div class="role-name" style="font-size: 1.8em; margin-bottom: 15px;">
+                                ${role.name}
+                            </div>
+                            <div class="role-description" style="font-size: 1.05em; line-height: 1.8;">
+                                ${role.description}
+                            </div>
+                        </div>
+                    </div>
+                    <button class="btn" onclick="nextPlayer()" style="margin-top: 20px;">${t.sawRoleBtn}</button>
+                `;
+            } else {
+                const instructionBox = document.getElementById('instructionBox');
+                const showRoleBtn = document.getElementById('showRoleBtn');
+                if (instructionBox && showRoleBtn) {
+                    const t = translations[currentLang];
+                    instructionBox.innerHTML = `
+                        <div style="font-size: 2.5em; margin-bottom: 15px;">👤</div>
+                        <h2 style="color: #333; margin-bottom: 10px;">${t.playerLabel} ${currentPlayerIndex + 1}</h2>
+                        <p style="color: #666;">${currentLang === 'en' ? 'Click the button below to see your role' : 'روی دکمه زیر کلیک کنید تا نقش خود را ببینید'}</p>
+                    `;
+                    showRoleBtn.innerHTML = t.showRoleBtn;
+                }
+            }
+        }
+
+        function updateHelpContent() {
+            const helpContent = document.getElementById('helpContent');
+            
+            if (currentLang === 'en') {
+                helpContent.innerHTML = `
+                    <h3>🎯 Game Overview</h3>
+                    <p>Mafia: Commando is a social deduction game for 10-15 players. This scenario introduces unique mechanics including hostage taking, gun distribution, and the powerful Commando role.</p>
+                    <p><strong>Standard Setup (10 players):</strong> 3 Mafia vs 7 Citizens</p>
+                    <p><strong>Teams:</strong> Always 3 mafia (Boss, NATO, Hostage Taker) vs citizens (5 special roles + simple citizens)</p>
+                    
+                    <h3>🌙 Night Phase</h3>
+                    <p><strong>Roles wake in this exact order:</strong></p>
+                    <ul>
+                        <li><strong>1. Guard</strong> - Protects players from hostage taking</li>
+                        <li><strong>2. Hostage Taker</strong> - Takes one player hostage</li>
+                        <li><strong>3. Mafia Team</strong> - Decides who to shoot (or use NATO)</li>
+                        <li><strong>4. Detective</strong> - Investigates one player</li>
+                        <li><strong>5. Commando</strong> - Only if shot, counter-shoots</li>
+                        <li><strong>6. Doctor</strong> - Saves players from attacks</li>
+                        <li><strong>7. Gunsmith</strong> - Distributes 2 guns</li>
+                    </ul>
+
+                    <h3>☀️ Day Phase</h3>
+                    <ul>
+                        <li><strong>Discussion:</strong> Players discuss and identify suspects</li>
+                        <li><strong>Gun Usage:</strong> Players with guns can shoot anytime before voting (war gun kills with role reveal, practice gun does nothing)</li>
+                        <li><strong>Voting:</strong> Eliminate suspect by majority vote</li>
+                    </ul>
+
+                    <h3>😈 Mafia Team</h3>
+                    <p><strong>First Night Only:</strong> All 3 mafia members (Boss, NATO, Hostage Taker) meet and know each other on Night 1</p>
+                    <p><strong>After Night 1:</strong> Only Boss and NATO wake together as mafia team. Hostage Taker works independently</p>
+                    
+                    <div class="role-help mafia">
+                        <h4>👔 Mafia Boss</h4>
+                        <p><strong>Team Leader:</strong> Wakes with NATO every night (after night 1) to decide mafia actions</p>
+                        <p><strong>Night Shoot:</strong> Decides who the mafia eliminates each night</p>
+                        <p><strong>Hidden Identity:</strong> Always appears innocent to Detective investigations</p>
+                        <p><strong>Commando Immunity:</strong> If Commando shoots Boss, neither of you dies (stalemate)</p>
+                        <p><strong>Day Vulnerability:</strong> Can be killed by war guns during day or voting</p>
+                    </div>
+
+                    <div class="role-help mafia">
+                        <h4>💣 NATO</h4>
+                        <p><strong>Team Member:</strong> Wakes with Boss every night (after night 1)</p>
+                        <p><strong>Special Ability:</strong> Once per game, guess a player's EXACT role (e.g., "Detective", "Guard")</p>
+                        <p><strong>If Guess is Correct:</strong> That player is eliminated the NEXT DAY at dawn, before day discussion starts</p>
+                        <p><strong>Role Reveal:</strong> When eliminated by NATO, the victim's role IS revealed to everyone</p>
+                        <p><strong>Public Announcement:</strong> When NATO uses this ability, it's announced publicly: "NATO was used tonight"</p>
+                        <p><strong>Critical Trade-off:</strong> The night NATO uses this ability, mafia CANNOT shoot anyone</p>
+                        <p><strong>Doctor Interaction:</strong> Doctor's saves have NO effect if NATO is used (Doctor still wakes but ability is blocked)</p>
+                        <p><strong>One-time Use:</strong> Can only be used ONCE in the entire game - use wisely!</p>
+                    </div>
+
+                    <div class="role-help mafia">
+                        <h4>🎭 Hostage Taker</h4>
+                        <p><strong>Introduction Night:</strong> On Night 1 ONLY, you meet all mafia teammates (Boss, NATO)</p>
+                        <p><strong>Independent Operation:</strong> After Night 1, you do NOT wake with mafia team - you work alone</p>
+                        <p><strong>Wake Order:</strong> You wake BEFORE the mafia team each night</p>
+                        <p><strong>Hostage Taking:</strong> Each night, select one player - they CANNOT use their ability that night (blocked)</p>
+                        <p><strong>Guard Counter:</strong> If Guard protects the same player you target, your hostage taking FAILS</p>
+                        <p><strong>No Spam Rule:</strong> Cannot select the same person on 2 consecutive nights</p>
+                        <p><strong>Strategic Targets:</strong> Prioritize blocking Detective, Doctor, or Guard to help mafia</p>
+                    </div>
+
+                    <h3>😇 Citizens Team</h3>
+                    
+                    <div class="role-help citizen">
+                        <h4>🔍 Detective</h4>
+                        <p><strong>Investigation:</strong> Each night, choose one player to investigate</p>
+                        <p><strong>Result:</strong> You learn if they are mafia or not (binary result: mafia/not mafia)</p>
+                        <p><strong>Boss Exception:</strong> Mafia Boss always shows as innocent (false negative)</p>
+                        <p><strong>Accurate for:</strong> NATO and Hostage Taker will correctly show as mafia</p>
+                        <p><strong>Strategy:</strong> Build trust by sharing findings carefully, but don't reveal role directly</p>
+                    </div>
+
+                    <div class="role-help citizen">
+                        <h4>💉 Doctor</h4>
+                        <p><strong>Save:</strong> Each night, protect players from mafia night kill</p>
+                        <p><strong>Scaling:</strong> With ≤7 alive players: save 1 person | With ≥8 alive players: save 2 people</p>
+                        <p><strong>Self-Save Restriction:</strong> You CANNOT save yourself</p>
+                        <p><strong>Successful Save:</strong> If mafia targets someone you saved, they survive (no death that night)</p>
+                        <p><strong>NATO Interaction:</strong> If NATO is used that night, your save ability has NO effect (you still wake but ability is blocked)</p>
+                        <p><strong>Hostage Interaction:</strong> If you are taken hostage, you cannot save anyone that night</p>
+                        <p><strong>Strategy:</strong> Try to predict mafia targets and save key roles</p>
+                    </div>
+
+                    <div class="role-help citizen">
+                        <h4>🎖️ Commando</h4>
+                        <p><strong>Passive Role:</strong> You don't wake every night - only if mafia shoots you</p>
+                        <p><strong>Trigger:</strong> Only activates if you are shot by mafia during the night</p>
+                        <p><strong>Counter-shot:</strong> When shot, you wake and can shoot ONE person before you die</p>
+                        <p><strong>vs Regular Mafia:</strong> If you shoot NATO or Hostage Taker, they die (you also die)</p>
+                        <p><strong>vs Mafia Boss:</strong> If you shoot Mafia Boss, NEITHER of you dies (stalemate - both survive)</p>
+                        <p><strong>vs Citizen:</strong> If you accidentally shoot a citizen, ONLY YOU die (they survive)</p>
+                        <p><strong>⚠️ CRITICAL WARNING:</strong> Do NOT shoot Mafia Boss without strong evidence - causes stalemate</p>
+                        <p><strong>Doctor Interaction:</strong> If Doctor saves you, you don't get shot, so Commando ability doesn't activate</p>
+                        <p><strong>Hostage Interaction:</strong> Being taken hostage does NOT affect this ability (only activates when shot)</p>
+                    </div>
+
+                    <div class="role-help citizen">
+                        <h4>🛡️ Guard</h4>
+                        <p><strong>Night Protection:</strong> Each night, select players to protect from being taken hostage</p>
+                        <p><strong>Scaling:</strong> With ≤7 alive players: protect 1 | With ≥8 alive players: protect 2</p>
+                        <p><strong>Counter:</strong> If your choice matches Hostage Taker's target, hostage taking FAILS (target is protected)</p>
+                        <p><strong>Day Armor:</strong> You have armor/vest during the DAY phase only (protects against war gun shots)</p>
+                        <p><strong>Armor Mechanics:</strong> If shot by war gun during day, your armor breaks but you survive that shot</p>
+                        <p><strong>Armor Loss Penalty:</strong> Once armor breaks, you permanently LOSE your night hostage-protection ability</p>
+                        <p><strong>Voting Vulnerability:</strong> Armor does NOT protect against voting elimination</p>
+                        <p><strong>Night Vulnerability:</strong> Armor does NOT protect against mafia night kills</p>
+                        <p><strong>Hostage Interaction:</strong> If you are taken hostage, you cannot protect anyone that night</p>
+                    </div>
+
+                    <div class="role-help citizen">
+                        <h4>🔫 Gunsmith</h4>
+                        <p><strong>Distribution:</strong> Each night, give exactly 2 guns to players (can be same or different players)</p>
+                        <p><strong>Gun Types:</strong></p>
+                        <p style="margin-left: 20px;">• <strong>War Gun (Real):</strong> Kills target when fired, victim's role is revealed to everyone</p>
+                        <p style="margin-left: 20px;">• <strong>Practice Gun (Fake):</strong> Does nothing when fired, no effect</p>
+                        <p><strong>War Gun Limitation:</strong> Can only give war gun to the SAME player ONCE per game</p>
+                        <p><strong>Example:</strong> If you give Player A a war gun on night 2, you cannot give Player A another war gun for the rest of the game (but you can give them practice guns)</p>
+                        <p><strong>Gun Usage:</strong> Players with guns can fire them anytime during day phase, BEFORE voting starts</p>
+                        <p><strong>Strategy:</strong> Give war guns to trusted players or use practice guns to test loyalty</p>
+                        <p><strong>Hostage Interaction:</strong> If you are taken hostage, you cannot distribute guns that night</p>
+                    </div>
+
+                    <div class="role-help citizen">
+                        <h4>👤 Simple Citizen</h4>
+                        <p><strong>Role:</strong> No special abilities</p>
+                        <p><strong>Importance:</strong> Your vote and voice in discussions are crucial for identifying mafia</p>
+                        <p><strong>Task:</strong> Pay attention, participate in discussion, and vote wisely</p>
+                    </div>
+
+                    <h3>⚠️ Important Rules</h3>
+                    <ul>
+                        <li><strong>🚫 No Guard Requests:</strong> Citizens cannot request guard protection (will be kicked from game)</li>
+                        <li><strong>🚫 No Direct Role Reveals:</strong> Cannot directly reveal roles (will be kicked from game)</li>
+                        <li><strong>🚫 No Exit Threats:</strong> Threatening to quit/exit results in immediate kick</li>
+                        <li><strong>⚖️ Commando Warning:</strong> Don't shoot Boss without strong evidence</li>
+                        <li><strong>🔫 Gun Usage:</strong> Guns can be used anytime during day before voting starts</li>
+                    </ul>
+
+                    <h3>🔄 Game Flow</h3>
+                    
+                    <h4>🌙 Night 1 (Special)</h4>
+                    <ul>
+                        <li><strong>Mafia Meeting:</strong> All 3 mafia (Boss, NATO, Hostage Taker) meet and know each other</li>
+                        <li><strong>Then:</strong> Follow normal night order (Guard → Hostage Taker → Mafia Team → etc.)</li>
+                    </ul>
+
+                    <h4>🌙 Night 2+ (Regular Pattern)</h4>
+                    <ol>
+                        <li><strong>Guard</strong> - Protects from hostage taking</li>
+                        <li><strong>Hostage Taker</strong> - Takes one hostage (works alone, NOT with mafia team)</li>
+                        <li><strong>Mafia Team</strong> - Boss + NATO decide to shoot OR use NATO ability</li>
+                        <li><strong>Detective</strong> - Investigates one player</li>
+                        <li><strong>Commando</strong> - Only if shot by mafia, counter-shoots</li>
+                        <li><strong>Doctor</strong> - Saves players (unless NATO was used)</li>
+                        <li><strong>Gunsmith</strong> - Gives 2 guns to players</li>
+                    </ol>
+
+                    <h4>☀️ Day Phase</h4>
+                    <ul>
+                        <li><strong>Dawn:</strong> Night results announced (who died, if NATO was used)</li>
+                        <li><strong>Discussion:</strong> Players discuss and identify suspects</li>
+                        <li><strong>Gun Usage:</strong> Anyone with guns can shoot BEFORE voting</li>
+                        <li><strong>Voting:</strong> All players vote to eliminate one suspect</li>
+                        <li><strong>Elimination:</strong> Player with most votes is eliminated, role revealed</li>
+                    </ul>
+
+                    <h3>🎮 Special Mechanics</h3>
+                    
+                    <h4>🎯 Hostage Taking System</h4>
+                    <ul>
+                        <li><strong>How it works:</strong> Hostage Taker selects one player each night</li>
+                        <li><strong>Effect:</strong> That player CANNOT use their ability that night (completely blocked)</li>
+                        <li><strong>Guard Counter:</strong> If Guard protects same player, hostage taking FAILS</li>
+                        <li><strong>No Spam:</strong> Cannot select same person 2 consecutive nights</li>
+                        <li><strong>Key Detail:</strong> Hostage Taker works ALONE after Night 1 (not with mafia team)</li>
+                        <li><strong>Strategic Value:</strong> Blocking Detective, Doctor, or Guard can swing game</li>
+                    </ul>
+
+                    <h4>🔫 Gun Distribution System</h4>
+                    <ul>
+                        <li><strong>Distribution:</strong> Gunsmith gives 2 guns per night</li>
+                        <li><strong>War Guns (Real):</strong> Kill target when fired, role is publicly revealed</li>
+                        <li><strong>Practice Guns (Fake):</strong> Do nothing when fired (click sound only)</li>
+                        <li><strong>One War Gun Rule:</strong> Same player can only receive war gun ONCE per game</li>
+                        <li><strong>Usage Timing:</strong> Guns can be fired anytime during day BEFORE voting starts</li>
+                        <li><strong>Guard Armor:</strong> Guard survives first war gun shot (armor breaks)</li>
+                        <li><strong>Strategic Use:</strong> Test suspicious players or eliminate confirmed mafia</li>
+                    </ul>
+
+                    <h4>🛡️ Guard Armor System</h4>
+                    <ul>
+                        <li><strong>Armor Location:</strong> Only works during DAY phase (not night)</li>
+                        <li><strong>Protection:</strong> Survives ONE war gun shot</li>
+                        <li><strong>Armor Break:</strong> After surviving gun shot, armor is destroyed</li>
+                        <li><strong>Penalty:</strong> Once armor breaks, Guard LOSES night hostage-protection ability forever</li>
+                        <li><strong>Does NOT protect against:</strong> Voting elimination or mafia night kills</li>
+                    </ul>
+
+                    <h4>💣 NATO Ability System</h4>
+                    <ul>
+                        <li><strong>Usage:</strong> Once per game, guess a player's exact role</li>
+                        <li><strong>If Correct:</strong> Player dies at dawn (next day), role revealed</li>
+                        <li><strong>Public Announcement:</strong> "NATO was used tonight" is announced to all</li>
+                        <li><strong>Trade-off:</strong> Mafia cannot shoot that night (no kill)</li>
+                        <li><strong>Doctor Block:</strong> Doctor's saves don't work if NATO is used</li>
+                    </ul>
+
+                    <h3>🏆 Win Conditions</h3>
+                    <ul>
+                        <li><strong>Mafia Wins:</strong> When mafia members equal or outnumber citizens</li>
+                        <li><strong>Citizens Win:</strong> When all mafia members are eliminated</li>
+                    </ul>
+
+                    <h3>💡 Strategy Tips</h3>
+                    <ul>
+                        <li><strong>Mafia Boss:</strong> Use NATO strategically - you lose shooting ability that night</li>
+                        <li><strong>Hostage Taker:</strong> Target key roles (Detective, Doctor, Guard) to disrupt citizens</li>
+                        <li><strong>Commando:</strong> Be unpredictable - mafia will hesitate to shoot you</li>
+                        <li><strong>Guard:</strong> Protect likely hostage targets and preserve your armor</li>
+                        <li><strong>Gunsmith:</strong> Track who has war guns and use information wisely</li>
+                    </ul>
+                `;
+            } else {
+                helpContent.innerHTML = `
+                    <h3>🎯 معرفی بازی</h3>
+                    <p>مافیا: تکاور یک بازی استنتاج اجتماعی برای ۱۰-۱۵ بازیکن است. این سناریو مکانیک‌های منحصر به فرد شامل گروگان‌گیری، توزیع تفنگ و نقش قدرتمند تکاور را معرفی می‌کند.</p>
+                    <p><strong>ترکیب استاندارد (۱۰ بازیکن):</strong> ۳ مافیا در مقابل ۷ شهروند</p>
+                    <p><strong>تیم‌ها:</strong> همیشه ۳ مافیا (رئیس، ناتو، گروگان‌گیر) در مقابل شهروندان (۵ نقش خاص + شهروندان ساده)</p>
+                    
+                    <h3>🌙 فاز شب</h3>
+                    <p><strong>نقش‌ها به این ترتیب دقیق بیدار می‌شوند:</strong></p>
+                    <ul>
+                        <li><strong>۱. نگهبان</strong> - بازیکنان را از گروگان‌گیری محافظت می‌کند</li>
+                        <li><strong>۲. گروگان‌گیر</strong> - یک بازیکن را گروگان می‌گیرد</li>
+                        <li><strong>۳. تیم مافیا</strong> - تصمیم می‌گیرند چه کسی را شات کنند (یا ناتو استفاده کنند)</li>
+                        <li><strong>۴. کارآگاه</strong> - یک بازیکن را استعلام می‌گیرد</li>
+                        <li><strong>۵. تکاور</strong> - فقط اگر شات شود، شلیک متقابل می‌کند</li>
+                        <li><strong>۶. پزشک</strong> - بازیکنان را از حملات نجات می‌دهد</li>
+                        <li><strong>۷. تفنگدار</strong> - ۲ تفنگ توزیع می‌کند</li>
+                    </ul>
+
+                    <h3>☀️ فاز روز</h3>
+                    <ul>
+                        <li><strong>بحث:</strong> بازیکنان بحث می‌کنند و مظنونین را شناسایی می‌کنند</li>
+                        <li><strong>استفاده از تفنگ:</strong> بازیکنان دارای تفنگ می‌توانند قبل از رای‌گیری شلیک کنند (تفنگ جنگی می‌کشد با اعلام نقش، تفنگ مشقی کاری نمی‌کند)</li>
+                        <li><strong>رای‌گیری:</strong> با رای اکثریت، مظنون را حذف کنید</li>
+                    </ul>
+
+                    <h3>😈 تیم مافیا</h3>
+                    <p><strong>فقط شب اول:</strong> هر ۳ عضو مافیا (رئیس، ناتو، گروگان‌گیر) همدیگر را می‌شناسند</p>
+                    <p><strong>بعد از شب ۱:</strong> فقط رئیس و ناتو با هم بیدار می‌شوند. گروگان‌گیر به صورت مستقل کار می‌کند</p>
+                    
+                    <div class="role-help mafia">
+                        <h4>👔 رئیس مافیا</h4>
+                        <p><strong>رهبر تیم:</strong> هر شب (بعد از شب ۱) با ناتو بیدار می‌شود</p>
+                        <p><strong>شات شب:</strong> تصمیم می‌گیرد مافیا هر شب چه کسی را حذف کند</p>
+                        <p><strong>هویت مخفی:</strong> در استعلام کارآگاه همیشه بی‌گناه به نظر می‌رسد</p>
+                        <p><strong>مصونیت تکاور:</strong> اگر تکاور به رئیس شلیک کند، هیچ کدام نمی‌میرند (تعادل)</p>
+                        <p><strong>آسیب‌پذیری روز:</strong> می‌تواند با تفنگ جنگی یا رای حذف شود</p>
+                    </div>
+
+                    <div class="role-help mafia">
+                        <h4>💣 ناتو</h4>
+                        <p><strong>عضو تیم:</strong> هر شب (بعد از شب ۱) با رئیس بیدار می‌شود</p>
+                        <p><strong>توانایی ویژه:</strong> یک بار در بازی، نقش دقیق یک بازیکن را حدس بزنید (مثلاً "کارآگاه"، "نگهبان")</p>
+                        <p><strong>اگر حدس درست باشد:</strong> آن بازیکن روز بعد در سپیده‌دم، قبل از بحث روز، حذف می‌شود</p>
+                        <p><strong>افشای نقش:</strong> وقتی کسی توسط ناتو حذف می‌شود، نقشش به همه نشان داده می‌شود</p>
+                        <p><strong>اعلام علنی:</strong> وقتی ناتو استفاده می‌شود، به همه اعلام می‌شود: "امشب ناتو استفاده شد"</p>
+                        <p><strong>معاوضه مهم:</strong> شبی که ناتو استفاده می‌شود، مافیا نمی‌تواند کسی را شات کند</p>
+                        <p><strong>تعامل با پزشک:</strong> اگر ناتو استفاده شود، نجات پزشک تأثیری ندارد (پزشک بیدار می‌شود اما توانایی مسدود است)</p>
+                        <p><strong>یک‌بار مصرف:</strong> فقط یک بار در کل بازی قابل استفاده - عاقلانه استفاده کنید!</p>
+                    </div>
+
+                    <div class="role-help mafia">
+                        <h4>🎭 گروگان‌گیر</h4>
+                        <p><strong>شب معارفه:</strong> فقط در شب ۱ همه یارهای مافیا را می‌شناسید (رئیس، ناتو)</p>
+                        <p><strong>عملیات مستقل:</strong> بعد از شب ۱، با تیم مافیا بیدار نمی‌شوید - به تنهایی کار می‌کنید</p>
+                        <p><strong>ترتیب بیداری:</strong> قبل از تیم مافیا هر شب بیدار می‌شوید</p>
+                        <p><strong>گروگان‌گیری:</strong> هر شب یک بازیکن انتخاب کنید - آن‌ها نمی‌توانند از توانایی‌شان استفاده کنند (مسدود)</p>
+                        <p><strong>پادزهر نگهبان:</strong> اگر نگهبان همان بازیکنی را که شما هدف گرفته‌اید محافظت کند، گروگان‌گیری شکست می‌خورد</p>
+                        <p><strong>قانون ممنوعیت اسپم:</strong> نمی‌توانید ۲ شب پیاپی یک نفر را انتخاب کنید</p>
+                        <p><strong>اهداف استراتژیک:</strong> کارآگاه، پزشک یا نگهبان را مسدود کنید تا به مافیا کمک کنید</p>
+                    </div>
+
+                    <h3>😇 تیم شهروندان</h3>
+                    
+                    <div class="role-help citizen">
+                        <h4>🔍 کارآگاه</h4>
+                        <p><strong>استعلام:</strong> هر شب یک بازیکن را برای استعلام انتخاب کنید</p>
+                        <p><strong>نتیجه:</strong> متوجه می‌شوید آن‌ها مافیا هستند یا نه (نتیجه دوگانه: مافیا/مافیا نیست)</p>
+                        <p><strong>استثنای رئیس:</strong> رئیس مافیا همیشه بی‌گناه نشان داده می‌شود (نتیجه نادرست)</p>
+                        <p><strong>دقیق برای:</strong> ناتو و گروگان‌گیر به درستی به عنوان مافیا نشان داده می‌شوند</p>
+                        <p><strong>استراتژی:</strong> با اشتراک‌گذاری یافته‌ها با احتیاط اعتماد بسازید، اما نقش خود را مستقیماً فاش نکنید</p>
+                    </div>
+
+                    <div class="role-help citizen">
+                        <h4>💉 پزشک</h4>
+                        <p><strong>نجات:</strong> هر شب بازیکنان را از کشته شدن توسط مافیا نجات دهید</p>
+                        <p><strong>مقیاس:</strong> با ≤۷ بازیکن زنده: ۱ نفر نجات دهید | با ≥۸ بازیکن زنده: ۲ نفر نجات دهید</p>
+                        <p><strong>محدودیت نجات خود:</strong> نمی‌توانید خودتان را نجات دهید</p>
+                        <p><strong>نجات موفق:</strong> اگر مافیا کسی را که شما نجاتش داده‌اید هدف بگیرد، زنده می‌ماند (آن شب مرگی نیست)</p>
+                        <p><strong>تعامل ناتو:</strong> اگر ناتو آن شب استفاده شود، توانایی نجات شما تأثیری ندارد (بیدار می‌شوید اما توانایی مسدود است)</p>
+                        <p><strong>تعامل گروگان:</strong> اگر شما گروگان گرفته شوید، آن شب نمی‌توانید کسی را نجات دهید</p>
+                        <p><strong>استراتژی:</strong> سعی کنید اهداف مافیا را پیش‌بینی کنید و نقش‌های کلیدی را نجات دهید</p>
+                    </div>
+
+                    <div class="role-help citizen">
+                        <h4>🎖️ تکاور</h4>
+                        <p><strong>نقش منفعل:</strong> هر شب بیدار نمی‌شوید - فقط اگر مافیا شما را شات کند</p>
+                        <p><strong>فعال‌سازی:</strong> فقط اگر مافیا شب شما را شات کند فعال می‌شود</p>
+                        <p><strong>شلیک متقابل:</strong> وقتی شات می‌شوید، بیدار می‌شوید و می‌توانید یک نفر را قبل از مردن شات کنید</p>
+                        <p><strong>در مقابل مافیای عادی:</strong> اگر به ناتو یا گروگان‌گیر شلیک کنید، می‌میرند (شما هم می‌میرید)</p>
+                        <p><strong>در مقابل رئیس مافیا:</strong> اگر به رئیس مافیا شلیک کنید، هیچ کدام نمی‌میرید (تعادل - هر دو زنده می‌مانید)</p>
+                        <p><strong>در مقابل شهروند:</strong> اگر تصادفاً به شهروند شلیک کنید، فقط شما می‌میرید (آن‌ها زنده می‌مانند)</p>
+                        <p><strong>⚠️ هشدار مهم:</strong> بدون مدرک قوی به رئیس مافیا شلیک نکنید - باعث تعادل می‌شود</p>
+                        <p><strong>تعامل پزشک:</strong> اگر پزشک شما را نجات دهد، شات نمی‌شوید، پس توانایی تکاور فعال نمی‌شود</p>
+                        <p><strong>تعامل گروگان:</strong> گروگان گرفته شدن تأثیری بر این توانایی ندارد (فقط با شات شدن فعال می‌شود)</p>
+                    </div>
+
+                    <div class="role-help citizen">
+                        <h4>🛡️ نگهبان</h4>
+                        <p><strong>محافظت شب:</strong> هر شب بازیکنانی را برای محافظت از گروگان‌گیری انتخاب کنید</p>
+                        <p><strong>مقیاس:</strong> با ≤۷ بازیکن زنده: ۱ نفر | با ≥۸ بازیکن زنده: ۲ نفر</p>
+                        <p><strong>پادزهر:</strong> اگر انتخاب شما با هدف گروگان‌گیر یکی باشد، گروگان‌گیری شکست می‌خورد (هدف محافظت می‌شود)</p>
+                        <p><strong>زره روز:</strong> فقط در فاز روز زره/جلیقه دارید (در مقابل شات تفنگ جنگی محافظت می‌کند)</p>
+                        <p><strong>مکانیک زره:</strong> اگر در روز با تفنگ جنگی به شما شلیک شود، زره می‌شکند اما از آن شات جان سالم به در می‌برید</p>
+                        <p><strong>جریمه از دست دادن زره:</strong> وقتی زره بشکند، برای همیشه توانایی محافظت شبانه خود را از دست می‌دهید</p>
+                        <p><strong>آسیب‌پذیری رای‌گیری:</strong> زره در مقابل حذف با رای‌گیری محافظت نمی‌کند</p>
+                        <p><strong>آسیب‌پذیری شب:</strong> زره در مقابل کشته شدن توسط مافیا در شب محافظت نمی‌کند</p>
+                        <p><strong>تعامل گروگان:</strong> اگر شما گروگان گرفته شوید، آن شب نمی‌توانید کسی را محافظت کنید</p>
+                    </div>
+
+                    <div class="role-help citizen">
+                        <h4>🔫 تفنگدار</h4>
+                        <p><strong>توزیع:</strong> هر شب دقیقاً ۲ تفنگ به بازیکنان بدهید (می‌تواند به یک نفر یا دو نفر مختلف)</p>
+                        <p><strong>انواع تفنگ:</strong></p>
+                        <p style="margin-left: 20px;">• <strong>تفنگ جنگی (واقعی):</strong> هدف را با شلیک می‌کشد، نقش قربانی به همه نشان داده می‌شود</p>
+                        <p style="margin-left: 20px;">• <strong>تفنگ مشقی (تقلبی):</strong> با شلیک کاری نمی‌کند، تأثیری ندارد</p>
+                        <p><strong>محدودیت تفنگ جنگی:</strong> فقط یک بار در کل بازی می‌توانید به یک بازیکن تفنگ جنگی بدهید</p>
+                        <p><strong>مثال:</strong> اگر شب ۲ به بازیکن A تفنگ جنگی دادید، تا آخر بازی نمی‌توانید به بازیکن A تفنگ جنگی دیگری بدهید (اما می‌توانید تفنگ مشقی بدهید)</p>
+                        <p><strong>استفاده از تفنگ:</strong> بازیکنان با تفنگ می‌توانند در فاز روز، قبل از شروع رای‌گیری، هر زمان شلیک کنند</p>
+                        <p><strong>استراتژی:</strong> تفنگ جنگی به بازیکنان قابل اعتماد بدهید یا با تفنگ مشقی وفاداری را آزمایش کنید</p>
+                        <p><strong>تعامل گروگان:</strong> اگر شما گروگان گرفته شوید، آن شب نمی‌توانید تفنگ توزیع کنید</p>
+                    </div>
+
+                    <div class="role-help citizen">
+                        <h4>👤 شهروند ساده</h4>
+                        <p><strong>نقش:</strong> توانایی خاصی ندارد</p>
+                        <p><strong>اهمیت:</strong> رای و صدای شما در بحث‌ها برای شناسایی مافیا حیاتی است</p>
+                        <p><strong>وظیفه:</strong> دقت کنید، در بحث شرکت کنید و عاقلانه رای دهید</p>
+                    </div>
+
+                    <h3>⚠️ قوانین مهم</h3>
+                    <ul>
+                        <li><strong>🚫 ممنوعیت درخواست نگهبانی:</strong> شهروندان نمی‌توانند نگهبانی درخواست کنند (کیک می‌شوند)</li>
+                        <li><strong>🚫 ممنوعیت افشای مستقیم نقش:</strong> نمی‌توانید مستقیماً نقش‌ها را فاش کنید (کیک می‌شوند)</li>
+                        <li><strong>🚫 ممنوعیت تهدید به خروج:</strong> تهدید به ترک بازی منجر به کیک فوری می‌شود</li>
+                        <li><strong>⚖️ هشدار تکاور:</strong> بدون مدرک قوی به رئیس شلیک نکنید</li>
+                        <li><strong>🔫 استفاده از تفنگ:</strong> تفنگ‌ها در روز قبل از شروع رای‌گیری قابل استفاده هستند</li>
+                    </ul>
+
+                    <h3>🔄 جریان بازی</h3>
+                    
+                    <h4>🌙 شب ۱ (ویژه)</h4>
+                    <ul>
+                        <li><strong>جلسه مافیا:</strong> هر ۳ مافیا (رئیس، ناتو، گروگان‌گیر) همدیگر را می‌شناسند</li>
+                        <li><strong>سپس:</strong> ترتیب عادی شب را دنبال کنید (نگهبان → گروگان‌گیر → تیم مافیا → و غیره)</li>
+                    </ul>
+
+                    <h4>🌙 شب ۲ به بعد (الگوی عادی)</h4>
+                    <ol>
+                        <li><strong>نگهبان</strong> - از گروگان‌گیری محافظت می‌کند</li>
+                        <li><strong>گروگان‌گیر</strong> - یک گروگان می‌گیرد (به تنهایی کار می‌کند، با تیم مافیا نیست)</li>
+                        <li><strong>تیم مافیا</strong> - رئیس + ناتو تصمیم می‌گیرند شات کنند یا از ناتو استفاده کنند</li>
+                        <li><strong>کارآگاه</strong> - یک بازیکن را استعلام می‌گیرد</li>
+                        <li><strong>تکاور</strong> - فقط اگر شات شود، شلیک متقابل می‌کند</li>
+                        <li><strong>پزشک</strong> - بازیکنان را نجات می‌دهد (مگر ناتو استفاده شده باشد)</li>
+                        <li><strong>تفنگدار</strong> - ۲ تفنگ به بازیکنان می‌دهد</li>
+                    </ol>
+
+                    <h4>☀️ فاز روز</h4>
+                    <ul>
+                        <li><strong>سپیده‌دم:</strong> نتایج شب اعلام می‌شود (چه کسی مرد، آیا ناتو استفاده شد)</li>
+                        <li><strong>بحث:</strong> بازیکنان بحث و مظنونین را شناسایی می‌کنند</li>
+                        <li><strong>استفاده از تفنگ:</strong> هر کسی با تفنگ می‌تواند قبل از رای‌گیری شلیک کند</li>
+                        <li><strong>رای‌گیری:</strong> همه بازیکنان برای حذف یک مظنون رای می‌دهند</li>
+                        <li><strong>حذف:</strong> بازیکنی با بیشترین رای حذف می‌شود، نقش افشا می‌شود</li>
+                    </ul>
+
+                    <h3>🎮 مکانیک‌های ویژه</h3>
+                    
+                    <h4>🎯 سیستم گروگان‌گیری</h4>
+                    <ul>
+                        <li><strong>نحوه کار:</strong> گروگان‌گیر هر شب یک بازیکن انتخاب می‌کند</li>
+                        <li><strong>تأثیر:</strong> آن بازیکن نمی‌تواند آن شب از توانایی‌اش استفاده کند (کاملاً مسدود)</li>
+                        <li><strong>پادزهر نگهبان:</strong> اگر نگهبان همان بازیکن را محافظت کند، گروگان‌گیری شکست می‌خورد</li>
+                        <li><strong>منع اسپم:</strong> نمی‌تواند ۲ شب پیاپی یک نفر را انتخاب کند</li>
+                        <li><strong>جزئیات کلیدی:</strong> گروگان‌گیر بعد از شب ۱ به تنهایی کار می‌کند (با تیم مافیا نیست)</li>
+                        <li><strong>ارزش استراتژیک:</strong> مسدود کردن کارآگاه، پزشک یا نگهبان می‌تواند بازی را عوض کند</li>
+                    </ul>
+
+                    <h4>🔫 سیستم توزیع تفنگ</h4>
+                    <ul>
+                        <li><strong>توزیع:</strong> تفنگدار هر شب ۲ تفنگ می‌دهد</li>
+                        <li><strong>تفنگ جنگی (واقعی):</strong> هدف را با شلیک می‌کشد، نقش علناً افشا می‌شود</li>
+                        <li><strong>تفنگ مشقی (تقلبی):</strong> با شلیک کاری نمی‌کند (فقط صدای کلیک)</li>
+                        <li><strong>قانون یک تفنگ جنگی:</strong> یک بازیکن فقط یک بار در کل بازی می‌تواند تفنگ جنگی دریافت کند</li>
+                        <li><strong>زمان استفاده:</strong> تفنگ‌ها می‌توانند در روز قبل از شروع رای‌گیری هر موقع شلیک شوند</li>
+                        <li><strong>زره نگهبان:</strong> نگهبان از اولین شات تفنگ جنگی جان سالم به در می‌برد (زره می‌شکند)</li>
+                        <li><strong>استفاده استراتژیک:</strong> بازیکنان مشکوک را آزمایش یا مافیای تأیید شده را حذف کنید</li>
+                    </ul>
+
+                    <h4>🛡️ سیستم زره نگهبان</h4>
+                    <ul>
+                        <li><strong>مکان زره:</strong> فقط در فاز روز کار می‌کند (نه شب)</li>
+                        <li><strong>محافظت:</strong> از یک شات تفنگ جنگی جان سالم به در می‌برد</li>
+                        <li><strong>شکستن زره:</strong> بعد از جان سالم بردن از شات، زره نابود می‌شود</li>
+                        <li><strong>جریمه:</strong> وقتی زره بشکند، نگهبان برای همیشه توانایی محافظت شبانه را از دست می‌دهد</li>
+                        <li><strong>محافظت نمی‌کند در برابر:</strong> حذف با رای‌گیری یا کشته شدن توسط مافیا در شب</li>
+                    </ul>
+
+                    <h4>💣 سیستم توانایی ناتو</h4>
+                    <ul>
+                        <li><strong>استفاده:</strong> یک بار در بازی، نقش دقیق یک بازیکن را حدس بزنید</li>
+                        <li><strong>اگر درست باشد:</strong> بازیکن در سپیده‌دم (روز بعد) می‌میرد، نقش افشا می‌شود</li>
+                        <li><strong>اعلام علنی:</strong> "امشب ناتو استفاده شد" به همه اعلام می‌شود</li>
+                        <li><strong>معاوضه:</strong> مافیا آن شب نمی‌تواند کسی را شات کند (مرگی نیست)</li>
+                        <li><strong>مسدودسازی پزشک:</strong> نجات پزشک اگر ناتو استفاده شود کار نمی‌کند</li>
+                    </ul>
+
+                    <h3>🏆 شرایط برد</h3>
+                    <ul>
+                        <li><strong>برد مافیا:</strong> وقتی تعداد مافیاها با شهروندان برابر یا بیشتر شود</li>
+                        <li><strong>برد شهروندان:</strong> وقتی همه اعضای مافیا حذف شوند</li>
+                    </ul>
+
+                    <h3>💡 نکات استراتژیک</h3>
+                    <ul>
+                        <li><strong>رئیس مافیا:</strong> ناتو را استراتژیک استفاده کنید - آن شب قابلیت شات را از دست می‌دهید</li>
+                        <li><strong>گروگان‌گیر:</strong> نقش‌های کلیدی (کارآگاه، پزشک، نگهبان) را هدف بگیرید تا شهروندان را مختل کنید</li>
+                        <li><strong>تکاور:</strong> غیرقابل پیش‌بینی باشید - مافیا از شلیک به شما مردد خواهند بود</li>
+                        <li><strong>نگهبان:</strong> از اهداف احتمالی گروگان‌گیری محافظت کنید و زره خود را حفظ کنید</li>
+                        <li><strong>تفنگدار:</strong> پیگیری کنید چه کسی تفنگ جنگی دارد و از اطلاعات عاقلانه استفاده کنید</li>
+                    </ul>
+                `;
+            }
+        }
+
+        function startGame() {
+            const playerCount = parseInt(document.getElementById('playerCount').value);
+            const errorMsg = document.getElementById('errorMsg');
+            
+            if (!playerCount || playerCount < 10 || playerCount > 15) {
+                errorMsg.textContent = currentLang === 'en' 
+                    ? 'Please enter a number between 10 and 15' 
+                    : 'لطفاً عددی بین ۱۰ تا ۱۵ وارد کنید';
+                errorMsg.classList.remove('hidden');
+                return;
+            }
+            
+            errorMsg.classList.add('hidden');
+            
+            const teamSize = calculateTeamSize(playerCount);
+            
+            // Create role array based on calculated team sizes
+            let roleArray = [];
+            
+            // Add Mafia roles
+            for (let i = 0; i < teamSize.godfather; i++) roleArray.push('godfather');
+            for (let i = 0; i < teamSize.nato; i++) roleArray.push('nato');
+            for (let i = 0; i < teamSize.hostageTaker; i++) roleArray.push('hostageTaker');
+            
+            // Add Citizen roles
+            for (let i = 0; i < teamSize.detective; i++) roleArray.push('detective');
+            for (let i = 0; i < teamSize.doctor; i++) roleArray.push('doctor');
+            for (let i = 0; i < teamSize.commando; i++) roleArray.push('commando');
+            for (let i = 0; i < teamSize.guard; i++) roleArray.push('guard');
+            for (let i = 0; i < teamSize.gunsmith; i++) roleArray.push('gunsmith');
+            for (let i = 0; i < teamSize.citizen; i++) roleArray.push('citizen');
+            
+            // Shuffle and assign
+            playerRoles = shuffleArray(roleArray);
+            currentPlayerIndex = 0;
+            
+            document.getElementById('setupSection').classList.add('hidden');
+            document.getElementById('gameSection').classList.remove('hidden');
+            
+            // Hide back-to-home button during game
+            const backHomeBtn = document.querySelector('.back-home-btn');
+            if (backHomeBtn) backHomeBtn.style.display = 'none';
+            
+            showPlayerReveal();
+        }
+
+        function showPlayerReveal() {
+            const rolesContainer = document.getElementById('rolesContainer');
+            const newGameBtn = document.getElementById('newGameBtn');
+            const t = translations[currentLang];
+            
+            if (currentPlayerIndex >= playerRoles.length) {
+                if (!gameCountIncremented) {
+                    incrementGlobalCounter();
+                    gameCountIncremented = true;
+                }
+                
+                rolesContainer.innerHTML = `
+                    <div style="text-align: center; padding: 40px 20px;">
+                        <div style="font-size: 3em; margin-bottom: 20px;">🎉</div>
+                        <h2 style="color: #333; margin-bottom: 15px;">${t.allAssigned}</h2>
+                        <p style="color: #666; font-size: 1.1em;">${t.gameBegin}</p>
+                    </div>
+                `;
+                newGameBtn.classList.remove('hidden');
+                return;
+            }
+            
+            newGameBtn.classList.add('hidden');
+            
+            rolesContainer.innerHTML = `
+                <div style="text-align: center; padding: 20px;">
+                    <div id="instructionBox" style="background: #f8f9fa; border-radius: 15px; padding: 30px; margin-bottom: 20px;">
+                        <div style="font-size: 2.5em; margin-bottom: 15px;">👤</div>
+                        <h2 style="color: #333; margin-bottom: 10px;">${t.playerLabel} ${currentPlayerIndex + 1}</h2>
+                        <p style="color: #666;">${currentLang === 'en' ? 'Click the button below to see your role' : 'روی دکمه زیر کلیک کنید تا نقش خود را ببینید'}</p>
+                    </div>
+                    
+                    <div id="roleRevealArea"></div>
+                    
+                    <button class="btn" id="showRoleBtn" onclick="revealRole()">${t.showRoleBtn}</button>
+                </div>
+            `;
+        }
+
+        function revealRole() {
+            document.getElementById('instructionBox').style.display = 'none';
+            document.getElementById('showRoleBtn').style.display = 'none';
+            
+            const roleKey = playerRoles[currentPlayerIndex];
+            const role = roles[currentLang][roleKey];
+            const t = translations[currentLang];
+            
+            let teamBadge = '';
+            let teamColor = '';
+            if (role.team === 'mafia') {
+                teamBadge = currentLang === 'en' ? '😈 Mafia Team' : '😈 تیم مافیا';
+                teamColor = '#ee3d72';
+            } else if (role.team === 'citizen') {
+                teamBadge = currentLang === 'en' ? '😇 Citizens Team' : '😇 تیم شهروندان';
+                teamColor = '#4facfe';
+            }
+            
+            const roleRevealArea = document.getElementById('roleRevealArea');
+            roleRevealArea.innerHTML = `
+                <div class="role-card ${role.class}" style="margin-bottom: 20px; cursor: default;">
+                    <div style="text-align: ${currentLang === 'fa' ? 'right' : 'left'};">
+                        <div style="display: inline-block; background: ${teamColor}; color: white; padding: 5px 15px; border-radius: 20px; font-size: 0.9em; margin-bottom: 10px; font-weight: 600;">
+                            ${teamBadge}
+                        </div>
+                        <div class="role-name" style="font-size: 1.8em; margin-bottom: 15px;">
+                            ${role.name}
+                        </div>
+                        <div class="role-description" style="font-size: 1.05em; line-height: 1.8;">
+                            ${role.description}
+                        </div>
+                    </div>
+                </div>
+                <button class="btn" onclick="nextPlayer()" style="margin-top: 20px;">${t.sawRoleBtn}</button>
+            `;
+        }
+
+        function nextPlayer() {
+            currentPlayerIndex++;
+            showPlayerReveal();
+        }
+
+        function shuffleArray(array) {
+            const newArray = [...array];
+            for (let i = newArray.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [newArray[i], newArray[j]] = [newArray[j], newArray[i]];
+            }
+            return newArray;
+        }
+
+        function resetGame() {
+            currentPlayerIndex = 0;
+            playerRoles = [];
+            gameCountIncremented = false;
+            document.getElementById('setupSection').classList.remove('hidden');
+            document.getElementById('gameSection').classList.add('hidden');
+            document.getElementById('rolesContainer').innerHTML = '';
+            document.getElementById('newGameBtn').classList.add('hidden');
+            
+            // Show back-to-home button when returning to setup
+            const backHomeBtn = document.querySelector('.back-home-btn');
+            if (backHomeBtn) backHomeBtn.style.display = 'inline-flex';
+        }
+
+        function cancelGame() {
+            document.getElementById('confirmModal').classList.remove('hidden');
+        }
+
+        function confirmCancel() {
+            closeConfirm();
+            resetGame();
+        }
+
+        function closeConfirm() {
+            document.getElementById('confirmModal').classList.add('hidden');
+        }
+
+        function showHelp() {
+            document.getElementById('helpModal').classList.remove('hidden');
+            // Hide back-to-home button when showing help
+            const backHomeBtn = document.querySelector('.back-home-btn');
+            if (backHomeBtn) backHomeBtn.style.display = 'none';
+        }
+
+        function closeHelp() {
+            document.getElementById('helpModal').classList.add('hidden');
+            // Show back-to-home button when closing help
+            const backHomeBtn = document.querySelector('.back-home-btn');
+            if (backHomeBtn) backHomeBtn.style.display = 'inline-flex';
+        }
+
+        function showFeedback() {
+            document.getElementById('feedbackModal').classList.remove('hidden');
+            // Hide back-to-home button when showing feedback
+            const backHomeBtn = document.querySelector('.back-home-btn');
+            if (backHomeBtn) backHomeBtn.style.display = 'none';
+        }
+
+        function closeFeedback() {
+            document.getElementById('feedbackModal').classList.add('hidden');
+            // Show back-to-home button when closing feedback
+            const backHomeBtn = document.querySelector('.back-home-btn');
+            if (backHomeBtn) backHomeBtn.style.display = 'inline-flex';
+            setTimeout(() => {
+                document.getElementById('feedbackForm').reset();
+                document.getElementById('feedbackStatus').classList.add('hidden');
+            }, 300);
+        }
+
+        function updateGlobalCounter() {
+            if (!database) {
+                const t = translations[currentLang];
+                document.getElementById('gameCounter').textContent = t.gamesPlayed + ' ' + (currentLang === 'en' ? 'Setup Required' : 'نیاز به تنظیم');
+                return;
+            }
+
+            const counterRef = database.ref('commandoGameCounter');
+            counterRef.on('value', (snapshot) => {
+                const count = snapshot.val() || 0;
+                const t = translations[currentLang];
+                document.getElementById('gameCounter').textContent = t.gamesPlayed + ' ' + count.toLocaleString(currentLang === 'fa' ? 'fa-IR' : 'en-US');
+            });
+        }
+
+        function incrementGlobalCounter() {
+            if (!database) return;
+
+            const counterRef = database.ref('commandoGameCounter');
+            counterRef.transaction((currentValue) => {
+                return (currentValue || 0) + 1;
+            });
+        }
+
+        function submitFeedback(event) {
+            event.preventDefault();
+            
+            const name = document.getElementById('feedbackName').value.trim();
+            const email = document.getElementById('feedbackEmail').value.trim();
+            const message = document.getElementById('feedbackMessage').value.trim();
+            const submitBtn = document.getElementById('submitFeedbackBtn');
+            const statusEl = document.getElementById('feedbackStatus');
+            
+            if (!message) {
+                statusEl.textContent = currentLang === 'en' ? '⚠️ Please enter a message' : '⚠️ لطفاً پیامی وارد کنید';
+                statusEl.style.background = '#fff3cd';
+                statusEl.style.color = '#856404';
+                statusEl.classList.remove('hidden');
+                return;
+            }
+            
+            submitBtn.disabled = true;
+            const sendingText = currentLang === 'en' ? '📤 Sending...' : '📤 در حال ارسال...';
+            submitBtn.querySelector('span').textContent = sendingText;
+            
+            if (database) {
+                const counterRef = database.ref('commandoFeedbackCounter');
+                counterRef.transaction((currentValue) => {
+                    return (currentValue || 0) + 1;
+                }).then((result) => {
+                    const feedbackNumber = result.snapshot.val();
+                    
+                    const feedbackRef = database.ref('commandoFeedback');
+                    return feedbackRef.push({
+                        number: feedbackNumber,
+                        name: name || 'Anonymous',
+                        email: email || 'Not provided',
+                        message: message,
+                        language: currentLang,
+                        timestamp: new Date().toISOString(),
+                        date: new Date().toLocaleString()
+                    }).then(() => feedbackNumber);
+                })
+                .then((feedbackNumber) => {
+                    if (EMAILJS_PUBLIC_KEY !== 'YOUR_PUBLIC_KEY') {
+                        emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, {
+                            feedback_number: feedbackNumber,
+                            from_name: name || 'Anonymous',
+                            from_email: email || 'Not provided',
+                            message: message + '\n\nLanguage: ' + currentLang + '\n\nScenario: Commando',
+                            to_email: 'contact.ehm@gmail.com'
+                        }).catch((error) => {
+                            console.error('EmailJS error:', error);
+                        });
+                    }
+                    
+                    statusEl.textContent = currentLang === 'en' ? '✅ Thank you! Your feedback has been sent successfully!' : '✅ متشکریم! بازخورد شما با موفقیت ارسال شد!';
+                    statusEl.style.background = '#d4edda';
+                    statusEl.style.color = '#155724';
+                    statusEl.classList.remove('hidden');
+                    
+                    document.getElementById('feedbackForm').reset();
+                    
+                    setTimeout(() => {
+                        closeFeedback();
+                    }, 2000);
+                })
+                .catch((error) => {
+                    console.error('Error submitting feedback:', error);
+                    statusEl.textContent = currentLang === 'en' ? '❌ Error sending feedback. Please try again.' : '❌ خطا در ارسال بازخورد. لطفاً دوباره تلاش کنید.';
+                    statusEl.style.background = '#f8d7da';
+                    statusEl.style.color = '#721c24';
+                    statusEl.classList.remove('hidden');
+                })
+                .finally(() => {
+                    submitBtn.disabled = false;
+                    submitBtn.querySelector('span').textContent = translations[currentLang].sendBtn;
+                });
+            } else {
+                statusEl.textContent = currentLang === 'en' ? '❌ Firebase not configured.' : '❌ Firebase پیکربندی نشده است.';
+                statusEl.style.background = '#f8d7da';
+                statusEl.style.color = '#721c24';
+                statusEl.classList.remove('hidden');
+                submitBtn.disabled = false;
+                submitBtn.querySelector('span').textContent = translations[currentLang].sendBtn;
+            }
+        }
+
+        // Close modals when clicking outside
+        window.addEventListener('DOMContentLoaded', function() {
+            document.getElementById('helpModal').addEventListener('click', function(e) {
+                if (e.target === this) closeHelp();
+            });
+            
+            document.getElementById('feedbackModal').addEventListener('click', function(e) {
+                if (e.target === this) closeFeedback();
+            });
+            
+            document.getElementById('confirmModal').addEventListener('click', function(e) {
+                if (e.target === this) closeConfirm();
+            });
+
+            // Initialize
+            updateLanguage();
+            updateGlobalCounter();
+        });
+    </script>
+</body>
+</html>
