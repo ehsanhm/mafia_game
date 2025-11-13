@@ -127,12 +127,6 @@
             font-size: 0.95rem;
         }
 
-        footer {
-            text-align: center;
-            color: #7a8290;
-            margin-top: 40px;
-        }
-
         @media (max-width: 768px) {
             h1 {
                 font-size: 2.5rem;
@@ -188,6 +182,15 @@
         </header>
 
         <div class="games-grid">
+            <a href="godfather.html" class="game-card">
+                <div class="game-icon">🎩</div>
+                <h2 class="game-title" id="godfatherTitle">Godfather</h2>
+                <p class="game-description" id="godfatherDesc">
+                    The ultimate power position. Make them an offer they can't refuse in this classic variation.
+                </p>
+                <div class="play-button" id="godfatherBtn">Play Now</div>
+            </a>
+
             <a href="commando.html" class="game-card">
                 <div class="game-icon">🪖</div>
                 <h2 class="game-title" id="commandoTitle">Commando</h2>
@@ -223,20 +226,7 @@
                 </p>
                 <div class="play-button" id="elclasicoBtn">Play Now</div>
             </a>
-
-            <a href="godfather.html" class="game-card">
-                <div class="game-icon">🎩</div>
-                <h2 class="game-title" id="godfatherTitle">Godfather</h2>
-                <p class="game-description" id="godfatherDesc">
-                    The ultimate power position. Make them an offer they can't refuse in this classic variation.
-                </p>
-                <div class="play-button" id="godfatherBtn">Play Now</div>
-            </a>
         </div>
-
-        <footer>
-            <p id="footerText">Select a game variation to begin playing</p>
-        </footer>
     </div>
 
     <script>
@@ -257,24 +247,22 @@
                 godfatherTitle: 'Godfather',
                 godfatherDesc: 'The ultimate power position. Make them an offer they can\'t refuse in this classic variation.',
                 playBtn: 'Play Now',
-                footerText: 'Select a game variation to begin playing',
                 langButtonText: 'فارسی'
             },
             fa: {
                 mainTitle: '🎭 بازی مافیا 🎭',
-                subtitle: 'نوع بازی خود را انتخاب کنید',
-                commandoTitle: 'تکاور',
+                subtitle: 'نسخه بازی خود را انتخاب کنید',
+                commandoTitle: 'نسخه تکاور',
                 commandoDesc: 'عملیات‌های تاکتیکی با دقت نظامی را رهبری کنید. استراتژی و مخفی‌کاری در این نسخه هیجان‌انگیز ترکیب می‌شوند.',
-                detectiveTitle: 'بازپرس',
+                detectiveTitle: 'نسخه بازپرس',
                 detectiveDesc: 'رازها را حل کنید و حقیقت را کشف کنید. از مهارت‌های تحقیقاتی خود برای یافتن مافیا استفاده کنید.',
-                doncapoTitle: 'دن کاپو',
+                doncapoTitle: 'نسخه دن کاپو',
                 doncapoDesc: 'به عنوان رئیس جنایتکار احترام کسب کنید. خانواده را کنترل کنید و بر دنیای جنایت حکومت کنید.',
-                elclasicoTitle: 'ال کلاسیکو',
+                elclasicoTitle: 'نسخه ال کلاسیکو',
                 elclasicoDesc: 'رقابت کلاسیک در مافیا. بازی سنتی را با طعم رقابتی تجربه کنید.',
-                godfatherTitle: 'پدرخوانده',
+                godfatherTitle: 'نسخه پدرخوانده',
                 godfatherDesc: 'موقعیت قدرت نهایی. پیشنهادی بدهید که نتوانند رد کنند در این نسخه کلاسیک.',
                 playBtn: 'شروع بازی',
-                footerText: 'یک نوع بازی را برای شروع انتخاب کنید',
                 langButtonText: 'English'
             }
         };
@@ -299,7 +287,6 @@
             document.getElementById('godfatherTitle').textContent = t.godfatherTitle;
             document.getElementById('godfatherDesc').textContent = t.godfatherDesc;
             document.getElementById('godfatherBtn').textContent = t.playBtn;
-            document.getElementById('footerText').textContent = t.footerText;
             document.getElementById('langButtonText').textContent = t.langButtonText;
 
             // Apply RTL for Farsi

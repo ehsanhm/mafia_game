@@ -101,7 +101,7 @@
             align-items: center;
             gap: 8px;
             box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
-            z-index: 2000;
+            z-index: 4000;
         }
 
         .language-toggle:hover {
@@ -112,9 +112,24 @@
         h1 {
             text-align: center;
             color: #1a1a2e;
-            margin-bottom: 10px;
+            margin-bottom: 40px;
             font-size: 2em;
             margin-top: 20px;
+            position: relative;
+            padding-bottom: 20px;
+        }
+
+        h1::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 300px;
+            height: 2px;
+            background: linear-gradient(90deg, #e94560 0%, #f093fb 50%, #e94560 100%);
+            border-radius: 1px;
+            box-shadow: 0 2px 10px rgba(233, 69, 96, 0.3);
         }
 
         .subtitle {
@@ -298,7 +313,7 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            z-index: 1000;
+            z-index: 3000;
             padding: 20px;
             overflow-y: auto;
         }
@@ -315,6 +330,7 @@
             max-height: 90vh;
             overflow-y: auto;
             animation: slideDown 0.3s ease;
+            margin-top: 50px;
         }
 
         @keyframes slideDown {
@@ -513,7 +529,6 @@
     <div class="container">
         <div id="setupSection">
             <h1 id="mainTitle">🎖️ Mafia: Commando 🎯</h1>
-            <p class="subtitle" id="subtitle">Commando Scenario - Role Assignment System</p>
 
             <div class="input-section" style="margin-bottom: 20px;">
                 <label for="playerCount" style="display: block; color: #333; margin-bottom: 10px; font-weight: 600; font-size: 1.1em;">
@@ -668,7 +683,6 @@
         const translations = {
             en: {
                 mainTitle: '🎖️ Mafia: Commando 🎯',
-                subtitle: 'Commando Scenario - Role Assignment System',
                 playerCountLabel: 'Number of Players (10-15):',
                 playerInfo: '10 Players: 3 Mafia • 7 Citizens',
                 assignBtn: '🎲 Assign Roles',
@@ -696,7 +710,6 @@
             },
             fa: {
                 mainTitle: '🎖️ مافیا: تکاور 🎯',
-                subtitle: 'سناریو تکاور - سیستم تخصیص نقش‌ها',
                 playerCountLabel: 'تعداد بازیکنان (۱۰-۱۵):',
                 playerInfo: '۱۰ بازیکن: ۳ مافیا - ۷ شهروند',
                 assignBtn: '🎲 تخصیص نقش‌ها',
@@ -923,7 +936,6 @@
             
             // Update all UI text
             document.getElementById('mainTitle').textContent = t.mainTitle;
-            document.getElementById('subtitle').textContent = t.subtitle;
             document.getElementById('playerCountLabel').textContent = t.playerCountLabel;
             updatePlayerInfo();
             document.getElementById('assignBtn').textContent = t.assignBtn;
