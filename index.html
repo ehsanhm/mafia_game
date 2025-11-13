@@ -3,15 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mafia: Godfather - Role Assigner</title>
-    
-    <!-- Firebase SDK -->
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
-    
-    <!-- EmailJS SDK -->
-    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
-    
+    <title>Mafia Game - Choose Your Variation</title>
     <style>
         * {
             margin: 0;
@@ -21,12 +13,14 @@
 
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #2d3561 0%, #3e2753 50%, #4a2c5e 100%);
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
             min-height: 100vh;
-            padding: 20px;
             display: flex;
-            justify-content: center;
+            flex-direction: column;
             align-items: center;
+            justify-content: center;
+            padding: 20px;
+            color: #fff;
         }
 
         /* RTL Support for Farsi */
@@ -35,34 +29,10 @@
             font-family: Tahoma, 'Segoe UI', Arial, sans-serif;
         }
 
-        .container {
-            background: white;
-            border-radius: 20px;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-            max-width: 700px;
-            width: 100%;
-            padding: 30px;
-            animation: fadeIn 0.5s ease-in;
-            position: relative;
-            margin-top: 80px;
-        }
-
-        @keyframes fadeIn {
-            from {
-                opacity: 0;
-                transform: translateY(-20px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        /* Language Toggle Button */
         .language-toggle {
             position: fixed;
             top: 20px;
-            left: 20px;
+            right: 20px;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
             border: none;
@@ -72,1594 +42,283 @@
             font-weight: 600;
             cursor: pointer;
             transition: all 0.3s ease;
-            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
             z-index: 2000;
         }
 
         .language-toggle:hover {
             transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.5);
+        }
+
+        .container {
+            max-width: 1200px;
+            width: 100%;
+            padding-top: 80px;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 50px;
         }
 
         h1 {
-            text-align: center;
-            color: #1a1a2e;
-            margin-bottom: 10px;
-            font-size: 2em;
-            margin-top: 20px;
+            font-size: 3.5rem;
+            margin-bottom: 15px;
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-shadow: 0 0 30px rgba(240, 147, 251, 0.3);
         }
 
         .subtitle {
+            font-size: 1.3rem;
+            color: #b8c0cc;
+            margin-bottom: 10px;
+        }
+
+        .games-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 30px;
+            margin-bottom: 40px;
+        }
+
+        .game-card {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 35px;
             text-align: center;
-            color: #666;
-            margin-bottom: 30px;
-            font-size: 0.9em;
-        }
-
-        .info-badge {
-            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
-            color: #333;
-            padding: 15px;
-            border-radius: 15px;
-            text-align: center;
-            margin-bottom: 30px;
-            font-weight: 600;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-            border: 2px solid #dee2e6;
-        }
-
-        .btn {
-            width: 100%;
-            padding: 15px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            border: none;
-            border-radius: 10px;
-            font-size: 1.1em;
-            font-weight: 600;
-            cursor: pointer;
-            transition: transform 0.2s ease, box-shadow 0.2s ease;
-            text-align: center;
-            margin-bottom: 15px;
-        }
-
-        .btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.4);
-        }
-
-        .btn:active {
-            transform: translateY(0);
-        }
-
-        .btn-secondary {
-            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-        }
-
-        .btn-secondary:hover {
-            box-shadow: 0 10px 20px rgba(245, 87, 108, 0.4);
-        }
-
-        .roles-section {
-            margin-top: 30px;
-        }
-
-        .role-card {
-            background: white;
-            border-radius: 10px;
-            padding: 20px;
-            margin-bottom: 15px;
-            border-left: 5px solid #667eea;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            cursor: pointer;
             transition: all 0.3s ease;
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            cursor: pointer;
+            text-decoration: none;
+            color: inherit;
+            display: block;
         }
 
-        body.rtl .role-card {
-            border-left: none;
-            border-right: 5px solid #667eea;
+        .game-card:hover {
+            transform: translateY(-10px);
+            border-color: rgba(240, 147, 251, 0.5);
+            box-shadow: 0 20px 40px rgba(245, 87, 108, 0.3);
+            background: rgba(255, 255, 255, 0.1);
         }
 
-        .role-card:hover {
-            transform: translateX(5px);
-            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+        .game-icon {
+            font-size: 4rem;
+            margin-bottom: 20px;
+            filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.3));
         }
 
-        body.rtl .role-card:hover {
-            transform: translateX(-5px);
+        .game-title {
+            font-size: 1.8rem;
+            margin-bottom: 12px;
+            font-weight: 600;
         }
 
-        .role-card.mafia {
-            border-left-color: #f5576c;
-        }
-
-        body.rtl .role-card.mafia {
-            border-right-color: #f5576c;
-        }
-
-        .role-card.citizen {
-            border-left-color: #4facfe;
-        }
-
-        body.rtl .role-card.citizen {
-            border-right-color: #4facfe;
-        }
-
-        .role-card.independent {
-            border-left-color: #8b5cf6;
-        }
-
-        body.rtl .role-card.independent {
-            border-right-color: #8b5cf6;
-        }
-
-        .player-number {
-            display: inline-block;
-            background: #667eea;
-            color: white;
-            width: 35px;
-            height: 35px;
-            border-radius: 50%;
-            text-align: center;
-            line-height: 35px;
-            font-weight: 700;
-            margin-right: 15px;
-        }
-
-        body.rtl .player-number {
-            margin-right: 0;
-            margin-left: 15px;
-        }
-
-        .role-card.mafia .player-number {
-            background: #f5576c;
-        }
-
-        .role-card.citizen .player-number {
-            background: #4facfe;
-        }
-
-        .role-card.independent .player-number {
-            background: #8b5cf6;
-        }
-
-        .role-name {
-            font-size: 1.3em;
-            font-weight: 700;
-            color: #333;
-            margin-bottom: 5px;
-        }
-
-        .role-description {
-            color: #666;
-            font-size: 0.9em;
-            margin-top: 10px;
+        .game-description {
+            color: #b8c0cc;
             line-height: 1.6;
+            font-size: 0.95rem;
         }
 
-        .close-game-btn {
-            position: absolute;
-            top: 20px;
-            right: 20px;
-            background: #f5576c;
-            color: white;
-            border: none;
-            border-radius: 20px;
-            width: 70px;
-            height: 36px;
-            font-size: 1.3em;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            box-shadow: 0 2px 8px rgba(245, 87, 108, 0.3);
-            z-index: 10;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .close-game-btn:hover {
-            background: #e04560;
-            transform: scale(1.05);
-            box-shadow: 0 4px 12px rgba(245, 87, 108, 0.5);
-        }
-
-        #gameCounter {
-            margin-top: 20px;
-            font-size: 0.9em;
-            color: #888;
+        footer {
             text-align: center;
-            padding: 10px;
+            color: #7a8290;
+            margin-top: 40px;
         }
 
-        /* Modal Styles */
-        .modal {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.8);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            z-index: 1000;
-            padding: 20px;
-            overflow-y: auto;
-        }
-
-        .hidden {
-            display: none !important;
-        }
-
-        .modal-content {
-            background: white;
-            border-radius: 20px;
-            max-width: 800px;
-            width: 100%;
-            max-height: 90vh;
-            overflow-y: auto;
-            animation: slideDown 0.3s ease;
-        }
-
-        @keyframes slideDown {
-            from {
-                opacity: 0;
-                transform: translateY(-50px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        .modal-header {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 25px 30px;
-            border-radius: 20px 20px 0 0;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            position: sticky;
-            top: 0;
-            z-index: 10;
-        }
-
-        .modal-header h2 {
-            margin: 0;
-            color: white;
-        }
-
-        .close-btn {
-            background: rgba(255, 255, 255, 0.2);
-            border: none;
-            color: white;
-            font-size: 1.5em;
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            flex-shrink: 0;
-        }
-
-        .close-btn:hover {
-            background: rgba(255, 255, 255, 0.3);
-            transform: rotate(90deg);
-        }
-
-        .modal-body {
-            padding: 30px;
-        }
-
-        .modal-body h3 {
-            color: #1a1a2e;
-            margin-top: 25px;
-            margin-bottom: 15px;
-            font-size: 1.3em;
-        }
-
-        .modal-body h3:first-child {
-            margin-top: 0;
-        }
-
-        .modal-body h4 {
-            color: #333;
-            margin-top: 15px;
-            margin-bottom: 10px;
-            font-size: 1.1em;
-        }
-
-        .modal-body p {
-            color: #666;
-            line-height: 1.8;
-            margin-bottom: 15px;
-        }
-
-        .modal-body ul {
-            color: #666;
-            line-height: 2;
-            padding-left: 25px;
-            margin-bottom: 15px;
-        }
-
-        body.rtl .modal-body ul {
-            padding-left: 0;
-            padding-right: 25px;
-        }
-
-        .role-help {
-            background: #f8f9fa;
-            border-radius: 10px;
-            padding: 20px;
-            margin-bottom: 15px;
-            border-left: 5px solid #667eea;
-        }
-
-        body.rtl .role-help {
-            border-left: none;
-            border-right: 5px solid #667eea;
-        }
-
-        .role-help.mafia {
-            border-left-color: #f5576c;
-        }
-
-        body.rtl .role-help.mafia {
-            border-right-color: #f5576c;
-        }
-
-        .role-help.citizen {
-            border-left-color: #4facfe;
-        }
-
-        body.rtl .role-help.citizen {
-            border-right-color: #4facfe;
-        }
-
-        .role-help.independent {
-            border-left-color: #8b5cf6;
-        }
-
-        body.rtl .role-help.independent {
-            border-right-color: #8b5cf6;
-        }
-
-        .team-badge {
-            display: inline-block;
-            padding: 5px 15px;
-            border-radius: 20px;
-            font-size: 0.9em;
-            font-weight: 600;
-            margin-bottom: 10px;
-        }
-
-        .team-badge.mafia {
-            background: #f5576c;
-            color: white;
-        }
-
-        .team-badge.citizen {
-            background: #4facfe;
-            color: white;
-        }
-
-        .team-badge.independent {
-            background: #8b5cf6;
-            color: white;
-        }
-
-        @media (max-width: 480px) {
-            .container {
-                padding: 20px;
-                margin-top: 70px;
-            }
-
+        @media (max-width: 768px) {
             h1 {
-                font-size: 1.5em;
+                font-size: 2.5rem;
+            }
+
+            .subtitle {
+                font-size: 1.1rem;
+            }
+
+            .games-grid {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+
+            .game-card {
+                padding: 25px;
             }
 
             .language-toggle {
                 padding: 8px 15px;
                 font-size: 0.8em;
                 top: 15px;
-                left: 15px;
+                right: 15px;
             }
+        }
 
-            .close-game-btn {
-                width: 60px;
-                height: 32px;
-                font-size: 1.1em;
-            }
+        .play-button {
+            display: inline-block;
+            margin-top: 15px;
+            padding: 12px 30px;
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            border-radius: 25px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
 
-            .close-btn {
-                width: 36px;
-                height: 36px;
-                font-size: 1.3em;
-            }
-
-            .modal-body {
-                padding: 20px;
-            }
+        .game-card:hover .play-button {
+            transform: scale(1.05);
+            box-shadow: 0 5px 20px rgba(245, 87, 108, 0.5);
         }
     </style>
 </head>
 <body>
-    <!-- Global Language Toggle (Fixed Position) -->
+    <!-- Language Toggle Button -->
     <button class="language-toggle" onclick="toggleLanguage()">
         <span id="langButtonText">فارسی</span>
     </button>
 
     <div class="container">
-        <div id="setupSection">
-            <h1 id="mainTitle">🎭 Mafia: Godfather 🔱</h1>
-            <p class="subtitle" id="subtitle">Role Assignment System</p>
+        <header>
+            <h1 id="mainTitle">🎭 Mafia Game 🎭</h1>
+            <p class="subtitle" id="subtitle">Choose Your Game Variation</p>
+        </header>
 
-            <div class="input-section" style="margin-bottom: 20px;">
-                <label for="playerCount" style="display: block; color: #333; margin-bottom: 10px; font-weight: 600; font-size: 1.1em;">
-                    <span id="playerCountLabel">Number of Players (6-15):</span>
-                </label>
-                <input type="number" id="playerCount" min="6" max="15" value="11" placeholder="Enter number of players"
-                       style="width: 100%; padding: 15px; border: 2px solid #e0e0e0; border-radius: 10px; font-size: 1.1em; transition: all 0.3s ease;"
-                       oninput="updatePlayerInfo()"
-                       onfocus="this.style.borderColor='#e94560'; this.style.boxShadow='0 0 0 3px rgba(233, 69, 96, 0.1)';"
-                       onblur="this.style.borderColor='#e0e0e0'; this.style.boxShadow='none';">
-                <p class="error hidden" id="errorMsg" style="color: #ee3d72; font-size: 0.9em; margin-top: 10px; text-align: center;"></p>
-            </div>
-
-            <div class="info-badge" id="playerInfo">
-                11 Players: 3 Mafia • 7 Citizens • 1 Independent
-            </div>
-
-            <button class="btn" onclick="startGame()">
-                <span id="assignBtn">🎲 Assign Roles</span>
-            </button>
-            <button class="btn btn-secondary" onclick="showHelp()">
-                <span id="howToPlayBtn">📖 How to Play</span>
-            </button>
-            <button class="btn btn-secondary" onclick="showFeedback()">
-                <span id="feedbackBtn">💬 Feedback</span>
-            </button>
-            <div id="gameCounter">Games Played Worldwide: Loading...</div>
-        </div>
-
-        <div id="gameSection" class="hidden">
-            <button class="close-game-btn" onclick="cancelGame()" title="Cancel and start over">✕</button>
-            
-            <div class="roles-section">
-                <div id="rolesContainer"></div>
-            </div>
-
-            <button class="btn btn-secondary hidden" id="newGameBtn" onclick="resetGame()">
-                <span id="newGameText">🔄 New Game</span>
-            </button>
-        </div>
-    </div>
-
-    <!-- Help Modal -->
-    <div id="helpModal" class="modal hidden">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h2 id="helpTitle">📖 How to Play - Mafia: Godfather</h2>
-                <button class="close-btn" onclick="closeHelp()">✕</button>
-            </div>
-            <div class="modal-body" id="helpContent">
-                <!-- Content will be populated by JavaScript based on language -->
-            </div>
-        </div>
-    </div>
-
-    <!-- Feedback Modal -->
-    <div id="feedbackModal" class="modal hidden">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h2 id="feedbackTitle">💬 Send Feedback</h2>
-                <button class="close-btn" onclick="closeFeedback()">✕</button>
-            </div>
-            <div class="modal-body">
-                <p id="feedbackIntro" style="color: #666; margin-bottom: 20px;">Have questions, suggestions, or ideas to improve the game? We'd love to hear from you!</p>
-                
-                <form id="feedbackForm" onsubmit="submitFeedback(event)">
-                    <div style="margin-bottom: 20px;">
-                        <label for="feedbackName" id="nameLabel" style="display: block; margin-bottom: 8px; font-weight: 600; color: #333;">Name (Optional)</label>
-                        <input type="text" id="feedbackName" placeholder="Your name" 
-                               style="width: 100%; padding: 12px; border: 2px solid #ddd; border-radius: 8px; font-size: 1em;">
-                    </div>
-                    
-                    <div style="margin-bottom: 20px;">
-                        <label for="feedbackEmail" id="emailLabel" style="display: block; margin-bottom: 8px; font-weight: 600; color: #333;">Email (Optional)</label>
-                        <input type="email" id="feedbackEmail" placeholder="your.email@example.com" 
-                               style="width: 100%; padding: 12px; border: 2px solid #ddd; border-radius: 8px; font-size: 1em;">
-                    </div>
-                    
-                    <div style="margin-bottom: 20px;">
-                        <label for="feedbackMessage" id="messageLabel" style="display: block; margin-bottom: 8px; font-weight: 600; color: #333;">Message *</label>
-                        <textarea id="feedbackMessage" required placeholder="Share your thoughts..." 
-                                  style="width: 100%; min-height: 150px; padding: 12px; border: 2px solid #ddd; border-radius: 8px; font-size: 1em; resize: vertical; font-family: inherit;"></textarea>
-                    </div>
-                    
-                    <p id="feedbackStatus" class="hidden" style="padding: 12px; border-radius: 8px; margin-bottom: 15px; text-align: center; font-weight: 600;"></p>
-                    
-                    <button type="submit" class="btn" id="submitFeedbackBtn">
-                        <span id="sendBtn">📤 Send Feedback</span>
-                    </button>
-                </form>
-            </div>
-        </div>
-    </div>
-
-    <!-- Confirmation Modal -->
-    <div id="confirmModal" class="modal hidden">
-        <div class="modal-content" style="max-width: 400px;">
-            <div class="modal-header">
-                <h2 id="confirmTitle" style="font-size: 1.3em;">⚠️ Cancel Game?</h2>
-            </div>
-            <div class="modal-body">
-                <p id="confirmText" style="font-size: 1.1em; text-align: center; margin-bottom: 20px;">
-                    Are you sure you want to cancel this game and start over?
+        <div class="games-grid">
+            <a href="commando.html" class="game-card">
+                <div class="game-icon">🪖</div>
+                <h2 class="game-title" id="commandoTitle">Commando</h2>
+                <p class="game-description" id="commandoDesc">
+                    Lead tactical operations with military precision. Strategy and stealth combine in this intense variation.
                 </p>
-                <div style="display: flex; gap: 10px;">
-                    <button class="btn" style="flex: 1;" onclick="confirmCancel()">
-                        <span id="yesBtn">Yes, Cancel</span>
-                    </button>
-                    <button class="btn btn-secondary" style="flex: 1;" onclick="closeConfirm()">
-                        <span id="noBtn">No, Continue</span>
-                    </button>
-                </div>
-            </div>
+                <div class="play-button" id="commandoBtn">Play Now</div>
+            </a>
+
+            <a href="detective.html" class="game-card">
+                <div class="game-icon">🔍</div>
+                <h2 class="game-title" id="detectiveTitle">Detective</h2>
+                <p class="game-description" id="detectiveDesc">
+                    Solve mysteries and uncover the truth. Use your investigative skills to find the mafia.
+                </p>
+                <div class="play-button" id="detectiveBtn">Play Now</div>
+            </a>
+
+            <a href="doncapo.html" class="game-card">
+                <div class="game-icon">👑</div>
+                <h2 class="game-title" id="doncapoTitle">Don Capo</h2>
+                <p class="game-description" id="doncapoDesc">
+                    Command respect as the crime boss. Control the family and rule the underworld.
+                </p>
+                <div class="play-button" id="doncapoBtn">Play Now</div>
+            </a>
+
+            <a href="elclasico.html" class="game-card">
+                <div class="game-icon">⚔️</div>
+                <h2 class="game-title" id="elclasicoTitle">El Clásico</h2>
+                <p class="game-description" id="elclasicoDesc">
+                    The classic rivalry brought to Mafia. Experience the traditional game with a competitive twist.
+                </p>
+                <div class="play-button" id="elclasicoBtn">Play Now</div>
+            </a>
+
+            <a href="godfather.html" class="game-card">
+                <div class="game-icon">🎩</div>
+                <h2 class="game-title" id="godfatherTitle">Godfather</h2>
+                <p class="game-description" id="godfatherDesc">
+                    The ultimate power position. Make them an offer they can't refuse in this classic variation.
+                </p>
+                <div class="play-button" id="godfatherBtn">Play Now</div>
+            </a>
         </div>
+
+        <footer>
+            <p id="footerText">Select a game variation to begin playing</p>
+        </footer>
     </div>
 
     <script>
-        // Firebase Configuration
-        const firebaseConfig = {
-            apiKey: "AIzaSyBSTuzqrJ0ik2CTfKq0GOc7lEVUYtxCX0E",
-            authDomain: "spy-game-12f96.firebaseapp.com",
-            databaseURL: "https://spy-game-12f96-default-rtdb.firebaseio.com",
-            projectId: "spy-game-12f96",
-            storageBucket: "spy-game-12f96.firebasestorage.app",
-            messagingSenderId: "22301781663",
-            appId: "1:22301781663:web:23f31448a872e41203fcaa",
-            measurementId: "G-DE4QRR88RH"
-        };
-
-        // Initialize Firebase
-        let database;
-        try {
-            firebase.initializeApp(firebaseConfig);
-            database = firebase.database();
-        } catch (error) {
-            console.error("Firebase initialization error:", error);
-        }
-
-        const EMAILJS_PUBLIC_KEY = 'qw_grGhV3it_4-RwE';
-        const EMAILJS_SERVICE_ID = 'service_f65c74d';
-        const EMAILJS_TEMPLATE_ID = 'template_gna5het';
-        
-        try {
-            emailjs.init(EMAILJS_PUBLIC_KEY);
-        } catch (error) {
-            console.error("EmailJS initialization error:", error);
-        }
-
-        // Language System
-        let currentLang = 'en';
+        let currentLang = localStorage.getItem('language') || 'fa';
 
         const translations = {
             en: {
-                mainTitle: '🎭 Mafia: Godfather 🔱',
-                subtitle: 'Role Assignment System',
-                playerCountLabel: 'Number of Players (6-15):',
-                playerInfo: '11 Players: 3 Mafia • 7 Citizens • 1 Independent',
-                assignBtn: '🎲 Assign Roles',
-                howToPlayBtn: '📖 How to Play',
-                feedbackBtn: '💬 Feedback',
-                newGameText: '🔄 New Game',
-                langButtonText: 'فارسی',
-                helpTitle: '📖 How to Play - Mafia: Godfather',
-                feedbackTitle: '💬 Send Feedback',
-                feedbackIntro: 'Have questions, suggestions, or ideas to improve the game? We\'d love to hear from you!',
-                nameLabel: 'Name (Optional)',
-                emailLabel: 'Email (Optional)',
-                messageLabel: 'Message *',
-                sendBtn: '📤 Send Feedback',
-                confirmTitle: '⚠️ Cancel Game?',
-                confirmText: 'Are you sure you want to cancel this game and start over?',
-                yesBtn: 'Yes, Cancel',
-                noBtn: 'No, Continue',
-                playerLabel: 'Player',
-                showRoleBtn: '🎭 Show My Role',
-                sawRoleBtn: '✅ I Saw My Role',
-                allAssigned: 'All Roles Assigned!',
-                gameBegin: 'The game can now begin. Good luck!',
-                gamesPlayed: 'Games Played Worldwide:',
-                drawCard: '🃏 Draw Card',
-                cardDrawn: 'Card Drawn:',
-                noCardsLeft: 'No cards left!',
-                cardsRemaining: 'cards remaining'
+                mainTitle: '🎭 Mafia Game 🎭',
+                subtitle: 'Choose Your Game Variation',
+                commandoTitle: 'Commando',
+                commandoDesc: 'Lead tactical operations with military precision. Strategy and stealth combine in this intense variation.',
+                detectiveTitle: 'Detective',
+                detectiveDesc: 'Solve mysteries and uncover the truth. Use your investigative skills to find the mafia.',
+                doncapoTitle: 'Don Capo',
+                doncapoDesc: 'Command respect as the crime boss. Control the family and rule the underworld.',
+                elclasicoTitle: 'El Clásico',
+                elclasicoDesc: 'The classic rivalry brought to Mafia. Experience the traditional game with a competitive twist.',
+                godfatherTitle: 'Godfather',
+                godfatherDesc: 'The ultimate power position. Make them an offer they can\'t refuse in this classic variation.',
+                playBtn: 'Play Now',
+                footerText: 'Select a game variation to begin playing',
+                langButtonText: 'فارسی'
             },
             fa: {
-                mainTitle: '🎭 مافیا: پدرخوانده 🔱',
-                subtitle: 'سیستم تخصیص نقش‌ها',
-                playerCountLabel: 'تعداد بازیکنان (۶-۱۵):',
-                playerInfo: '۱۱ بازیکن: ۳ مافیا - ۷ شهروند - ۱ مستقل',
-                assignBtn: '🎲 تخصیص نقش‌ها',
-                howToPlayBtn: '📖 آموزش بازی',
-                feedbackBtn: '💬 بازخورد',
-                newGameText: '🔄 بازی جدید',
-                langButtonText: 'English',
-                helpTitle: '📖 آموزش بازی - مافیا: پدرخوانده',
-                feedbackTitle: '💬 ارسال بازخورد',
-                feedbackIntro: 'سوال، پیشنهاد یا ایده‌ای برای بهبود بازی دارید؟ خوشحال می‌شویم نظرتان را بشنویم!',
-                nameLabel: 'نام (اختیاری)',
-                emailLabel: 'ایمیل (اختیاری)',
-                messageLabel: 'پیام *',
-                sendBtn: '📤 ارسال بازخورد',
-                confirmTitle: '⚠️ لغو بازی؟',
-                confirmText: 'آیا مطمئن هستید که می‌خواهید این بازی را لغو کنید و از نو شروع کنید؟',
-                yesBtn: 'بله، لغو کن',
-                noBtn: 'خیر، ادامه بده',
-                playerLabel: 'بازیکن',
-                showRoleBtn: '🎭 نمایش نقش من',
-                sawRoleBtn: '✅ نقشم را دیدم',
-                allAssigned: 'همه نقش‌ها تخصیص داده شد!',
-                gameBegin: 'بازی می‌تواند شروع شود. موفق باشید!',
-                gamesPlayed: 'بازی‌های انجام شده در سراسر جهان:',
-                drawCard: '🃏 کشیدن کارت',
-                cardDrawn: 'کارت کشیده شده:',
-                noCardsLeft: 'کارتی باقی نمانده!',
-                cardsRemaining: 'کارت باقی‌مانده'
+                mainTitle: '🎭 بازی مافیا 🎭',
+                subtitle: 'نوع بازی خود را انتخاب کنید',
+                commandoTitle: 'تکاور',
+                commandoDesc: 'عملیات‌های تاکتیکی با دقت نظامی را رهبری کنید. استراتژی و مخفی‌کاری در این نسخه هیجان‌انگیز ترکیب می‌شوند.',
+                detectiveTitle: 'بازپرس',
+                detectiveDesc: 'رازها را حل کنید و حقیقت را کشف کنید. از مهارت‌های تحقیقاتی خود برای یافتن مافیا استفاده کنید.',
+                doncapoTitle: 'دن کاپو',
+                doncapoDesc: 'به عنوان رئیس جنایتکار احترام کسب کنید. خانواده را کنترل کنید و بر دنیای جنایت حکومت کنید.',
+                elclasicoTitle: 'ال کلاسیکو',
+                elclasicoDesc: 'رقابت کلاسیک در مافیا. بازی سنتی را با طعم رقابتی تجربه کنید.',
+                godfatherTitle: 'پدرخوانده',
+                godfatherDesc: 'موقعیت قدرت نهایی. پیشنهادی بدهید که نتوانند رد کنند در این نسخه کلاسیک.',
+                playBtn: 'شروع بازی',
+                footerText: 'یک نوع بازی را برای شروع انتخاب کنید',
+                langButtonText: 'English'
             }
         };
 
-        // Role definitions
-        const roles = {
-            en: {
-                godfather: {
-                    name: 'The Godfather',
-                    team: 'mafia',
-                    description: 'You are the Godfather, the main leader of the Mafia. You have a vest (survives first shot). You have "Sixth Sense" ability: point to a player and guess their exact role - if correct, they are eliminated immediately regardless of protection.',
-                    class: 'mafia'
-                },
-                matador: {
-                    name: 'Matador',
-                    team: 'mafia',
-                    description: 'You are the Matador. Each night, you can block one player\'s ability (roleblock). You cannot block the same person consecutively, but can repeat with a one-night gap.',
-                    class: 'mafia'
-                },
-                saul: {
-                    name: 'Saul Goodman',
-                    team: 'mafia',
-                    description: 'You are Saul Goodman. When a mafia teammate dies, you can once recruit a Simple Citizen to become mafia. Point to someone - if they are a Simple Citizen, they join the mafia team from that night.',
-                    class: 'mafia'
-                },
-                watson: {
-                    name: 'Dr. Watson',
-                    team: 'citizen',
-                    description: 'You are Dr. Watson. Each night, save one person from attacks. You can save yourself only once. You can save others unlimited times.',
-                    class: 'citizen'
-                },
-                leon: {
-                    name: 'Leon (Professional)',
-                    team: 'citizen',
-                    description: 'You are Leon, the Professional. You have 2 shots during the entire game. You have a vest (survives first shot). If you shoot a citizen, be careful - it hurts your team!',
-                    class: 'citizen'
-                },
-                kane: {
-                    name: 'Citizen Kane',
-                    team: 'citizen',
-                    description: 'You are Citizen Kane. Once per game, you can reveal someone\'s allegiance. If they are mafia, their role is exposed to everyone (but not eliminated). If correct, you die the next night as you sacrifice yourself for the information. If you reveal a citizen who dies that night, you get your ability back.',
-                    class: 'citizen'
-                },
-                constantine: {
-                    name: 'Constantine',
-                    team: 'citizen',
-                    description: 'You are Constantine. Once per game, you can resurrect one "half-dead" player (eliminated by voting, not night kill). Choose carefully - you might accidentally resurrect a mafia member!',
-                    class: 'citizen'
-                },
-                citizen: {
-                    name: 'Simple Citizen',
-                    team: 'citizen',
-                    description: 'You are a Simple Citizen. You have no special abilities, but your voice and vote are crucial. Discuss, analyze, and help find the mafia! Be careful what you say - Godfather might target you with Sixth Sense.',
-                    class: 'citizen'
-                },
-                nostradamus: {
-                    name: 'Nostradamus',
-                    team: 'independent',
-                    description: 'You are Nostradamus, the Independent. At the start, show the narrator 3 players - they will tell you how many mafia are among them. Then choose which team to help. You cannot be killed by night shots, only by Godfather\'s Sixth Sense. You always appear innocent on investigations. Win by surviving to the end with your chosen side.',
-                    class: 'independent'
-                }
-            },
-            fa: {
-                godfather: {
-                    name: 'پدرخوانده',
-                    team: 'mafia',
-                    description: 'شما پدرخوانده هستید، رهبر اصلی مافیا. یک جلیقه دارید (از اولین شلیک جان سالم به در می‌برید). قدرت "حس ششم" دارید: به یک بازیکن اشاره کنید و نقش دقیقش را حدس بزنید - اگر درست باشد، صبح روز بعد حذف می‌شود.',
-                    class: 'mafia'
-                },
-                matador: {
-                    name: 'ماتادور',
-                    team: 'mafia',
-                    description: 'شما ماتادور هستید. هر شب می‌توانید توانایی یک بازیکن را مسدود کنید. نمی‌توانید یک نفر را پشت سر هم انتخاب کنید، اما با یک شب فاصله می‌توانید تکرار کنید.',
-                    class: 'mafia'
-                },
-                saul: {
-                    name: 'ساول گودمن',
-                    team: 'mafia',
-                    description: 'شما ساول گودمن هستید. وقتی یکی از اعضای مافیا می‌میرد، یک بار می‌توانید یک شهروند ساده را به مافیا اضافه کنید. به کسی اشاره کنید - اگر شهروند ساده باشد، از آن شب به تیم مافیا می‌پیوندد.',
-                    class: 'mafia'
-                },
-                watson: {
-                    name: 'دکتر واتسون',
-                    team: 'citizen',
-                    description: 'شما دکتر واتسون هستید. هر شب یک نفر را از حملات نجات دهید. فقط یک بار می‌توانید خودتان را نجات دهید. دیگران را بی‌محدودیت نجات دهید.',
-                    class: 'citizen'
-                },
-                leon: {
-                    name: 'لئون (حرفه‌ای)',
-                    team: 'citizen',
-                    description: 'شما لئون، حرفه‌ای هستید. در کل بازی ۲ شلیک دارید. یک جلیقه دارید (از اولین شلیک جان سالم به در می‌برید). اگر به شهروند شلیک کنید، مراقب باشید - به تیمتان آسیب می‌زند!',
-                    class: 'citizen'
-                },
-                kane: {
-                    name: 'همشهری کین',
-                    team: 'citizen',
-                    description: 'شما همشهری کین هستید. یک بار در بازی می‌توانید وابستگی کسی را فاش کنید. اگر مافیا باشد، نقشش برای همه آشکار می‌شود (اما حذف نمی‌شود). اگر درست باشد، شب بعد می‌میرید چون خود را فدا می‌کنید. اگر شهروندی که فاش کردید همان شب بمیرد، توانایی‌تان برمی‌گردد.',
-                    class: 'citizen'
-                },
-                constantine: {
-                    name: 'کنستانتین',
-                    team: 'citizen',
-                    description: 'شما کنستانتین هستید. یک بار در بازی می‌توانید یک بازیکن "نیم‌مرده" (با رای‌گیری حذف شده، نه شات شب) را احضار کنید. با دقت انتخاب کنید - ممکن است اشتباهاً یک مافیا را زنده کنید!',
-                    class: 'citizen'
-                },
-                citizen: {
-                    name: 'شهروند ساده',
-                    team: 'citizen',
-                    description: 'شما یک شهروند ساده هستید. توانایی خاصی ندارید، اما صدا و رأی شما حیاتی است. بحث کنید، تحلیل کنید و به پیدا کردن مافیا کمک کنید! مراقب حرف‌هایتان باشید - پدرخوانده ممکن است با حس ششم شما را هدف بگیرد.',
-                    class: 'citizen'
-                },
-                nostradamus: {
-                    name: 'نوستراداموس',
-                    team: 'independent',
-                    description: 'شما نوستراداموس، مستقل هستید. در ابتدا ۳ بازیکن را به راوی نشان دهید - تعداد مافیاها را بین آن‌ها می‌گویند. سپس انتخاب کنید کدام تیم را کمک کنید. با شات شب کشته نمی‌شوید، فقط با حس ششم پدرخوانده. در تحقیق همیشه بی‌گناه به نظر می‌رسید. با زنده ماندن تا آخر در کنار تیم انتخابی‌تان برنده شوید.',
-                    class: 'independent'
-                }
-            }
-        };
+        function updateLanguage() {
+            const t = translations[currentLang];
+            
+            document.getElementById('mainTitle').textContent = t.mainTitle;
+            document.getElementById('subtitle').textContent = t.subtitle;
+            document.getElementById('commandoTitle').textContent = t.commandoTitle;
+            document.getElementById('commandoDesc').textContent = t.commandoDesc;
+            document.getElementById('commandoBtn').textContent = t.playBtn;
+            document.getElementById('detectiveTitle').textContent = t.detectiveTitle;
+            document.getElementById('detectiveDesc').textContent = t.detectiveDesc;
+            document.getElementById('detectiveBtn').textContent = t.playBtn;
+            document.getElementById('doncapoTitle').textContent = t.doncapoTitle;
+            document.getElementById('doncapoDesc').textContent = t.doncapoDesc;
+            document.getElementById('doncapoBtn').textContent = t.playBtn;
+            document.getElementById('elclasicoTitle').textContent = t.elclasicoTitle;
+            document.getElementById('elclasicoDesc').textContent = t.elclasicoDesc;
+            document.getElementById('elclasicoBtn').textContent = t.playBtn;
+            document.getElementById('godfatherTitle').textContent = t.godfatherTitle;
+            document.getElementById('godfatherDesc').textContent = t.godfatherDesc;
+            document.getElementById('godfatherBtn').textContent = t.playBtn;
+            document.getElementById('footerText').textContent = t.footerText;
+            document.getElementById('langButtonText').textContent = t.langButtonText;
 
-        let currentPlayerIndex = 0;
-        let playerRoles = [];
-        let gameCountIncremented = false;
-        let availableCards = [];
-        let drawnCard = null;
-
-        const cardDeck = {
-            en: [
-                { name: '🔒 Handcuff Card', description: 'Target one player - they lose their ability/power for the upcoming night.' },
-                { name: '🎭 Face-Off Card', description: 'Swap roles with another player and return to the game! They are permanently eliminated.' },
-                { name: '🤐 Silence of the Lambs', description: 'Silence chosen players for the entire next day. They can only vote.' },
-                { name: '🎯 Identity Reveal', description: 'The narrator reveals the exact role of the targeted player and they are eliminated.' },
-                { name: '🧠 Beautiful Mind', description: 'Try to identify Nostradamus. If correct, they are eliminated and YOU become Nostradamus!' }
-            ],
-            fa: [
-                { name: '🔒 کارت دستبند', description: 'یک بازیکن را هدف بگیرید - توانایی/قدرت خود را برای شب آینده از دست می‌دهد.' },
-                { name: '🎭 کارت تغییر چهره', description: 'نقش را با بازیکن دیگری عوض کنید و به بازی برگردید! آن‌ها برای همیشه حذف می‌شوند.' },
-                { name: '🤐 کارت سکوت بره‌ها', description: 'بازیکنان انتخابی را برای کل روز بعد ساکت کنید. فقط می‌توانند رای بدهند.' },
-                { name: '🎯 کارت افشای هویت', description: 'راوی نقش دقیق بازیکن هدف را فاش می‌کند و از بازی حذف می‌شود.' },
-                { name: '🧠 کارت ذهن زیبا', description: 'سعی کنید نوستراداموس را شناسایی کنید. اگر درست باشد، حذف می‌شود و شما تبدیل به نوستراداموس می‌شوید!' }
-            ]
-        };
-
-        function calculateTeamSize(playerCount) {
-            // Godfather dynamic role assignment (6-15 players)
-            // 6-7 players: Mafia vs Citizens (no Nostradamus)
-            // 8+ players: Mafia vs Citizens vs Nostradamus (full Godfather mode)
-            
-            let godfather = 1; // Always have Godfather
-            let matador = 0, saul = 0;
-            let watson = 0, leon = 0, kane = 0, constantine = 0;
-            let nostradamus = 0; // Only at 8+ players
-            
-            // Assign roles based on player count thresholds
-            if (playerCount >= 6) {
-                matador = 1;     // 2nd Mafia
-                watson = 1;      // Core healer
-                leon = 1;        // Core shooter
-            }
-            if (playerCount >= 7) {
-                kane = 1;        // Investigation role
-            }
-            if (playerCount >= 8) {
-                nostradamus = 1; // Independent enters (Godfather signature)
-            }
-            if (playerCount >= 9) {
-                constantine = 1; // Resurrection role
-            }
-            if (playerCount >= 11) {
-                saul = 1;        // 3rd Mafia (recruitment)
-            }
-            if (playerCount >= 13) {
-                matador = 2;     // 2nd Matador for 4th Mafia
-            }
-            if (playerCount >= 15) {
-                saul = 2;        // 2nd Saul for 5th Mafia
-            }
-            
-            const totalMafiaCount = godfather + matador + saul;
-            const totalCitizensCount = playerCount - totalMafiaCount - nostradamus;
-            
-            // Calculate simple citizens (fill remaining slots)
-            const citizen = totalCitizensCount - watson - leon - kane - constantine;
-            
-            return {
-                godfather: godfather,
-                matador: matador,
-                saul: saul,
-                watson: watson,
-                leon: leon,
-                kane: kane,
-                constantine: constantine,
-                citizen: citizen,
-                nostradamus: nostradamus,
-                totalMafia: totalMafiaCount,
-                totalCitizens: totalCitizensCount,
-                totalIndependent: nostradamus
-            };
-        }
-
-        function updatePlayerInfo() {
-            const playerCount = parseInt(document.getElementById('playerCount').value);
-            const errorMsg = document.getElementById('errorMsg');
-            
-            if (!playerCount || playerCount < 6 || playerCount > 15) {
-                errorMsg.textContent = currentLang === 'en' 
-                    ? 'Please enter a number between 6 and 15' 
-                    : 'لطفاً عددی بین ۶ تا ۱۵ وارد کنید';
-                errorMsg.classList.remove('hidden');
-                return;
-            }
-            
-            errorMsg.classList.add('hidden');
-            
-            const teamSize = calculateTeamSize(playerCount);
-            const playerInfoEl = document.getElementById('playerInfo');
-            
-            if (currentLang === 'en') {
-                if (teamSize.totalIndependent > 0) {
-                    playerInfoEl.textContent = `${playerCount} Players: ${teamSize.totalMafia} Mafia • ${teamSize.totalCitizens} Citizens • ${teamSize.totalIndependent} Independent`;
-                } else {
-                    playerInfoEl.textContent = `${playerCount} Players: ${teamSize.totalMafia} Mafia • ${teamSize.totalCitizens} Citizens`;
-                }
+            // Apply RTL for Farsi
+            if (currentLang === 'fa') {
+                document.body.classList.add('rtl');
             } else {
-                // Convert numbers to Farsi
-                const persianDigits = ['۰', '۱', '۲', '۳', '۴', '۵', '۶', '۷', '۸', '۹'];
-                const toFarsi = (num) => String(num).split('').map(d => persianDigits[parseInt(d)]).join('');
-                if (teamSize.totalIndependent > 0) {
-                    playerInfoEl.textContent = `${toFarsi(playerCount)} بازیکن: ${toFarsi(teamSize.totalMafia)} مافیا - ${toFarsi(teamSize.totalCitizens)} شهروند - ${toFarsi(teamSize.totalIndependent)} مستقل`;
-                } else {
-                    playerInfoEl.textContent = `${toFarsi(playerCount)} بازیکن: ${toFarsi(teamSize.totalMafia)} مافیا - ${toFarsi(teamSize.totalCitizens)} شهروند`;
-                }
+                document.body.classList.remove('rtl');
             }
         }
 
         function toggleLanguage() {
             currentLang = currentLang === 'en' ? 'fa' : 'en';
+            localStorage.setItem('language', currentLang);
             updateLanguage();
         }
 
-        function updateLanguage() {
-            const t = translations[currentLang];
-            document.body.className = currentLang === 'fa' ? 'rtl' : '';
-            
-            // Update all UI text
-            document.getElementById('mainTitle').textContent = t.mainTitle;
-            document.getElementById('subtitle').textContent = t.subtitle;
-            document.getElementById('playerCountLabel').textContent = t.playerCountLabel;
-            updatePlayerInfo(); // Update player info with current language
-            document.getElementById('assignBtn').textContent = t.assignBtn;
-            document.getElementById('howToPlayBtn').textContent = t.howToPlayBtn;
-            document.getElementById('feedbackBtn').textContent = t.feedbackBtn;
-            document.getElementById('newGameText').textContent = t.newGameText;
-            document.getElementById('langButtonText').textContent = t.langButtonText;
-            document.getElementById('helpTitle').textContent = t.helpTitle;
-            document.getElementById('feedbackTitle').textContent = t.feedbackTitle;
-            document.getElementById('feedbackIntro').textContent = t.feedbackIntro;
-            document.getElementById('nameLabel').textContent = t.nameLabel;
-            document.getElementById('emailLabel').textContent = t.emailLabel;
-            document.getElementById('messageLabel').textContent = t.messageLabel;
-            document.getElementById('sendBtn').textContent = t.sendBtn;
-            document.getElementById('confirmTitle').textContent = t.confirmTitle;
-            document.getElementById('confirmText').textContent = t.confirmText;
-            document.getElementById('yesBtn').textContent = t.yesBtn;
-            document.getElementById('noBtn').textContent = t.noBtn;
-            
-            // Update help content
-            updateHelpContent();
-            
-            // If game is in progress, refresh the current screen
-            if (playerRoles.length > 0 && !document.getElementById('gameSection').classList.contains('hidden')) {
-                refreshCurrentGameScreen();
-            }
-        }
-
-        function refreshCurrentGameScreen() {
-            // Check if we're on the final "all assigned" screen
-            if (currentPlayerIndex >= playerRoles.length) {
-                const t = translations[currentLang];
-                const rolesContainer = document.getElementById('rolesContainer');
-                rolesContainer.innerHTML = `
-                    <div style="text-align: center; padding: 40px 20px;">
-                        <div style="font-size: 3em; margin-bottom: 20px;">🎉</div>
-                        <h2 style="color: #333; margin-bottom: 15px;">${t.allAssigned}</h2>
-                        <p style="color: #666; font-size: 1.1em;">${t.gameBegin}</p>
-                    </div>
-                `;
-                return;
-            }
-            
-            // Check if role is currently revealed
-            const roleRevealArea = document.getElementById('roleRevealArea');
-            if (roleRevealArea && roleRevealArea.innerHTML.trim() !== '') {
-                // Role is revealed, refresh it
-                const roleKey = playerRoles[currentPlayerIndex];
-                const role = roles[currentLang][roleKey];
-                const t = translations[currentLang];
-                
-                let teamBadge = '';
-                let teamColor = '';
-                if (role.team === 'mafia') {
-                    teamBadge = currentLang === 'en' ? '😈 Mafia Team' : '😈 تیم مافیا';
-                    teamColor = '#ee3d72';
-                } else if (role.team === 'citizen') {
-                    teamBadge = currentLang === 'en' ? '😇 Citizens Team' : '😇 تیم شهروندان';
-                    teamColor = '#4facfe';
-                } else if (role.team === 'independent') {
-                    teamBadge = currentLang === 'en' ? '🎯 Independent' : '🎯 مستقل';
-                    teamColor = '#9b59b6';
-                }
-                
-                roleRevealArea.innerHTML = `
-                    <div class="role-card ${role.class}" style="margin-bottom: 20px; cursor: default;">
-                        <div style="text-align: ${currentLang === 'fa' ? 'right' : 'left'};">
-                            <div style="display: inline-block; background: ${teamColor}; color: white; padding: 5px 15px; border-radius: 20px; font-size: 0.9em; margin-bottom: 10px; font-weight: 600;">
-                                ${teamBadge}
-                            </div>
-                            <div class="role-name" style="font-size: 1.8em; margin-bottom: 15px;">
-                                ${role.name}
-                            </div>
-                            <div class="role-description" style="font-size: 1.05em; line-height: 1.8;">
-                                ${role.description}
-                            </div>
-                        </div>
-                    </div>
-                    <button class="btn" onclick="nextPlayer()" style="margin-top: 20px;">${t.sawRoleBtn}</button>
-                `;
-            } else {
-                // Just the instruction screen is showing, refresh it
-                const instructionBox = document.getElementById('instructionBox');
-                const showRoleBtn = document.getElementById('showRoleBtn');
-                if (instructionBox && showRoleBtn) {
-                    const t = translations[currentLang];
-                    instructionBox.innerHTML = `
-                        <div style="font-size: 2.5em; margin-bottom: 15px;">👤</div>
-                        <h2 style="color: #333; margin-bottom: 10px;">${t.playerLabel} ${currentPlayerIndex + 1}</h2>
-                        <p style="color: #666;">${currentLang === 'en' ? 'Click the button below to see your role' : 'روی دکمه زیر کلیک کنید تا نقش خود را ببینید'}</p>
-                    `;
-                    showRoleBtn.innerHTML = t.showRoleBtn;
-                }
-            }
-        }
-
-        function updateHelpContent() {
-            const helpContent = document.getElementById('helpContent');
-            
-            if (currentLang === 'en') {
-                helpContent.innerHTML = `
-                    <h3>🎯 Game Overview</h3>
-                    <p>Mafia: Godfather is an advanced social deduction game for 6-15 players. The game is run by a narrator (Lord/God) who manages the flow and executes all actions.</p>
-                    <p><strong>Standard Setup (11 players):</strong> 3 Mafia vs 7 Citizens vs 1 Independent (Nostradamus)</p>
-                    <p><strong>Note:</strong> Nostradamus only appears in games with 8+ players. Games with 6-7 players are pure Mafia vs Citizens.</p>
-                    
-                    <h3>🌙 Game Flow</h3>
-                    <ul>
-                        <li><strong>Night Introduction:</strong> Nostradamus picks 3 players, narrator reveals mafia count among them</li>
-                        <li><strong>Night Phase:</strong> Mafia chooses victim, special roles use abilities</li>
-                        <li><strong>Day Phase:</strong> Discussion and voting to eliminate suspects</li>
-                        <li><strong>Voting:</strong> Open voting with eyes open if multiple candidates. Can vote for 2 people simultaneously. Candidates can vote for each other</li>
-                        <li><strong>Last Move Cards:</strong> Players eliminated by voting draw a card before leaving</li>
-                    </ul>
-
-                    <h3>😈 Mafia Team (3 members)</h3>
-                    
-                    <div class="role-help mafia">
-                        <h4>👔 The Godfather</h4>
-                        <p><strong>Vest:</strong> Survives first shot (cannot be killed by Leon or night mafia shot)</p>
-                        <p><strong>Sixth Sense:</strong> Point to a player and guess their exact role. If correct, they are eliminated the next morning (cannot be saved, blocked, or protected by any ability - like "slaughter")</p>
-                        <p><strong>How to use:</strong> During night, point with index finger to the narrator</p>
-                    </div>
-
-                    <div class="role-help mafia">
-                        <h4>🎭 Matador</h4>
-                        <p><strong>Roleblock:</strong> Each night, block one player's ability</p>
-                        <p><strong>Limitation:</strong> Cannot block same person consecutively (but can after 1 night gap)</p>
-                    </div>
-
-                    <div class="role-help mafia">
-                        <h4>👨‍⚖️ Saul Goodman</h4>
-                        <p><strong>Recruitment:</strong> When a mafia dies, once recruit a Simple Citizen to mafia</p>
-                        <p><strong>How:</strong> Point to someone - if Simple Citizen, they join mafia that night</p>
-                    </div>
-
-                    <h3>😇 Citizens Team (7 members)</h3>
-                    
-                    <div class="role-help citizen">
-                        <h4>💉 Dr. Watson</h4>
-                        <p><strong>Save:</strong> Protect one person each night from attacks</p>
-                        <p><strong>Limitation:</strong> Can save self only once, others unlimited</p>
-                    </div>
-
-                    <div class="role-help citizen">
-                        <h4>🔫 Leon (Professional)</h4>
-                        <p><strong>Shots:</strong> 2 shots total for entire game</p>
-                        <p><strong>Vest:</strong> Survives first shot</p>
-                        <p><strong>Warning:</strong> Shooting citizens hurts your team!</p>
-                    </div>
-
-                    <div class="role-help citizen">
-                        <h4>📺 Citizen Kane</h4>
-                        <p><strong>Investigation:</strong> Once per game, point to someone. If they're a citizen, nothing happens. If they're mafia, the narrator announces the next morning: "At Citizen Kane's request, [Name] is mafia" - exposing their role to everyone</p>
-                        <p><strong>Sacrifice:</strong> If investigation reveals a mafia, Kane dies the next night (sacrifices himself for the information)</p>
-                        <p><strong>Important:</strong> Revealed mafia is NOT eliminated, only exposed</p>
-                        <p><strong>Recharge:</strong> If you investigate a citizen and they die that same night, you get your ability back for another use</p>
-                    </div>
-
-                    <div class="role-help citizen">
-                        <h4>✝️ Constantine</h4>
-                        <p><strong>Resurrection:</strong> Once per game, bring back a "half-dead" player (someone eliminated by day voting)</p>
-                        <p><strong>Half-Dead Rules:</strong> Players eliminated by voting stay near the game with eyes closed. Constantine can resurrect one of them (if their role wasn't exposed)</p>
-                        <p><strong>Risk:</strong> Might accidentally resurrect mafia!</p>
-                        <p><strong>Important:</strong> When one half-dead player is resurrected, all other half-dead players are permanently eliminated from the game</p>
-                    </div>
-
-                    <div class="role-help citizen">
-                        <h4>👤 Simple Citizens (3 people)</h4>
-                        <p><strong>Role:</strong> No special abilities</p>
-                        <p><strong>Importance:</strong> Discussion, voting, and deduction are crucial</p>
-                        <p><strong>Warning:</strong> Be careful about revealing you're a "simple" citizen - Godfather might use Sixth Sense!</p>
-                    </div>
-
-                    <h3>🎯 Independent (1 player)</h3>
-                    
-                    <div class="role-help independent">
-                        <h4>🔮 Nostradamus</h4>
-                        <p><strong>Intro Phase:</strong> At the start of the game, point to 3 players. The narrator tells you how many mafia are among those 3</p>
-                        <p><strong>Team Choice Rules:</strong></p>
-                        <ul style="margin-top: 5px; margin-bottom: 10px;">
-                            <li>If 0 or 1 mafia among your 3: You can choose any side (mafia or citizens)</li>
-                            <li>If 2 or 3 mafia among your 3: You MUST join the mafia side (forced, no choice) because you've identified too many of them</li>
-                        </ul>
-                        <p><strong>Immunities:</strong> Cannot be killed by night shots, always appears innocent on investigations</p>
-                        <p><strong>Weakness:</strong> Can only be killed by Godfather's Sixth Sense</p>
-                        <p><strong>Goal:</strong> Survive to the end with your chosen (or forced) team to win</p>
-                    </div>
-
-                    <h3>🃏 Last Move Cards</h3>
-                    <p>When eliminated by voting, players draw one card before leaving. The narrator executes the card's effect.</p>
-                    
-                    <div class="role-help" style="border-left-color: #667eea;">
-                        <h4>🔒 Handcuff Card</h4>
-                        <p><strong>Effect:</strong> Target one player - they lose their ability/power for the upcoming night.</p>
-                    </div>
-
-                    <div class="role-help" style="border-left-color: #667eea;">
-                        <h4>🎭 Face-Off Card</h4>
-                        <p><strong>Effect:</strong> Swap roles with another player and return to the game! They are permanently eliminated (not even half-dead). You take their entire role, abilities, and team. Cannot be resurrected.</p>
-                    </div>
-
-                    <div class="role-help" style="border-left-color: #667eea;">
-                        <h4>🤐 Silence of the Lambs Card</h4>
-                        <p><strong>Effect:</strong> Silence chosen players for the entire next day. They can only vote, no talking or gestures.</p>
-                    </div>
-
-                    <div class="role-help" style="border-left-color: #667eea;">
-                        <h4>🎯 Identity Reveal Card</h4>
-                        <p><strong>Effect:</strong> The narrator reveals the exact role of the targeted player and they are eliminated from the game.</p>
-                    </div>
-
-                    <div class="role-help" style="border-left-color: #667eea;">
-                        <h4>🧠 Beautiful Mind Card</h4>
-                        <p><strong>Effect:</strong> Try to identify Nostradamus. If correct, they are eliminated and YOU become the new Nostradamus!</p>
-                    </div>
-
-                    <h3>💡 Strategy Tips</h3>
-                    <ul>
-                        <li><strong>Godfather:</strong> Use Sixth Sense wisely - it's your most powerful tool</li>
-                        <li><strong>Matador:</strong> Block key roles like Dr. Watson or Leon</li>
-                        <li><strong>Leon:</strong> You only have 2 shots - make them count!</li>
-                        <li><strong>Citizens:</strong> Never say "I'm just a simple citizen" - it makes you a Sixth Sense target</li>
-                        <li><strong>Nostradamus:</strong> Your choice of team can determine the entire game</li>
-                        <li><strong>Everyone:</strong> Last Move Cards can change everything - use them strategically!</li>
-                    </ul>
-                `;
-            } else {
-                helpContent.innerHTML = `
-                    <h3>🎯 معرفی بازی</h3>
-                    <p>مافیا: پدرخوانده یک بازی استنتاج اجتماعی پیشرفته برای ۶-۱۵ بازیکن است. بازی توسط یک راوی (لرد/گاد) اداره می‌شود که تمام اقدامات را اجرا می‌کند.</p>
-                    <p><strong>ترکیب استاندارد (۱۱ بازیکن):</strong> ۳ مافیا در مقابل ۷ شهروند در مقابل ۱ مستقل (نوستراداموس)</p>
-                    <p><strong>نکته:</strong> نوستراداموس فقط در بازی‌های ۸ نفره یا بیشتر ظاهر می‌شود. بازی‌های ۶-۷ نفره فقط مافیا در مقابل شهروند است.</p>
-                    
-                    <h3>🌙 روند بازی</h3>
-                    <ul>
-                        <li><strong>شب معارفه:</strong> نوستراداموس ۳ نفر انتخاب می‌کند، راوی تعداد مافیا را بین آن‌ها می‌گوید</li>
-                        <li><strong>فاز شب:</strong> مافیا قربانی انتخاب می‌کند، نقش‌های ویژه از توانایی‌هایشان استفاده می‌کنند</li>
-                        <li><strong>فاز روز:</strong> بحث و رای‌گیری برای حذف مظنونین</li>
-                        <li><strong>رای‌گیری:</strong> رای‌گیری با چشم باز در صورت وجود چند کاندیدا. می‌توان همزمان به ۲ نفر رای داد. کاندیداها می‌توانند به یکدیگر رای دهند</li>
-                        <li><strong>کارت‌های حرکت آخر:</strong> بازیکنان حذف شده با رای‌گیری قبل از خروج یک کارت می‌کشند</li>
-                    </ul>
-
-                    <h3>😈 تیم مافیا (۳ عضو)</h3>
-                    
-                    <div class="role-help mafia">
-                        <h4>👔 پدرخوانده</h4>
-                        <p><strong>جلیقه:</strong> از اولین شلیک جان سالم به در می‌برد (توسط لئون یا شات شب مافیا کشته نمی‌شود)</p>
-                        <p><strong>حس ششم:</strong> به یک بازیکن اشاره کنید و نقش دقیقش را حدس بزنید. اگر درست باشد، صبح روز بعد حذف می‌شود (قابل نجات، مسدودسازی یا محافظت توسط هیچ توانایی‌ای نیست - مثل "سلاخی")</p>
-                        <p><strong>نحوه استفاده:</strong> در شب با انگشت اشاره به راوی نشان دهید</p>
-                    </div>
-
-                    <div class="role-help mafia">
-                        <h4>🎭 ماتادور</h4>
-                        <p><strong>مسدودسازی:</strong> هر شب توانایی یک بازیکن را مسدود کنید</p>
-                        <p><strong>محدودیت:</strong> نمی‌توانید یک نفر را پشت سر هم مسدود کنید (اما بعد از ۱ شب فاصله می‌توانید)</p>
-                    </div>
-
-                    <div class="role-help mafia">
-                        <h4>👨‍⚖️ ساول گودمن</h4>
-                        <p><strong>استخدام:</strong> وقتی یک مافیا می‌میرد، یک بار یک شهروند ساده را به مافیا اضافه کنید</p>
-                        <p><strong>چگونه:</strong> به کسی اشاره کنید - اگر شهروند ساده باشد، همان شب به مافیا می‌پیوندد</p>
-                    </div>
-
-                    <h3>😇 تیم شهروندان (۷ عضو)</h3>
-                    
-                    <div class="role-help citizen">
-                        <h4>💉 دکتر واتسون</h4>
-                        <p><strong>نجات:</strong> هر شب یک نفر را از حملات محافظت کنید</p>
-                        <p><strong>محدودیت:</strong> فقط یک بار خود را نجات دهید، دیگران بی‌محدودیت</p>
-                    </div>
-
-                    <div class="role-help citizen">
-                        <h4>🔫 لئون (حرفه‌ای)</h4>
-                        <p><strong>شلیک:</strong> در کل بازی ۲ شلیک دارید</p>
-                        <p><strong>جلیقه:</strong> از اولین شلیک جان سالم به در می‌برد</p>
-                        <p><strong>هشدار:</strong> شلیک به شهروندان به تیم شما آسیب می‌زند!</p>
-                    </div>
-
-                    <div class="role-help citizen">
-                        <h4>📺 همشهری کین</h4>
-                        <p><strong>استعلام:</strong> یک بار در بازی به کسی اشاره کنید. اگر شهروند باشد اتفاقی نمی‌افتد. اگر مافیا باشد صبح روز بعد راوی اعلام می‌کند: "به درخواست همشهری کین، [نام] مافیای بازی است" - نقش او برای همه فاش می‌شود</p>
-                        <p><strong>فداکاری:</strong> اگر استعلام مافیا را فاش کند، کین شب بعد می‌میرد (خود را برای اطلاعات فدا می‌کند)</p>
-                        <p><strong>مهم:</strong> مافیای فاش شده حذف نمی‌شود، فقط افشا می‌شود</p>
-                        <p><strong>شارژ مجدد:</strong> اگر به شهروندی استعلام بدهید و همان شب بمیرد، توانایی‌تان برای استفاده دوباره برمی‌گردد</p>
-                    </div>
-
-                    <div class="role-help citizen">
-                        <h4>✝️ کنستانتین</h4>
-                        <p><strong>احضار روح:</strong> یک بار در بازی یک بازیکن "نیم‌مرده" (با رای‌گیری روز حذف شده) را برگردانید</p>
-                        <p><strong>قوانین نیم‌مرده:</strong> بازیکنان حذف شده با رای‌گیری در نزدیکی بازی با چشم بسته می‌مانند. کنستانتین می‌تواند یکی را احضار کند (اگر نقشش افشا نشده باشد)</p>
-                        <p><strong>ریسک:</strong> ممکن است اشتباهاً مافیا را احضار کنید!</p>
-                        <p><strong>مهم:</strong> وقتی یک نیم‌مرده احضار می‌شود، تمام نیم‌مرده‌های دیگر برای همیشه از بازی خارج می‌شوند</p>
-                    </div>
-
-                    <div class="role-help citizen">
-                        <h4>👤 شهروندان ساده (۳ نفر)</h4>
-                        <p><strong>نقش:</strong> توانایی خاصی ندارند</p>
-                        <p><strong>اهمیت:</strong> بحث، رای‌گیری و استنتاج بسیار مهم هستند</p>
-                        <p><strong>هشدار:</strong> مراقب باشید که فاش نکنید "شهروند ساده" هستید - پدرخوانده ممکن است از حس ششم استفاده کند!</p>
-                    </div>
-
-                    <h3>🎯 مستقل (۱ بازیکن)</h3>
-                    
-                    <div class="role-help independent">
-                        <h4>🔮 نوستراداموس</h4>
-                        <p><strong>فاز معارفه:</strong> در ابتدای بازی به ۳ بازیکن اشاره کنید. راوی به شما می‌گوید چند مافیا بین آن ۳ نفر هستند</p>
-                        <p><strong>قوانین انتخاب تیم:</strong></p>
-                        <ul style="margin-top: 5px; margin-bottom: 10px;">
-                            <li>اگر ۰ یا ۱ مافیا بین ۳ نفرتان باشد: می‌توانید هر سایدی را انتخاب کنید (مافیا یا شهروند)</li>
-                            <li>اگر ۲ یا ۳ مافیا بین ۳ نفرتان باشد: باید به زور به ساید مافیا بپیوندید (اجباری، بدون انتخاب) چون تعداد زیادی از آن‌ها را شناسایی کرده‌اید</li>
-                        </ul>
-                        <p><strong>مصونیت:</strong> با شات شب کشته نمی‌شوید، در تحقیقات همیشه بی‌گناه به نظر می‌رسید</p>
-                        <p><strong>نقطه ضعف:</strong> فقط با حس ششم پدرخوانده کشته می‌شوید</p>
-                        <p><strong>هدف:</strong> تا آخر با تیم انتخابی (یا اجباری) خود زنده بمانید تا برنده شوید</p>
-                    </div>
-
-                    <h3>🃏 کارت‌های حرکت آخر</h3>
-                    <p>وقتی با رای‌گیری حذف می‌شوید، قبل از خروج یک کارت انتخاب می‌کنید. راوی اثر کارت را اجرا می‌کند.</p>
-                    
-                    <div class="role-help" style="border-right-color: #667eea;">
-                        <h4>🔒 کارت دستبند</h4>
-                        <p><strong>اثر:</strong> یک بازیکن را هدف بگیرید - توانایی/قدرت خود را برای شب آینده از دست می‌دهد.</p>
-                    </div>
-
-                    <div class="role-help" style="border-right-color: #667eea;">
-                        <h4>🎭 کارت تغییر چهره</h4>
-                        <p><strong>اثر:</strong> نقش را با بازیکن دیگری عوض کنید و به بازی برگردید! آن‌ها برای همیشه حذف می‌شوند (حتی نیم‌مرده نیستند). تمام نقش، توانایی‌ها و تیم آن‌ها را می‌گیرید. قابل احضار نیست.</p>
-                    </div>
-
-                    <div class="role-help" style="border-right-color: #667eea;">
-                        <h4>🤐 کارت سکوت بره‌ها</h4>
-                        <p><strong>اثر:</strong> بازیکنان انتخابی را برای کل روز بعد ساکت کنید. فقط می‌توانند رای بدهند، بدون صحبت یا حرکت.</p>
-                    </div>
-
-                    <div class="role-help" style="border-right-color: #667eea;">
-                        <h4>🎯 کارت افشای هویت</h4>
-                        <p><strong>اثر:</strong> راوی نقش دقیق بازیکن هدف را فاش می‌کند و از بازی حذف می‌شود.</p>
-                    </div>
-
-                    <div class="role-help" style="border-right-color: #667eea;">
-                        <h4>🧠 کارت ذهن زیبا</h4>
-                        <p><strong>اثر:</strong> سعی کنید نوستراداموس را شناسایی کنید. اگر درست باشد، حذف می‌شود و شما تبدیل به نوستراداموس جدید می‌شوید!</p>
-                    </div>
-
-                    <h3>💡 نکات استراتژیک</h3>
-                    <ul>
-                        <li><strong>پدرخوانده:</strong> از حس ششم با دقت استفاده کنید - قدرتمندترین ابزار شماست</li>
-                        <li><strong>ماتادور:</strong> نقش‌های کلیدی مثل دکتر واتسون یا لئون را مسدود کنید</li>
-                        <li><strong>لئون:</strong> فقط ۲ شلیک دارید - حساب شده عمل کنید!</li>
-                        <li><strong>شهروندان:</strong> هرگز نگویید "من فقط یک شهروند ساده‌ام" - هدف حس ششم می‌شوید</li>
-                        <li><strong>نوستراداموس:</strong> انتخاب تیمتان می‌تواند کل بازی را تعیین کند</li>
-                        <li><strong>همه:</strong> کارت‌های حرکت آخر می‌توانند همه چیز را تغییر دهند - استراتژیک استفاده کنید!</li>
-                    </ul>
-                `;
-            }
-        }
-
-        function startGame() {
-            const playerCount = parseInt(document.getElementById('playerCount').value);
-            const errorMsg = document.getElementById('errorMsg');
-            
-            if (!playerCount || playerCount < 6 || playerCount > 15) {
-                errorMsg.textContent = currentLang === 'en' 
-                    ? 'Please enter a number between 6 and 15' 
-                    : 'لطفاً عددی بین ۶ تا ۱۵ وارد کنید';
-                errorMsg.classList.remove('hidden');
-                return;
-            }
-            
-            errorMsg.classList.add('hidden');
-            
-            const teamSize = calculateTeamSize(playerCount);
-            
-            // Create role array based on calculated team sizes
-            let roleArray = [];
-            
-            // Add Mafia roles
-            for (let i = 0; i < teamSize.godfather; i++) roleArray.push('godfather');
-            for (let i = 0; i < teamSize.matador; i++) roleArray.push('matador');
-            for (let i = 0; i < teamSize.saul; i++) roleArray.push('saul');
-            
-            // Add Citizen roles
-            for (let i = 0; i < teamSize.watson; i++) roleArray.push('watson');
-            for (let i = 0; i < teamSize.leon; i++) roleArray.push('leon');
-            for (let i = 0; i < teamSize.kane; i++) roleArray.push('kane');
-            for (let i = 0; i < teamSize.constantine; i++) roleArray.push('constantine');
-            for (let i = 0; i < teamSize.citizen; i++) roleArray.push('citizen');
-            
-            // Add Independent role
-            for (let i = 0; i < teamSize.nostradamus; i++) roleArray.push('nostradamus');
-            
-            // Shuffle and assign
-            playerRoles = shuffleArray(roleArray);
-            currentPlayerIndex = 0;
-            
-            // Initialize card deck
-            availableCards = [...cardDeck[currentLang]];
-            drawnCard = null;
-            
-            document.getElementById('setupSection').classList.add('hidden');
-            document.getElementById('gameSection').classList.remove('hidden');
-            
-            showPlayerReveal();
-        }
-
-        function showPlayerReveal() {
-            const rolesContainer = document.getElementById('rolesContainer');
-            const newGameBtn = document.getElementById('newGameBtn');
-            const t = translations[currentLang];
-            
-            if (currentPlayerIndex >= playerRoles.length) {
-                if (!gameCountIncremented) {
-                    incrementGlobalCounter();
-                    gameCountIncremented = true;
-                }
-                
-                const cardsLeft = availableCards.length;
-                const cardDisplay = drawnCard ? `
-                    <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 20px; border-radius: 15px; margin: 20px 0; box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);">
-                        <h3 style="margin: 0 0 10px 0; color: white;">${t.cardDrawn}</h3>
-                        <p style="font-size: 1.3em; font-weight: 700; margin: 10px 0; color: white;">${drawnCard.name}</p>
-                        <p style="margin: 10px 0 0 0; opacity: 0.95; color: white;">${drawnCard.description}</p>
-                    </div>
-                ` : '';
-                
-                rolesContainer.innerHTML = `
-                    <div style="text-align: center; padding: 40px 20px;">
-                        <div style="font-size: 3em; margin-bottom: 20px;">🎉</div>
-                        <h2 style="color: #333; margin-bottom: 15px;">${t.allAssigned}</h2>
-                        <p style="color: #666; font-size: 1.1em; margin-bottom: 30px;">${t.gameBegin}</p>
-                        
-                        <div style="margin-top: 30px;">
-                            ${cardDisplay}
-                            <button class="btn btn-secondary" onclick="drawCard()" id="drawCardBtn" ${cardsLeft === 0 ? 'disabled' : ''} style="${cardsLeft === 0 ? 'opacity: 0.5; cursor: not-allowed;' : ''}">
-                                ${cardsLeft > 0 ? t.drawCard + ` (${cardsLeft} ${t.cardsRemaining})` : t.noCardsLeft}
-                            </button>
-                        </div>
-                    </div>
-                `;
-                newGameBtn.classList.remove('hidden');
-                return;
-            }
-            
-            newGameBtn.classList.add('hidden');
-            
-            rolesContainer.innerHTML = `
-                <div style="text-align: center; padding: 20px;">
-                    <div id="instructionBox" style="background: #f8f9fa; border-radius: 15px; padding: 30px; margin-bottom: 20px;">
-                        <div style="font-size: 2.5em; margin-bottom: 15px;">👤</div>
-                        <h2 style="color: #333; margin-bottom: 10px;">${t.playerLabel} ${currentPlayerIndex + 1}</h2>
-                        <p style="color: #666;">${currentLang === 'en' ? 'Click the button below to see your role' : 'روی دکمه زیر کلیک کنید تا نقش خود را ببینید'}</p>
-                    </div>
-                    
-                    <div id="roleRevealArea"></div>
-                    
-                    <button class="btn" id="showRoleBtn" onclick="revealRole()">${t.showRoleBtn}</button>
-                </div>
-            `;
-        }
-
-        function revealRole() {
-            document.getElementById('instructionBox').style.display = 'none';
-            document.getElementById('showRoleBtn').style.display = 'none';
-            
-            const roleKey = playerRoles[currentPlayerIndex];
-            const role = roles[currentLang][roleKey];
-            const t = translations[currentLang];
-            
-            let teamBadge = '';
-            let teamColor = '';
-            if (role.team === 'mafia') {
-                teamBadge = currentLang === 'en' ? '😈 Mafia Team' : '😈 تیم مافیا';
-                teamColor = '#ee3d72';
-            } else if (role.team === 'citizen') {
-                teamBadge = currentLang === 'en' ? '😇 Citizens Team' : '😇 تیم شهروندان';
-                teamColor = '#4facfe';
-            } else if (role.team === 'independent') {
-                teamBadge = currentLang === 'en' ? '🎯 Independent' : '🎯 مستقل';
-                teamColor = '#9b59b6';
-            }
-            
-            const roleRevealArea = document.getElementById('roleRevealArea');
-            roleRevealArea.innerHTML = `
-                <div class="role-card ${role.class}" style="margin-bottom: 20px; cursor: default;">
-                    <div style="text-align: ${currentLang === 'fa' ? 'right' : 'left'};">
-                        <div style="display: inline-block; background: ${teamColor}; color: white; padding: 5px 15px; border-radius: 20px; font-size: 0.9em; margin-bottom: 10px; font-weight: 600;">
-                            ${teamBadge}
-                        </div>
-                        <div class="role-name" style="font-size: 1.8em; margin-bottom: 15px;">
-                            ${role.name}
-                        </div>
-                        <div class="role-description" style="font-size: 1.05em; line-height: 1.8;">
-                            ${role.description}
-                        </div>
-                    </div>
-                </div>
-                <button class="btn" onclick="nextPlayer()" style="margin-top: 20px;">${t.sawRoleBtn}</button>
-            `;
-        }
-
-        function nextPlayer() {
-            currentPlayerIndex++;
-            showPlayerReveal();
-        }
-
-        function drawCard() {
-            if (availableCards.length === 0) {
-                return; // No cards left
-            }
-            
-            // Draw a random card
-            const randomIndex = Math.floor(Math.random() * availableCards.length);
-            drawnCard = availableCards[randomIndex];
-            
-            // Remove the drawn card from available cards
-            availableCards.splice(randomIndex, 1);
-            
-            // Refresh the display
-            showPlayerReveal();
-        }
-
-        function shuffleArray(array) {
-            const newArray = [...array];
-            for (let i = newArray.length - 1; i > 0; i--) {
-                const j = Math.floor(Math.random() * (i + 1));
-                [newArray[i], newArray[j]] = [newArray[j], newArray[i]];
-            }
-            return newArray;
-        }
-
-        function resetGame() {
-            currentPlayerIndex = 0;
-            playerRoles = [];
-            gameCountIncremented = false;
-            availableCards = [];
-            drawnCard = null;
-            document.getElementById('setupSection').classList.remove('hidden');
-            document.getElementById('gameSection').classList.add('hidden');
-            document.getElementById('rolesContainer').innerHTML = '';
-            document.getElementById('newGameBtn').classList.add('hidden');
-        }
-
-        function cancelGame() {
-            document.getElementById('confirmModal').classList.remove('hidden');
-        }
-
-        function confirmCancel() {
-            closeConfirm();
-            resetGame();
-        }
-
-        function closeConfirm() {
-            document.getElementById('confirmModal').classList.add('hidden');
-        }
-
-        function showHelp() {
-            document.getElementById('helpModal').classList.remove('hidden');
-        }
-
-        function closeHelp() {
-            document.getElementById('helpModal').classList.add('hidden');
-        }
-
-        function showFeedback() {
-            document.getElementById('feedbackModal').classList.remove('hidden');
-        }
-
-        function closeFeedback() {
-            document.getElementById('feedbackModal').classList.add('hidden');
-            setTimeout(() => {
-                document.getElementById('feedbackForm').reset();
-                document.getElementById('feedbackStatus').classList.add('hidden');
-            }, 300);
-        }
-
-        function updateGlobalCounter() {
-            if (!database) {
-                const t = translations[currentLang];
-                document.getElementById('gameCounter').textContent = t.gamesPlayed + ' ' + (currentLang === 'en' ? 'Setup Required' : 'نیاز به تنظیم');
-                return;
-            }
-
-            const counterRef = database.ref('godfatherGameCounter');
-            counterRef.on('value', (snapshot) => {
-                const count = snapshot.val() || 0;
-                const t = translations[currentLang];
-                document.getElementById('gameCounter').textContent = t.gamesPlayed + ' ' + count.toLocaleString(currentLang === 'fa' ? 'fa-IR' : 'en-US');
-            });
-        }
-
-        function incrementGlobalCounter() {
-            if (!database) return;
-
-            const counterRef = database.ref('godfatherGameCounter');
-            counterRef.transaction((currentValue) => {
-                return (currentValue || 0) + 1;
-            });
-        }
-
-        function submitFeedback(event) {
-            event.preventDefault();
-            
-            const name = document.getElementById('feedbackName').value.trim();
-            const email = document.getElementById('feedbackEmail').value.trim();
-            const message = document.getElementById('feedbackMessage').value.trim();
-            const submitBtn = document.getElementById('submitFeedbackBtn');
-            const statusEl = document.getElementById('feedbackStatus');
-            
-            if (!message) {
-                statusEl.textContent = currentLang === 'en' ? '⚠️ Please enter a message' : '⚠️ لطفاً پیامی وارد کنید';
-                statusEl.style.background = '#fff3cd';
-                statusEl.style.color = '#856404';
-                statusEl.classList.remove('hidden');
-                return;
-            }
-            
-            submitBtn.disabled = true;
-            const sendingText = currentLang === 'en' ? '📤 Sending...' : '📤 در حال ارسال...';
-            submitBtn.querySelector('span').textContent = sendingText;
-            
-            if (database) {
-                const counterRef = database.ref('godfatherFeedbackCounter');
-                counterRef.transaction((currentValue) => {
-                    return (currentValue || 0) + 1;
-                }).then((result) => {
-                    const feedbackNumber = result.snapshot.val();
-                    
-                    const feedbackRef = database.ref('godfatherFeedback');
-                    return feedbackRef.push({
-                        number: feedbackNumber,
-                        name: name || 'Anonymous',
-                        email: email || 'Not provided',
-                        message: message,
-                        language: currentLang,
-                        timestamp: new Date().toISOString(),
-                        date: new Date().toLocaleString()
-                    }).then(() => feedbackNumber);
-                })
-                .then((feedbackNumber) => {
-                    if (EMAILJS_PUBLIC_KEY !== 'YOUR_PUBLIC_KEY') {
-                        emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, {
-                            feedback_number: feedbackNumber,
-                            from_name: name || 'Anonymous',
-                            from_email: email || 'Not provided',
-                            message: message + '\n\nLanguage: ' + currentLang,
-                            to_email: 'contact.ehm@gmail.com'
-                        }).catch((error) => {
-                            console.error('EmailJS error:', error);
-                        });
-                    }
-                    
-                    statusEl.textContent = currentLang === 'en' ? '✅ Thank you! Your feedback has been sent successfully!' : '✅ متشکریم! بازخورد شما با موفقیت ارسال شد!';
-                    statusEl.style.background = '#d4edda';
-                    statusEl.style.color = '#155724';
-                    statusEl.classList.remove('hidden');
-                    
-                    document.getElementById('feedbackForm').reset();
-                    
-                    setTimeout(() => {
-                        closeFeedback();
-                    }, 2000);
-                })
-                .catch((error) => {
-                    console.error('Error submitting feedback:', error);
-                    statusEl.textContent = currentLang === 'en' ? '❌ Error sending feedback. Please try again.' : '❌ خطا در ارسال بازخورد. لطفاً دوباره تلاش کنید.';
-                    statusEl.style.background = '#f8d7da';
-                    statusEl.style.color = '#721c24';
-                    statusEl.classList.remove('hidden');
-                })
-                .finally(() => {
-                    submitBtn.disabled = false;
-                    submitBtn.querySelector('span').textContent = translations[currentLang].sendBtn;
-                });
-            } else {
-                statusEl.textContent = currentLang === 'en' ? '❌ Firebase not configured.' : '❌ Firebase پیکربندی نشده است.';
-                statusEl.style.background = '#f8d7da';
-                statusEl.style.color = '#721c24';
-                statusEl.classList.remove('hidden');
-                submitBtn.disabled = false;
-                submitBtn.querySelector('span').textContent = translations[currentLang].sendBtn;
-            }
-        }
-
-        // Close modals when clicking outside
-        window.addEventListener('DOMContentLoaded', function() {
-            document.getElementById('helpModal').addEventListener('click', function(e) {
-                if (e.target === this) closeHelp();
-            });
-            
-            document.getElementById('feedbackModal').addEventListener('click', function(e) {
-                if (e.target === this) closeFeedback();
-            });
-            
-            document.getElementById('confirmModal').addEventListener('click', function(e) {
-                if (e.target === this) closeConfirm();
-            });
-
-            // Initialize
-            updateLanguage();
-            updateGlobalCounter();
-        });
+        // Initialize on page load
+        updateLanguage();
     </script>
 </body>
 </html>
+
