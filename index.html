@@ -176,6 +176,7 @@
         grid-template-columns: 1fr 1fr;
         gap:10px;
         margin-top: 4px;
+        min-width:0; /* prevent iOS grid overflow */
       }
       .toggle{
         display:flex;
@@ -186,12 +187,15 @@
         border-radius: 16px;
         border:1px solid var(--line);
         background: rgba(17,24,36,.45);
+        min-width:0; /* allow grid item to shrink */
+        overflow:hidden; /* clip any stray overflow on iOS */
       }
       .toggle .meta{
         display:flex;
         flex-direction:column;
         gap:3px;
         min-width:0;
+        flex: 1 1 auto; /* ensure text side can shrink */
       }
       .toggle .name{
         font-weight:950;
@@ -200,6 +204,7 @@
         white-space:nowrap;
         overflow:hidden;
         text-overflow:ellipsis;
+        max-width:100%;
       }
       .toggle .hint{
         font-size:11px;
@@ -208,6 +213,7 @@
         white-space:nowrap;
         overflow:hidden;
         text-overflow:ellipsis;
+        max-width:100%;
       }
       .toggle input{
         width: 22px;
@@ -232,6 +238,11 @@
       }
       .toggle.base{
         background: rgba(17,24,36,.30);
+      }
+
+      /* Small phones (e.g., iPhone): avoid 2-column squeeze/overflow */
+      @media (max-width: 390px){
+        .toggles{ grid-template-columns: 1fr; }
       }
 
       .cardsGrid{
@@ -676,6 +687,10 @@
         background: linear-gradient(180deg, rgba(17,24,36,.98), rgba(15,23,34,.98));
         box-shadow: var(--shadow);
         overflow:hidden;
+        /* If content is taller than viewport, keep sheet visible and scroll inside */
+        max-height: 100%;
+        display:flex;
+        flex-direction:column;
       }
       .sheet .top{
         padding: 12px 14px;
@@ -705,6 +720,10 @@
         display:flex;
         flex-direction:column;
         gap:10px;
+        min-height:0; /* required so flex child can scroll */
+        overflow:auto;
+        -webkit-overflow-scrolling: touch;
+        overscroll-behavior: contain;
       }
       .roleCard{
         border-radius: 20px;
@@ -748,8 +767,17 @@
       .miniHelp:active{ transform: translateY(1px); }
       .roleCard .rname{
         font-weight:1000;
-        font-size:18px;
+        font-size:clamp(16px, 4.6vw, 18px);
         letter-spacing:-.2px;
+        line-height:1.25;
+        overflow-wrap:anywhere;
+        word-break:break-word;
+        padding-inline-end: 44px; /* avoid overlap with the ? button (inline-end) */
+      }
+      .roleCard .rname .teamParen{
+        font-weight:850;
+        font-size:0.9em;
+        color: var(--muted);
       }
       .roleCard .rteam{
         display:inline-flex;
@@ -1672,7 +1700,7 @@
           if (mafiaSpecials.length > mafiaCount) {
             return {
               ok: false,
-              error: "نقش‌های ویژه مافیا از تعداد مافیا بیشتر شده‌اند. یکی را خاموش کنید یا تعداد مافیا را زیاد کنید.",
+              error: "نقش‌های ویژه مافیا از تعداد مافیا بیشتر شده‌اند. یک یا چند نقش ویژه مافیا را خاموش کنید یا تعداد مافیا را افزایش دهید.",
             };
           }
 
@@ -2828,10 +2856,17 @@
           const r = rBase ? { ...rBase, ...(rOv || {}) } : null;
           $("modalWho").textContent = who;
           const team = (r && r.teamFa) ? r.teamFa : "";
-          $("roleName").textContent = r
-            ? `${r.faName}${team ? ` (${team})` : ""}`
-            : roleId;
-          $("roleTeam").textContent = r ? `تیم: ${r.teamFa}` : "—";
+          if (r) {
+            $("roleName").innerHTML = `${escapeHtml(r.faName)}${team ? ` <span class="teamParen">(${escapeHtml(team)})</span>` : ""}`;
+          } else {
+            $("roleName").textContent = roleId;
+          }
+          // team is already shown in parentheses after the name
+          const teamEl = $("roleTeam");
+          if (teamEl) {
+            teamEl.textContent = "";
+            teamEl.style.display = "none";
+          }
           // show role description in the note area (per request)
           const noteEl = $("modalNote");
           noteEl.textContent = r && r.descFa ? r.descFa : "توضیحی برای این نقش ثبت نشده است.";
