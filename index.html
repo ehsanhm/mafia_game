@@ -28,12 +28,25 @@
       body{
         margin:0;
         font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Arial, "Noto Sans Arabic", "Noto Naskh Arabic", sans-serif;
+        /* Use a fixed background layer to avoid iOS gradient "seams" while scrolling */
+        background: var(--bg1);
+        color:var(--text);
+        -webkit-tap-highlight-color: transparent;
+        position:relative;
+      }
+      body::before{
+        content:"";
+        position:fixed;
+        inset:0;
+        z-index:-1;
+        pointer-events:none;
         background:
           radial-gradient(1200px 700px at 80% -10%, rgba(139,92,255,.20), transparent 55%),
           radial-gradient(1000px 600px at 10% 0%, rgba(110,168,255,.18), transparent 60%),
           linear-gradient(180deg, var(--bg0), var(--bg1));
-        color:var(--text);
-        -webkit-tap-highlight-color: transparent;
+        background-repeat:no-repeat;
+        background-size:cover;
+        transform: translateZ(0);
       }
 
       .app{
