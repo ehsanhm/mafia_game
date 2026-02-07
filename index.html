@@ -1,311 +1,2934 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mafia Game - Choose Your Variation</title>
+<!doctype html>
+<html lang="fa" dir="rtl">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="theme-color" content="#0b0f14" />
+    <title>اپلیکیشن بازی مافیا</title>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+      :root{
+        --bg0:#070a0f;
+        --bg1:#0b0f14;
+        --card:#111824;
+        --card2:#0f1722;
+        --text:#eaf0ff;
+        --muted:#9fb0cf;
+        --line:rgba(255,255,255,.08);
+        --shadow: 0 14px 40px rgba(0,0,0,.45);
+        --accent:#6ea8ff;
+        --accent2:#8b5cff;
+        --good:#35d07f;
+        --warn:#ffcc66;
+        --bad:#ff5c74;
+        --radius:18px;
+      }
 
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            padding: 20px;
-            color: #fff;
-        }
+      *{ box-sizing:border-box; }
+      html, body{ height:100%; }
+      body{
+        margin:0;
+        font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Arial, "Noto Sans Arabic", "Noto Naskh Arabic", sans-serif;
+        background:
+          radial-gradient(1200px 700px at 80% -10%, rgba(139,92,255,.20), transparent 55%),
+          radial-gradient(1000px 600px at 10% 0%, rgba(110,168,255,.18), transparent 60%),
+          linear-gradient(180deg, var(--bg0), var(--bg1));
+        color:var(--text);
+        -webkit-tap-highlight-color: transparent;
+      }
 
-        /* RTL Support for Farsi */
-        body.rtl {
-            direction: rtl;
-            font-family: Tahoma, 'Segoe UI', Arial, sans-serif;
-        }
+      .app{
+        max-width: 520px;
+        margin: 0 auto;
+        min-height: 100%;
+        display:flex;
+        flex-direction:column;
+        padding:
+          calc(env(safe-area-inset-top) + 16px)
+          14px
+          calc(env(safe-area-inset-bottom) + 16px);
+        gap:12px;
+      }
 
-        .language-toggle {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            border: none;
-            border-radius: 25px;
-            padding: 10px 20px;
-            font-size: 0.9em;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
-            z-index: 2000;
-        }
+      .topbar{
+        display:flex;
+        align-items:center;
+        justify-content:space-between;
+        gap:10px;
+      }
+      .title{
+        font-weight:800;
+        letter-spacing:-.2px;
+        font-size: 18px;
+      }
 
-        .language-toggle:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.5);
-        }
+      .pill{
+        width:100%;
+        display:flex;
+        gap:10px;
+        padding: 10px;
+        border-radius: 18px;
+        border:1px solid var(--line);
+        background: rgba(17,24,36,.35);
+      }
+      .pill button{
+        flex:1;
+        border:1px solid transparent;
+        background: rgba(255,255,255,.04);
+        color: var(--muted);
+        font-weight:950;
+        font-size:12px;
+        padding: 10px 10px;
+        border-radius: 14px;
+        cursor:pointer;
+      }
+      .pill button.active{
+        color: var(--text);
+        background: rgba(110,168,255,.12);
+        border-color: rgba(110,168,255,.25);
+      }
+      .chip{
+        display:inline-flex;
+        align-items:center;
+        gap:8px;
+        border:1px solid var(--line);
+        background:rgba(255,255,255,.04);
+        padding:10px 12px;
+        border-radius:999px;
+        color:var(--muted);
+        font-weight:700;
+        font-size:13px;
+      }
+      .chip.clickable{
+        cursor:pointer;
+        user-select:none;
+      }
+      .chip.clickable .label{
+        pointer-events:none;
+      }
+      .chip button{
+        border:none;
+        background:transparent;
+        color:var(--text);
+        font-weight:800;
+        padding:0;
+        cursor:pointer;
+      }
 
-        .container {
-            max-width: 1200px;
-            width: 100%;
-            padding-top: 80px;
-        }
+      .card{
+        background: linear-gradient(180deg, rgba(255,255,255,.05), rgba(255,255,255,.02));
+        border:1px solid var(--line);
+        border-radius: var(--radius);
+        box-shadow: var(--shadow);
+        overflow:hidden;
+      }
+      .card .hd{
+        display:flex;
+        align-items:center;
+        justify-content:space-between;
+        gap:10px;
+        padding: 14px 14px 10px;
+        border-bottom:1px solid var(--line);
+        background: rgba(0,0,0,.14);
+      }
+      .card .hd h2{
+        margin:0;
+        font-size:14px;
+        font-weight:900;
+        color: var(--text);
+      }
+      .card .bd{ padding: 12px 14px 14px; }
 
-        header {
-            text-align: center;
-            margin-bottom: 50px;
-        }
+      .row{
+        display:grid;
+        grid-template-columns: 1fr 1fr;
+        gap:10px;
+        margin-bottom:10px;
+      }
+      .row.one{ grid-template-columns: 1fr; }
 
-        h1 {
-            font-size: 3.5rem;
-            margin-bottom: 15px;
-            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            text-shadow: 0 0 30px rgba(240, 147, 251, 0.3);
-        }
+      label{
+        display:flex;
+        flex-direction:column;
+        gap:6px;
+        color: var(--muted);
+        font-weight:800;
+        font-size:12px;
+      }
 
-        .subtitle {
-            font-size: 1.3rem;
-            color: #b8c0cc;
-            margin-bottom: 10px;
-        }
+      select, input[type="number"]{
+        width:100%;
+        padding: 12px 12px;
+        border-radius: 14px;
+        border:1px solid var(--line);
+        background: rgba(17,24,36,.65);
+        color: var(--text);
+        outline:none;
+        font-weight:800;
+        font-size:14px;
+      }
+      select:focus, input[type="number"]:focus{
+        border-color: rgba(110,168,255,.55);
+        box-shadow: 0 0 0 3px rgba(110,168,255,.14);
+      }
 
-        .games-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            gap: 30px;
-            margin-bottom: 40px;
-        }
+      .toggles{
+        display:grid;
+        grid-template-columns: 1fr 1fr;
+        gap:10px;
+        margin-top: 4px;
+      }
+      .toggle{
+        display:flex;
+        align-items:center;
+        justify-content:space-between;
+        gap:10px;
+        padding: 12px 12px;
+        border-radius: 16px;
+        border:1px solid var(--line);
+        background: rgba(17,24,36,.45);
+      }
+      .toggle .meta{
+        display:flex;
+        flex-direction:column;
+        gap:3px;
+        min-width:0;
+      }
+      .toggle .name{
+        font-weight:950;
+        font-size:13px;
+        color: var(--text);
+        white-space:nowrap;
+        overflow:hidden;
+        text-overflow:ellipsis;
+      }
+      .toggle .hint{
+        font-size:11px;
+        font-weight:800;
+        color: var(--muted);
+        white-space:nowrap;
+        overflow:hidden;
+        text-overflow:ellipsis;
+      }
+      .toggle input{
+        width: 22px;
+        height: 22px;
+        accent-color: var(--accent);
+      }
+      .toggle .right{
+        display:flex;
+        align-items:center;
+        gap:8px;
+        flex: 0 0 auto;
+      }
+      .toggle .countpill{
+        padding: 7px 10px;
+        border-radius: 999px;
+        border:1px solid var(--line);
+        background: rgba(255,255,255,.04);
+        color: var(--muted);
+        font-weight:950;
+        font-size:12px;
+        flex: 0 0 auto;
+      }
+      .toggle.base{
+        background: rgba(17,24,36,.30);
+      }
 
-        .game-card {
-            background: rgba(255, 255, 255, 0.05);
-            backdrop-filter: blur(10px);
-            border-radius: 20px;
-            padding: 35px;
-            text-align: center;
-            transition: all 0.3s ease;
-            border: 2px solid rgba(255, 255, 255, 0.1);
-            cursor: pointer;
-            text-decoration: none;
-            color: inherit;
-            display: block;
-        }
+      .cardsGrid{
+        margin-top: 12px;
+        display:grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap:10px;
+      }
+      .cardBtn{
+        width:100%;
+        aspect-ratio: 3 / 4;
+        border-radius: 18px;
+        border:1px solid var(--line);
+        background:
+          radial-gradient(220px 180px at 30% 20%, rgba(110,168,255,.18), transparent 60%),
+          radial-gradient(220px 180px at 80% 80%, rgba(139,92,255,.14), transparent 60%),
+          rgba(17,24,36,.42);
+        color: var(--text);
+        font-weight:1000;
+        cursor:pointer;
+        display:flex;
+        align-items:center;
+        justify-content:center;
+        text-align:center;
+        padding: 10px;
+      }
+      .cardBtn.used{
+        opacity:.45;
+        cursor:not-allowed;
+        background: rgba(17,24,36,.22);
+      }
+      .cardBtn:active{ transform: translateY(1px); }
+      @media (max-width: 380px){
+        .cardsGrid{ grid-template-columns: repeat(2, 1fr); }
+      }
 
-        .game-card:hover {
-            transform: translateY(-10px);
-            border-color: rgba(240, 147, 251, 0.5);
-            box-shadow: 0 20px 40px rgba(245, 87, 108, 0.3);
-            background: rgba(255, 255, 255, 0.1);
-        }
+      /* Vertically center the cards area on tall screens */
+      #cardsCard{
+        flex: 1;
+        display:flex;
+        flex-direction:column;
+        min-height: 0;
+      }
+      #cardsCard .bd{
+        display:flex;
+        flex-direction:column;
+        gap:12px;
+        flex: 1;
+        min-height: 0;
+      }
+      #cardsCard .cardsCenter{
+        flex: 1;
+        display:flex;
+        flex-direction:column;
+        justify-content:center;
+        gap:12px;
+      }
+      #cardsCard .actions{
+        margin-top: 6px;
+      }
 
-        .game-icon {
-            font-size: 4rem;
-            margin-bottom: 20px;
-            filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.3));
-        }
+      .actions{
+        display:flex;
+        gap:10px;
+        margin-top: 12px;
+      }
+      .actions.wrap{
+        flex-wrap: wrap;
+      }
+      .btn{
+        border:none;
+        cursor:pointer;
+        font-weight:950;
+        font-size:14px;
+        padding: 13px 14px;
+        border-radius: 16px;
+        color: var(--text);
+        background: rgba(255,255,255,.06);
+        border:1px solid var(--line);
+        flex: 1;
+      }
+      .btn.primary{
+        background: linear-gradient(135deg, rgba(110,168,255,.95), rgba(139,92,255,.92));
+        border: 0;
+        box-shadow: 0 10px 28px rgba(110,168,255,.14);
+      }
+      .btn.danger{
+        background: rgba(255,92,116,.10);
+        border-color: rgba(255,92,116,.35);
+        color: #ffd7dd;
+      }
+      .btn:active{ transform: translateY(1px); }
 
-        .game-title {
-            font-size: 1.8rem;
-            margin-bottom: 12px;
-            font-weight: 600;
-        }
+      .note{
+        margin-top:10px;
+        font-size:12px;
+        line-height:1.6;
+        color: var(--muted);
+        font-weight:750;
+      }
+      .note b{ color: var(--text); }
+      .error{
+        margin-top:10px;
+        padding: 10px 12px;
+        border-radius: 14px;
+        border:1px solid rgba(255,92,116,.35);
+        background: rgba(255,92,116,.10);
+        color: #ffd7dd;
+        font-weight:850;
+        font-size:12px;
+        line-height:1.5;
+        display:none;
+      }
 
-        .game-description {
-            color: #b8c0cc;
-            line-height: 1.6;
-            font-size: 0.95rem;
-        }
+      .players{
+        display:grid;
+        grid-template-columns: 1fr;
+        gap:10px;
+      }
 
-        @media (max-width: 768px) {
-            h1 {
-                font-size: 2.5rem;
-            }
+      .nameGrid{
+        display:grid;
+        grid-template-columns: 1fr;
+        gap:10px;
+        margin-top: 10px;
+      }
+      .nameRow{
+        display:flex;
+        align-items:center;
+        gap:10px;
+      }
+      .nameRow .num{
+        width:34px;
+        height:34px;
+        border-radius: 14px;
+        display:grid;
+        place-items:center;
+        font-weight:950;
+        background: rgba(255,255,255,.06);
+        border:1px solid var(--line);
+        color: var(--text);
+        flex: 0 0 auto;
+      }
+      .nameRow input{
+        width:100%;
+        padding: 12px 12px;
+        border-radius: 14px;
+        border:1px solid var(--line);
+        background: rgba(255,255,255,.90);
+        color: #111;
+        outline:none;
+        font-weight:900;
+        font-size:14px;
+      }
+      .nameRow input::placeholder{
+        color: rgba(0,0,0,.55);
+        font-weight:900;
+      }
 
-            .subtitle {
-                font-size: 1.1rem;
-            }
+      .bigbtn{
+        border:none;
+        cursor:pointer;
+        width:100%;
+        padding: 14px 14px;
+        border-radius: 18px;
+        color: #f5f8ff;
+        font-weight:1000;
+        font-size:14px;
+      }
+      .bigbtn.blue{
+        background: linear-gradient(135deg, rgba(60,118,255,.95), rgba(110,168,255,.88));
+        box-shadow: 0 10px 28px rgba(60,118,255,.16);
+      }
+      .bigbtn.purple{
+        background: linear-gradient(135deg, rgba(139,92,255,.92), rgba(190,98,255,.85));
+        box-shadow: 0 10px 28px rgba(139,92,255,.16);
+      }
+      .bigbtn.primary{
+        background: linear-gradient(135deg, rgba(110,168,255,.95), rgba(139,92,255,.92));
+        box-shadow: 0 10px 28px rgba(110,168,255,.14);
+      }
+      .bigbtn.redbar{
+        background: rgba(140,35,35,.55);
+        border:1px solid rgba(255,255,255,.10);
+      }
+      .bigbtn:active{ transform: translateY(1px); }
 
-            .games-grid {
-                grid-template-columns: 1fr;
-                gap: 20px;
-            }
+      .banner{
+        display:flex;
+        align-items:center;
+        justify-content:center;
+        gap:10px;
+        padding: 14px 12px;
+        border-radius: 18px;
+        border:1px solid var(--line);
+        background: rgba(255,255,255,.92);
+        color: #14161a;
+        font-weight:1000;
+        text-align:center;
+      }
+      .banner .icon{
+        width: 34px;
+        height: 34px;
+        border-radius: 14px;
+        display:grid;
+        place-items:center;
+        background: rgba(255,204,102,.35);
+        border:1px solid rgba(0,0,0,.10);
+        font-weight:1000;
+      }
+      .castBox{
+        border-radius: 18px;
+        border:2px solid rgba(255,255,255,.15);
+        background: rgba(255,255,255,.95);
+        overflow:hidden;
+      }
+      .castBox.mafia{ border-color: rgba(255,92,116,.55); }
+      .castBox.city{ border-color: rgba(110,168,255,.55); }
+      .castRow{
+        display:grid;
+        grid-template-columns: 1fr 1.2fr;
+        gap:10px;
+        padding: 10px 10px;
+        border-top: 1px solid rgba(0,0,0,.08);
+        align-items:center;
+        color:#111;
+        font-weight:950;
+        font-size:13px;
+      }
+      .castRow[data-idx]{
+        cursor:pointer;
+      }
+      .castRow.dead{
+        opacity:.55;
+        filter: grayscale(.25);
+      }
+      .castRow .leftMeta{
+        display:flex;
+        align-items:center;
+        justify-content:space-between;
+        gap:10px;
+        min-width:0;
+      }
+      .castRow .statusPill{
+        padding: 6px 9px;
+        border-radius: 999px;
+        border:1px solid rgba(0,0,0,.10);
+        background: rgba(0,0,0,.06);
+        font-weight:1000;
+        font-size:11px;
+        white-space:nowrap;
+      }
+      .castRow .statusPill.dead{
+        background: rgba(255,92,116,.12);
+        border-color: rgba(255,92,116,.25);
+      }
+      .castRow .statusPill.alive{
+        background: rgba(53,208,127,.14);
+        border-color: rgba(53,208,127,.25);
+      }
+      .castRow:first-child{ border-top:none; }
+      .castRow .p{
+        background: rgba(0,0,0,.08);
+        border-radius: 12px;
+        height: 12px;
+        width: 100%;
+        max-width: 140px;
+        opacity: .55;
+      }
+      .castRow .who{
+        display:flex;
+        align-items:center;
+        justify-content:flex-start;
+        gap:10px;
+        min-width:0;
+      }
+      .castRow .who .avatar{
+        width: 34px;
+        height: 34px;
+        border-radius: 12px;
+        background: rgba(0,0,0,.10);
+        border:1px solid rgba(0,0,0,.10);
+        display:grid;
+        place-items:center;
+        font-weight:1000;
+        color:#111;
+        flex: 0 0 auto;
+      }
+      .castRow .who .role{
+        white-space:nowrap;
+        overflow:hidden;
+        text-overflow:ellipsis;
+      }
+      .player{
+        display:flex;
+        align-items:center;
+        justify-content:space-between;
+        gap:10px;
+        padding: 12px 12px;
+        border-radius: 18px;
+        border:1px solid var(--line);
+        background: rgba(17,24,36,.40);
+      }
+      .player .left{
+        display:flex;
+        align-items:center;
+        gap:10px;
+        min-width:0;
+      }
+      .badge{
+        width:34px;
+        height:34px;
+        border-radius: 14px;
+        display:grid;
+        place-items:center;
+        font-weight:950;
+        background: rgba(255,255,255,.06);
+        border:1px solid var(--line);
+        color: var(--text);
+        flex: 0 0 auto;
+      }
+      .player .txt{
+        display:flex;
+        flex-direction:column;
+        gap:3px;
+        min-width:0;
+      }
+      .player .pname{
+        font-weight:950;
+        font-size:13px;
+        white-space:nowrap;
+        overflow:hidden;
+        text-overflow:ellipsis;
+      }
+      .player .pstate{
+        font-size:11px;
+        font-weight:850;
+        color: var(--muted);
+      }
+      .player .pstate.ok{ color: rgba(53,208,127,.95); }
 
-            .game-card {
-                padding: 25px;
-            }
+      .smallbtn{
+        border:none;
+        cursor:pointer;
+        font-weight:950;
+        font-size:12px;
+        padding: 10px 12px;
+        border-radius: 14px;
+        color: var(--text);
+        background: rgba(255,255,255,.06);
+        border:1px solid var(--line);
+        flex: 0 0 auto;
+      }
+      .smallbtn.primary{
+        background: rgba(110,168,255,.12);
+        border-color: rgba(110,168,255,.28);
+      }
 
-            .language-toggle {
-                padding: 8px 15px;
-                font-size: 0.8em;
-                top: 15px;
-                right: 15px;
-            }
-        }
+      .roleBtn{
+        display:flex;
+        align-items:center;
+        justify-content:space-between;
+        gap:10px;
+        padding: 12px 12px;
+        border-radius: 18px;
+        border:1px solid var(--line);
+        background: rgba(17,24,36,.40);
+        cursor:pointer;
+        width:100%;
+      }
+      .roleBtn .left{
+        display:flex;
+        align-items:center;
+        gap:10px;
+        min-width:0;
+      }
+      .roleBtn .ravatar{
+        width:34px;
+        height:34px;
+        border-radius: 14px;
+        display:grid;
+        place-items:center;
+        font-weight:1000;
+        background: rgba(255,255,255,.06);
+        border:1px solid var(--line);
+        color: var(--text);
+        flex: 0 0 auto;
+      }
+      .roleBtn .rmeta{
+        display:flex;
+        flex-direction:column;
+        gap:3px;
+        min-width:0;
+      }
+      .roleBtn .rname{
+        font-weight:1000;
+        font-size:13px;
+        color: var(--text);
+        white-space:nowrap;
+        overflow:hidden;
+        text-overflow:ellipsis;
+      }
+      .roleBtn .rteam{
+        font-size:11px;
+        font-weight:850;
+        color: var(--muted);
+      }
+      .roleBtn .right{
+        display:flex;
+        align-items:center;
+        gap:8px;
+        flex: 0 0 auto;
+      }
+      .roleBtn .count{
+        padding: 7px 10px;
+        border-radius: 999px;
+        border:1px solid var(--line);
+        background: rgba(255,255,255,.04);
+        color: var(--muted);
+        font-weight:950;
+        font-size:12px;
+      }
+      .roleBtn:active{ transform: translateY(1px); }
 
-        .play-button {
-            display: inline-block;
-            margin-top: 15px;
-            padding: 12px 30px;
-            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-            border-radius: 25px;
-            font-weight: 600;
-            transition: all 0.3s ease;
-        }
+      .modal{
+        position: fixed;
+        inset: 0;
+        background: rgba(0,0,0,.78);
+        backdrop-filter: blur(3px);
+        display:none;
+        align-items:flex-end;
+        justify-content:center;
+        padding:
+          16px
+          14px
+          calc(env(safe-area-inset-bottom) + 16px);
+      }
+      .sheet{
+        width:min(520px, 100%);
+        border-radius: 22px;
+        border:1px solid var(--line);
+        background: linear-gradient(180deg, rgba(17,24,36,.98), rgba(15,23,34,.98));
+        box-shadow: var(--shadow);
+        overflow:hidden;
+      }
+      .sheet .top{
+        padding: 12px 14px;
+        display:flex;
+        align-items:center;
+        justify-content:space-between;
+        gap:10px;
+        border-bottom:1px solid var(--line);
+        background: rgba(0,0,0,.32);
+      }
+      .sheet .top .who{
+        font-weight:950;
+        font-size:13px;
+      }
+      .sheet .top .close{
+        border:none;
+        background: rgba(255,255,255,.06);
+        border:1px solid var(--line);
+        color: var(--text);
+        font-weight:950;
+        border-radius: 14px;
+        padding: 9px 12px;
+        cursor:pointer;
+      }
+      .sheet .content{
+        padding: 14px 14px 12px;
+        display:flex;
+        flex-direction:column;
+        gap:10px;
+      }
+      .roleCard{
+        border-radius: 20px;
+        border:1px solid var(--line);
+        padding: 14px 14px;
+        background: rgba(17,24,36,.55);
+        position: relative;
+        display:flex;
+        flex-direction:column;
+        gap:6px;
+      }
+      .roleHelpBtn{
+        position:absolute;
+        inset-inline-end: 10px;
+        top: 10px;
+        width: 34px;
+        height: 34px;
+        border-radius: 14px;
+        border:1px solid var(--line);
+        background: rgba(255,255,255,.06);
+        color: var(--text);
+        font-weight:1000;
+        cursor:pointer;
+      }
+      .roleHelpBtn:active{ transform: translateY(1px); }
+      .roleCard .rdesc.collapsed{ display:none; }
+      .note.collapsed{ display:none; }
+      .miniHelp{
+        border:1px solid rgba(0,0,0,.10);
+        background: rgba(255,255,255,.92);
+        color:#111;
+        width: 28px;
+        height: 28px;
+        border-radius: 12px;
+        display:grid;
+        place-items:center;
+        font-weight:1100;
+        cursor:pointer;
+        flex: 0 0 auto;
+      }
+      .miniHelp:active{ transform: translateY(1px); }
+      .roleCard .rname{
+        font-weight:1000;
+        font-size:18px;
+        letter-spacing:-.2px;
+      }
+      .roleCard .rteam{
+        display:inline-flex;
+        align-self:flex-start;
+        padding: 7px 10px;
+        border-radius: 999px;
+        font-weight:950;
+        font-size:12px;
+        border:1px solid var(--line);
+        background: rgba(255,255,255,.04);
+        color: var(--muted);
+      }
+      .roleCard .rdesc{
+        margin-top:6px;
+        font-size:13px;
+        line-height:1.75;
+        color: var(--text);
+        font-weight:750;
+      }
+      .sheet .bottom{
+        padding: 12px 14px 14px;
+        display:flex;
+        gap:10px;
+        border-top:1px solid var(--line);
+      }
 
-        .game-card:hover .play-button {
-            transform: scale(1.05);
-            box-shadow: 0 5px 20px rgba(245, 87, 108, 0.5);
-        }
+      .hidden{ display:none !important; }
+
+      .toolBar{
+        display:grid;
+        grid-template-columns: repeat(6, 1fr);
+        gap:10px;
+        margin-bottom: 10px;
+      }
+      .toolBtn{
+        border:1px solid var(--line);
+        background: rgba(255,255,255,.85);
+        color:#111;
+        border-radius: 14px;
+        padding: 10px 8px;
+        cursor:pointer;
+        display:flex;
+        flex-direction:column;
+        align-items:center;
+        justify-content:center;
+        gap:6px;
+        min-height: 64px;
+        font-weight:1000;
+      }
+      .toolBtn .ico{
+        width: 30px;
+        height: 30px;
+        border-radius: 12px;
+        display:grid;
+        place-items:center;
+        background: rgba(0,0,0,.08);
+        border:1px solid rgba(0,0,0,.10);
+        font-weight:1000;
+      }
+      .toolBtn .lbl{
+        font-size:12px;
+        font-weight:1000;
+        color:#111;
+        white-space:nowrap;
+      }
+      @media (max-width: 420px){
+        .toolBar{ grid-template-columns: repeat(3, 1fr); }
+      }
+
+      .toolGrid{
+        display:grid;
+        grid-template-columns: 1fr 1fr;
+        gap:10px;
+      }
+      .toolBox{
+        border:1px solid rgba(255,255,255,.10);
+        background: rgba(255,255,255,.08);
+        border-radius: 16px;
+        padding: 12px;
+        color: var(--text);
+      }
+      .helpBox{
+        border:1px solid var(--line);
+        background: rgba(255,255,255,.04);
+        border-radius: 18px;
+        padding: 12px;
+      }
+      .helpBox .helpTitle{
+        font-weight:1100;
+        font-size:13px;
+        margin-bottom: 8px;
+      }
+      .helpBox .helpText{
+        font-weight:850;
+        font-size:12px;
+        line-height:1.8;
+        color: var(--muted);
+      }
+      .helpBox .helpActions{
+        margin-top: 10px;
+        display:flex;
+        justify-content:flex-start;
+      }
+      .toolBox.light{
+        background: rgba(255,255,255,.92);
+        color:#111;
+        border-color: rgba(0,0,0,.08);
+      }
+      .kv{
+        display:flex;
+        align-items:center;
+        justify-content:space-between;
+        gap:10px;
+      }
+      .kv .k{ font-weight:950; font-size:12px; opacity:.9; }
+      .kv .v{ font-weight:1100; font-size:22px; letter-spacing:.3px; }
+      .stepper{
+        display:flex;
+        align-items:center;
+        gap:8px;
+      }
+      .stepper button{
+        border:1px solid rgba(0,0,0,.12);
+        background: rgba(255,255,255,.92);
+        color:#111;
+        font-weight:1100;
+        width: 34px;
+        height: 34px;
+        border-radius: 14px;
+        cursor:pointer;
+      }
+      .stepper .num{
+        min-width: 36px;
+        text-align:center;
+        font-weight:1100;
+        font-size:16px;
+      }
+
+      .timerRow{
+        display:grid;
+        grid-template-columns: 1fr 1fr;
+        gap:10px;
+      }
+      .timerCard{
+        border-radius: 18px;
+        border:1px solid rgba(255,255,255,.10);
+        background: rgba(255,255,255,.92);
+        color:#111;
+        padding: 12px;
+        display:flex;
+        flex-direction:column;
+        gap:8px;
+        align-items:center;
+      }
+      .timerCard .tname{ font-weight:1000; font-size:13px; }
+      .timerCard .tval{ font-weight:1200; font-size:34px; letter-spacing:1px; }
+      .timerCard .tval.clickable{
+        cursor:pointer;
+        user-select:none;
+      }
+      .timerCard .tbtn{
+        border:none;
+        cursor:pointer;
+        width: 52px;
+        height: 52px;
+        border-radius: 999px;
+        background: rgba(0,0,0,.10);
+        color:#111;
+        font-weight:1200;
+        font-size:16px;
+      }
+      .timerActions{
+        display:flex;
+        gap:10px;
+        margin-top: 10px;
+      }
+      .timerActions button{
+        flex:1;
+        border:none;
+        cursor:pointer;
+        padding: 12px 12px;
+        border-radius: 16px;
+        font-weight:1100;
+      }
+      .timerActions .reset{
+        background: rgba(255,255,255,.88);
+        color:#111;
+        border:1px solid rgba(0,0,0,.10);
+      }
+      .timerActions .close{
+        background: rgba(110,168,255,.18);
+        color: var(--text);
+        border:1px solid rgba(110,168,255,.30);
+      }
     </style>
-</head>
-<body>
-    <!-- Language Toggle Button -->
-    <button class="language-toggle" onclick="toggleLanguage()">
-        <span id="langButtonText">فارسی</span>
-    </button>
-
-    <div class="container">
-        <header>
-            <h1 id="mainTitle">🎭 Mafia Game 🎭</h1>
-            <p class="subtitle" id="subtitle">Choose Your Game Variation</p>
-        </header>
-
-        <div class="games-grid">
-            <a href="godfather.html" class="game-card">
-                <div class="game-icon">🎩</div>
-                <h2 class="game-title" id="godfatherTitle">Godfather</h2>
-                <p class="game-description" id="godfatherDesc">
-                    The ultimate power position. Make them an offer they can't refuse in this classic variation.
-                </p>
-                <div class="play-button" id="godfatherBtn">Play Now</div>
-            </a>
-
-            <a href="commando.html" class="game-card">
-                <div class="game-icon">🪖</div>
-                <h2 class="game-title" id="commandoTitle">Commando</h2>
-                <p class="game-description" id="commandoDesc">
-                    Lead tactical operations with military precision. Strategy and stealth combine in this intense variation.
-                </p>
-                <div class="play-button" id="commandoBtn">Play Now</div>
-            </a>
-
-            <a href="detective.html" class="game-card">
-                <div class="game-icon">🔍</div>
-                <h2 class="game-title" id="detectiveTitle">Detective</h2>
-                <p class="game-description" id="detectiveDesc">
-                    Solve mysteries and uncover the truth. Use your investigative skills to find the mafia.
-                </p>
-                <div class="play-button" id="detectiveBtn">Play Now</div>
-            </a>
-
-            <a href="doncapo.html" class="game-card">
-                <div class="game-icon">👑</div>
-                <h2 class="game-title" id="doncapoTitle">Don Capo</h2>
-                <p class="game-description" id="doncapoDesc">
-                    Command respect as the crime boss. Control the family and rule the underworld.
-                </p>
-                <div class="play-button" id="doncapoBtn">Play Now</div>
-            </a>
-
-            <a href="elclasico.html" class="game-card">
-                <div class="game-icon">⚔️</div>
-                <h2 class="game-title" id="elclasicoTitle">El Clásico</h2>
-                <p class="game-description" id="elclasicoDesc">
-                    The classic rivalry brought to Mafia. Experience the traditional game with a competitive twist.
-                </p>
-                <div class="play-button" id="elclasicoBtn">Play Now</div>
-            </a>
+  </head>
+  <body>
+    <div class="app">
+      <div class="topbar">
+        <div class="title">اپلیکیشن بازی مافیا</div>
+        <div class="chip clickable" id="helpChip" role="button" tabindex="0" aria-label="راهنما">
+          <span class="label">راهنما</span>
+          <button id="helpBtn" type="button">؟</button>
         </div>
+      </div>
+
+      <section class="card" id="setupCard">
+        <div class="hd">
+          <h2>تنظیمات بازی</h2>
+          <span class="chip" id="quickStat">—</span>
+        </div>
+        <div class="bd">
+          <button class="bigbtn redbar" id="backBarBtn" type="button" style="display:none">بازگشت به تنظیمات بازی</button>
+
+          <div class="row">
+            <label>
+              سناریو
+              <select id="scenario">
+                <option value="bazras">بازپرس</option>
+                <option value="namayande">نماینده</option>
+                <option value="mozaker">مذاکره</option>
+                <option value="classic">کلاسیک</option>
+                <option value="takavar">تکاور</option>
+                <option value="kabo">کاپو</option>
+                <option value="pedarkhande">پدرخوانده</option>
+                <option value="zodiac">زودیاک</option>
+                <option value="meeting_epic">میتینگ/اپیک</option>
+                <option value="pishrafte">پیشرفته</option>
+                <option value="shab_mafia">شب مافیا</option>
+              </select>
+            </label>
+            <label>
+              تعداد بازیکن‌ها
+              <select id="playersCount"></select>
+            </label>
+          </div>
+
+          <div class="row one">
+            <label>
+              تعداد مافیا
+              <select id="mafiaCount"></select>
+            </label>
+          </div>
+
+          <div class="row one">
+            <div class="error" id="errorBox"></div>
+          </div>
+
+          <div class="toggles" id="toggles">
+            <!-- injected -->
+          </div>
+
+          <div class="row one" style="margin-top:12px">
+            <div class="actions">
+              <button class="btn danger" id="resetBtn" type="button">ریست</button>
+              <button class="btn primary" id="startGameBtn" type="button">شروع بازی</button>
+            </div>
+            <button class="btn" id="resumeBtn" type="button" style="display:none">ادامه بازی</button>
+          </div>
+        </div>
+      </section>
+
+      <section class="card hidden" id="playersCard">
+        <div class="hd">
+          <h2>بازیکنان</h2>
+          <span class="chip" id="playersStat">—</span>
+        </div>
+        <div class="bd">
+          <div class="row one">
+            <div class="pill" role="tablist" aria-label="حالت نام‌ها">
+              <button id="namesDefaultBtn" type="button" class="active">اسامی پیش‌فرض</button>
+              <button id="namesLastBtn" type="button">اسامی بازی قبل</button>
+            </div>
+            <div class="note">
+              اسامی بازیکنان را وارد کنید. اگر «اسامی بازی قبل» را انتخاب کنید، از ذخیره‌ی مرورگر استفاده می‌شود.
+            </div>
+            <div class="nameGrid" id="nameGrid"></div>
+            <div class="error" id="errorBoxPlayers"></div>
+          </div>
+
+          <div class="row one" style="margin-top:12px">
+            <button class="bigbtn primary" id="dealBtn" type="button">تقسیم نقش</button>
+            <div class="actions">
+              <button class="btn" id="playersBackBtn" type="button">بازگشت به تنظیمات</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="card hidden" id="cardsCard">
+        <div class="hd">
+          <h2>تقسیم نقش</h2>
+          <span class="chip" id="cardsStat">—</span>
+        </div>
+        <div class="bd">
+          <div class="cardsCenter">
+            <div class="banner">
+              <div class="icon">!</div>
+              <div id="cardsWho">نوبت: —</div>
+            </div>
+
+            <div class="note" id="cardsHint">بازیکن یک کارت را انتخاب می‌کند و نقش خودش را می‌بیند.</div>
+
+            <div class="cardsGrid" id="cardsGrid"></div>
+          </div>
+
+          <div class="actions wrap">
+            <button class="btn" id="cardsBackBtn" type="button">بازگشت</button>
+            <button class="btn" id="autoAssignBtn" type="button">اختصاص اتومات نقش‌ها</button>
+            <button class="btn primary" id="cardsNextBtn" type="button" disabled>برو مرحله بعد!</button>
+          </div>
+        </div>
+      </section>
+
+      <section class="card hidden" id="castCard">
+        <div class="hd">
+          <h2>فهرست شخصیت‌ها</h2>
+          <span class="chip" id="castStat">—</span>
+        </div>
+        <div class="bd">
+          <div class="toolBar" id="godTools">
+            <button class="toolBtn" id="toolWake" type="button">
+              <div class="ico">🌙</div>
+              <div class="lbl">بیداری</div>
+            </button>
+            <button class="toolBtn" id="toolStatus" type="button">
+              <div class="ico">🔎</div>
+              <div class="lbl">استعلام</div>
+            </button>
+            <button class="toolBtn" id="toolLastMove" type="button">
+              <div class="ico">🃏</div>
+              <div class="lbl">حرکت آخر</div>
+            </button>
+            <button class="toolBtn" id="toolRoleChange" type="button">
+              <div class="ico">🎭</div>
+              <div class="lbl">تغییر نقش</div>
+            </button>
+            <button class="toolBtn" id="toolChance" type="button">
+              <div class="ico">🎲</div>
+              <div class="lbl">قرعه</div>
+            </button>
+            <button class="toolBtn" id="toolTimer" type="button">
+              <div class="ico">⏱</div>
+              <div class="lbl">تایم</div>
+            </button>
+          </div>
+
+          <div class="banner">
+            <div class="icon">!</div>
+            <div>بازی با شخصیت‌های زیر شروع می‌شود:</div>
+          </div>
+
+          <div style="height:12px"></div>
+
+          <div class="castBox mafia" id="castMafia"></div>
+          <div style="height:12px"></div>
+          <div class="castBox city" id="castCity"></div>
+          <div style="height:12px"></div>
+          <div class="castBox" id="castInd" style="display:none"></div>
+
+          <div class="actions">
+            <button class="btn" id="castBackBtn" type="button">بازگشت به تنظیمات بازی</button>
+            <button class="btn primary" id="castNewBtn" type="button">قرعه‌کشی جدید</button>
+          </div>
+        </div>
+      </section>
+
+    </div>
+
+    <div class="modal" id="modal" role="dialog" aria-modal="true" aria-hidden="true">
+      <div class="sheet">
+        <div class="top">
+          <div class="who" id="modalWho">—</div>
+          <button class="close" id="modalCloseBtn" type="button">بستن</button>
+        </div>
+        <div class="content">
+          <div class="roleCard" id="roleCard">
+            <button class="roleHelpBtn" id="roleHelpBtn" type="button" title="راهنمای نقش">؟</button>
+            <div class="rname" id="roleName">—</div>
+            <div class="rteam" id="roleTeam">—</div>
+            <div class="rdesc collapsed" id="roleDesc">—</div>
+          </div>
+          <div class="note" id="modalNote"></div>
+        </div>
+        <div class="bottom">
+          <button class="btn primary" id="markRevealedBtn" type="button">دیدم</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal" id="toolModal" role="dialog" aria-modal="true" aria-hidden="true">
+      <div class="sheet">
+        <div class="top">
+          <div class="who" id="toolTitle">—</div>
+          <button class="close" id="toolCloseBtn" type="button">بستن</button>
+        </div>
+        <div class="content" id="toolBody">
+          <!-- injected -->
+        </div>
+        <div class="bottom" id="toolBottom">
+          <button class="btn primary" id="toolOkBtn" type="button">بستن</button>
+        </div>
+      </div>
     </div>
 
     <script>
-        let currentLang = localStorage.getItem('language') || 'fa';
+      (function () {
+        const $ = (id) => document.getElementById(id);
 
-        const translations = {
-            en: {
-                mainTitle: '🎭 Mafia Game 🎭',
-                subtitle: 'Choose Your Game Variation',
-                commandoTitle: 'Commando',
-                commandoDesc: 'Lead tactical operations with military precision. Strategy and stealth combine in this intense variation.',
-                detectiveTitle: 'Detective',
-                detectiveDesc: 'Solve mysteries and uncover the truth. Use your investigative skills to find the mafia.',
-                doncapoTitle: 'Don Capo',
-                doncapoDesc: 'Command respect as the crime boss. Control the family and rule the underworld.',
-                elclasicoTitle: 'El Clásico',
-                elclasicoDesc: 'The classic rivalry brought to Mafia. Experience the traditional game with a competitive twist.',
-                godfatherTitle: 'Godfather',
-                godfatherDesc: 'The ultimate power position. Make them an offer they can\'t refuse in this classic variation.',
-                playBtn: 'Play Now',
-                langButtonText: 'فارسی'
-            },
-            fa: {
-                mainTitle: '🎭 بازی مافیا 🎭',
-                subtitle: 'نسخه بازی خود را انتخاب کنید',
-                commandoTitle: 'نسخه تکاور',
-                commandoDesc: 'عملیات‌های تاکتیکی با دقت نظامی را رهبری کنید. استراتژی و مخفی‌کاری در این نسخه هیجان‌انگیز ترکیب می‌شوند.',
-                detectiveTitle: 'نسخه بازپرس',
-                detectiveDesc: 'رازها را حل کنید و حقیقت را کشف کنید. از مهارت‌های تحقیقاتی خود برای یافتن مافیا استفاده کنید.',
-                doncapoTitle: 'نسخه دن کاپو',
-                doncapoDesc: 'به عنوان رئیس جنایتکار احترام کسب کنید. خانواده را کنترل کنید و بر دنیای جنایت حکومت کنید.',
-                elclasicoTitle: 'نسخه ال کلاسیکو',
-                elclasicoDesc: 'رقابت کلاسیک در مافیا. بازی سنتی را با طعم رقابتی تجربه کنید.',
-                godfatherTitle: 'نسخه پدرخوانده',
-                godfatherDesc: 'موقعیت قدرت نهایی. پیشنهادی بدهید که نتوانند رد کنند در این نسخه کلاسیک.',
-                playBtn: 'شروع بازی',
-                langButtonText: 'English'
-            }
+        const STORAGE_KEY = "mafia_v2_simple_web_state_v1";
+        const LAST_NAMES_KEY = "mafia_v2_simple_web_last_names_v1";
+
+        const roles = {
+          // --- base ---
+          citizen: { faName: "شهروند ساده", teamFa: "شهر", hintFa: "بدون قابلیت", descFa: "هدف شما کمک به شهر و پیدا کردن مافیا است." },
+          mafia: { faName: "مافیا ساده", teamFa: "مافیا", hintFa: "بدون قابلیت", descFa: "شب‌ها با تیم مافیا هماهنگ شوید و شهر را گمراه کنید." },
+
+          // --- classic / general ---
+          mafiaBoss: { faName: "رئیس مافیا", teamFa: "مافیا", hintFa: "رهبر تیم", descFa: "تصمیم‌های تیم مافیا را هماهنگ می‌کند (طبق قوانین میز)." },
+          godfather: { faName: "پدرخوانده", teamFa: "مافیا", hintFa: "نقش ویژه مافیا", descFa: "در برخی سناریوها استعلام او منفی است و توانایی‌های ویژه دارد (طبق قوانین میز)." },
+          swindler: { faName: "شیاد", teamFa: "مافیا", hintFa: "فریب/برهم‌زن", descFa: "با فریب و بازی روانی، رأی‌ها را منحرف می‌کند (طبق قوانین میز)." },
+          nato: { faName: "ناتو", teamFa: "مافیا", hintFa: "حدس نقش", descFa: "در برخی سناریوها با حدس درست نقش، بازیکن را خارج می‌کند (طبق قوانین میز)." },
+          negotiator: { faName: "مذاکره‌کننده", teamFa: "مافیا", hintFa: "جذب شهر", descFa: "در برخی سناریوها می‌تواند یک شهروند را به تیم مافیا اضافه کند (طبق قوانین میز)." },
+          natasha: { faName: "ناتاشا", teamFa: "مافیا", hintFa: "سایلنت", descFa: "هر شب می‌تواند یک نفر را برای روز بعد سایلنت کند (طبق قوانین میز)." },
+          doctorLecter: { faName: "دکتر لکتر", teamFa: "مافیا", hintFa: "پزشک مافیا", descFa: "می‌تواند یک مافیا را از شلیک شب نجات دهد (طبق قوانین میز)." },
+          jokerMafia: { faName: "جوکر مافیا", teamFa: "مافیا", hintFa: "برعکس‌کردن استعلام", descFa: "در برخی سناریوها می‌تواند استعلام‌ها را محدوداً برعکس کند (طبق قوانین میز)." },
+          matador: { faName: "ماتادور", teamFa: "مافیا", hintFa: "گرفتن قابلیت", descFa: "می‌تواند توانایی یک نفر را برای یک شب غیرفعال کند (طبق قوانین میز)." },
+          saulGoodman: { faName: "ساول گودمن", teamFa: "مافیا", hintFa: "خرید شهر", descFa: "در برخی سناریوها یک‌بار می‌تواند یک شهروند ساده را به تیم مافیا اضافه کند (طبق قوانین میز)." },
+
+          detective: { faName: "کارآگاه", teamFa: "شهر", hintFa: "استعلام", descFa: "هر شب می‌تواند یک نفر را استعلام کند (طبق قوانین میز)." },
+          investigator: { faName: "بازپرس", teamFa: "شهر", hintFa: "بازپرسی", descFa: "در برخی سناریوها دو نفر را به بازپرسی می‌آورد (طبق قوانین میز)." },
+          doctor: { faName: "پزشک", teamFa: "شهر", hintFa: "نجات", descFa: "هر شب می‌تواند یک نفر را از شلیک نجات دهد (طبق قوانین میز)." },
+          watson: { faName: "دکتر واتسون", teamFa: "شهر", hintFa: "نجات", descFa: "در سناریو پدرخوانده نقش پزشک شهر است (طبق قوانین میز)." },
+          researcher: { faName: "محقق", teamFa: "شهر", hintFa: "سرنخ/تحلیل", descFa: "در برخی سناریوها نقش کلیدی برای سرنخ دادن به شهر است (طبق قوانین میز)." },
+          invulnerable: { faName: "رویین‌تن", teamFa: "شهر", hintFa: "ضربه‌گیر", descFa: "در برخی سناریوها یک بار از شلیک جان سالم به‌در می‌برد (طبق قوانین میز)." },
+          armored: { faName: "زره‌پوش", teamFa: "شهر", hintFa: "دفاع", descFa: "در برخی سناریوها در برابر شلیک مقاوم است یا یک شیلد دارد (طبق قوانین میز)." },
+          sniper: { faName: "تک‌تیرانداز", teamFa: "شهر", hintFa: "شلیک", descFa: "در برخی سناریوها می‌تواند شلیک کند؛ اشتباه ممکن است باعث خروج خودش شود (طبق قوانین میز)." },
+          professional: { faName: "حرفه‌ای", teamFa: "شهر", hintFa: "شلیک", descFa: "در سناریوهایی مثل شب‌مافیا/زودیاک نقش شلیک‌کننده شهر است (طبق قوانین میز)." },
+          reporter: { faName: "خبرنگار", teamFa: "شهر", hintFa: "ردگیری", descFa: "در برخی سناریوها می‌تواند مذاکره‌شده/تغییرات را شناسایی کند (طبق قوانین میز)." },
+          representative: { faName: "نماینده", teamFa: "شهر", hintFa: "قدرت روز", descFa: "نقش سناریو نماینده (طبق قوانین میز شما)." },
+          hardJohn: { faName: "جان‌سخت", teamFa: "شهر", hintFa: "جلیقه", descFa: "یک جلیقه دارد و با شلیک اول خارج نمی‌شود (طبق قوانین میز)." },
+          psychologist: { faName: "روانپزشک", teamFa: "شهر", hintFa: "سکوت", descFa: "می‌تواند محدوداً برای یک نفر سکوت/درمان تجویز کند (طبق قوانین میز)." },
+          mayor: { faName: "شهردار", teamFa: "شهر", hintFa: "وتو/خروج", descFa: "در برخی سناریوها می‌تواند رأی را وتو کند یا خروج مستقیم بدهد (طبق قوانین میز)." },
+          seller: { faName: "فروشنده", teamFa: "شهر", hintFa: "گرفتن قابلیت", descFa: "می‌تواند یک‌بار توانایی یک نفر را تا آخر بازی بگیرد (طبق قوانین میز)." },
+          priest: { faName: "کشیش", teamFa: "شهر", hintFa: "نقش پیشرفته", descFa: "نقش سناریوهای پیشرفته (طبق قوانین میز شما)." },
+          judge: { faName: "قاضی", teamFa: "شهر", hintFa: "کنترل رأی", descFa: "در برخی سناریوها می‌تواند رأی‌گیری را تغییر دهد یا وتو کند (طبق قوانین میز)." },
+          commander: { faName: "فرمانده", teamFa: "شهر", hintFa: "نقش پیشرفته", descFa: "نقش سناریوهای پیشرفته (طبق قوانین میز شما)." },
+
+          // --- Capo (کاپو/دن) ---
+          danMafia: { faName: "دن مافیا", teamFa: "مافیا", hintFa: "رئیس", descFa: "استعلام او برای کارآگاه منفی است و توانایی‌های خاص دارد (طبق سناریو کاپو)." },
+          witch: { faName: "جادوگر", teamFa: "مافیا", hintFa: "کپی قابلیت", descFa: "اگر به یک شهروند ابلیتی‌دار بزند، آن قابلیت روی خودش اعمال می‌شود (طبق سناریو کاپو)." },
+          executioner: { faName: "جلاد", teamFa: "مافیا", hintFa: "حدس نقش", descFa: "با حدس درست نقش، فرد تحت هر شرایطی خارج می‌شود (طبق سناریو کاپو)." },
+          informant: { faName: "خبرچین", teamFa: "مافیا", hintFa: "جاسوس", descFa: "در سناریو کاپو جاسوس تیم مافیا است (طبق قوانین میز)." },
+          kadkhoda: { faName: "کدخدا", teamFa: "شهر", hintFa: "لینک شهر", descFa: "می‌تواند در طول بازی چند نفر را به لینک شهروندی وصل کند (طبق سناریو کاپو)." },
+          heir: { faName: "وارث", teamFa: "شهر", hintFa: "ارث نقش", descFa: "در صورت خروج هدف، ممکن است توانایی او را به‌ارث ببرد (طبق سناریو کاپو)." },
+          herbalist: { faName: "عطار", teamFa: "شهر", hintFa: "زهر/پادزهر", descFa: "می‌تواند زهر بدهد و در شرایطی پادزهر بدهد (طبق سناریو کاپو)." },
+          armorsmith: { faName: "زره‌ساز", teamFa: "شهر", hintFa: "تک‌سیو", descFa: "یک‌بار می‌تواند خودش را نجات دهد (طبق سناریو کاپو)." },
+          suspect: { faName: "مظنون", teamFa: "شهر", hintFa: "استعلام مثبت", descFa: "برای کارآگاه مثبت دیده می‌شود ولی شهر است (طبق سناریو کاپو)." },
+
+          // --- Zodiac ---
+          alcapone: { faName: "آلکاپن", teamFa: "مافیا", hintFa: "رئیس", descFa: "رئیس مافیاست و استعلام او برای کارآگاه منفی است (طبق سناریو زودیاک)." },
+          zodiac: { faName: "زودیاک", teamFa: "مستقل", hintFa: "قاتل مستقل", descFa: "نه شهر است نه مافیا؛ برای بردن باید تنها برنده شود (طبق سناریو زودیاک)." },
+          showman: { faName: "شعبده‌باز", teamFa: "مستقل", hintFa: "گرفتن قابلیت", descFa: "هر شب می‌تواند قابلیت یک نفر را موقتاً از او بگیرد (طبق سناریو زودیاک)." },
+          bomber: { faName: "بمب‌گذار", teamFa: "مستقل", hintFa: "بمب", descFa: "در سناریو زودیاک می‌تواند یک‌بار بمب روی یک نفر بگذارد (طبق قوانین میز)." },
+          guard: { faName: "محافظ", teamFa: "شهر", hintFa: "ضد زودیاک", descFa: "در سناریو زودیاک تعامل ویژه با زودیاک دارد (طبق قوانین میز)." },
+          ocean: { faName: "اوشن", teamFa: "شهر", hintFa: "بیدار کردن", descFa: "دو شب می‌تواند یک شهروند را بیدار کند و با او آشنا شود (طبق سناریو زودیاک)." },
+          gunslinger: { faName: "تفنگدار", teamFa: "شهر", hintFa: "تفنگ دادن", descFa: "می‌تواند محدوداً تفنگ به بازیکنان بدهد (طبق سناریو زودیاک)." },
+
+          // --- Godfather (game) ---
+          leon: { faName: "لئون", teamFa: "شهر", hintFa: "حرفه‌ای شهر", descFa: "نقش کلیدی شهر در سناریو پدرخوانده (طبق قوانین میز)." },
+          constantine: { faName: "کنستانتین", teamFa: "شهر", hintFa: "بازگردانی", descFa: "می‌تواند طبق قوانین میز یک نفر را به بازی برگرداند (طبق سناریو پدرخوانده)." },
+          citizenKane: { faName: "همشهری کین", teamFa: "شهر", hintFa: "افشا", descFa: "در سناریو پدرخوانده معمولاً یک‌بار می‌تواند یک نفر را نشان کند؛ اگر آن نفر مافیا باشد، صبح ساید او توسط گرداننده اعلام می‌شود (طبق قوانین میز)." },
+          nostradamus: { faName: "نوستراداموس", teamFa: "مستقل", hintFa: "شب معارفه", descFa: "در سناریو پدرخوانده (روایت رایج)، فقط شب معارفه بیدار می‌شود و ۳ نفر را نشان می‌دهد؛ گرداننده تعداد مافیاهای داخل این ۳ نفر را اعلام می‌کند و او براساس آن، ساید خود را انتخاب می‌کند." },
         };
 
-        function updateLanguage() {
-            const t = translations[currentLang];
-            
-            document.getElementById('mainTitle').textContent = t.mainTitle;
-            document.getElementById('subtitle').textContent = t.subtitle;
-            document.getElementById('commandoTitle').textContent = t.commandoTitle;
-            document.getElementById('commandoDesc').textContent = t.commandoDesc;
-            document.getElementById('commandoBtn').textContent = t.playBtn;
-            document.getElementById('detectiveTitle').textContent = t.detectiveTitle;
-            document.getElementById('detectiveDesc').textContent = t.detectiveDesc;
-            document.getElementById('detectiveBtn').textContent = t.playBtn;
-            document.getElementById('doncapoTitle').textContent = t.doncapoTitle;
-            document.getElementById('doncapoDesc').textContent = t.doncapoDesc;
-            document.getElementById('doncapoBtn').textContent = t.playBtn;
-            document.getElementById('elclasicoTitle').textContent = t.elclasicoTitle;
-            document.getElementById('elclasicoDesc').textContent = t.elclasicoDesc;
-            document.getElementById('elclasicoBtn').textContent = t.playBtn;
-            document.getElementById('godfatherTitle').textContent = t.godfatherTitle;
-            document.getElementById('godfatherDesc').textContent = t.godfatherDesc;
-            document.getElementById('godfatherBtn').textContent = t.playBtn;
-            document.getElementById('langButtonText').textContent = t.langButtonText;
+        // Per-scenario overrides for role texts (same role, different rules).
+        // This is only UI/help text; actual game rules are still handled by the narrator/table.
+        const roleScenarioOverrides = {
+          godfather: {
+            pedarkhande: {
+              descFa: "در سناریو پدرخوانده یک جلیقه دارد و «حس ششم» دارد. تیم مافیا هر شب معمولاً یکی را انتخاب می‌کند: یا شلیک، یا استفاده از حس ششم، یا خرید توسط ساول (طبق قوانین سناریو).",
+            },
+            shab_mafia: {
+              descFa: "در سناریو شب‌مافیا معمولاً نقش ویژهٔ مافیا با استعلام منفی است (جزئیات دقیق طبق قوانین سناریو/میز).",
+            },
+          },
+          matador: {
+            pedarkhande: {
+              descFa: "شب‌ها با تیم مافیا بیدار می‌شود. هر شب می‌تواند یک نفر را نشان کند تا توانایی شبِ او همان شب غیرفعال شود؛ اگر آن فرد بیدار شود با علامت ضربدر گرداننده مواجه می‌شود (طبق سناریو پدرخوانده).",
+            },
+          },
+          saulGoodman: {
+            pedarkhande: {
+              descFa: "معمولاً فقط یک‌بار می‌تواند یک «شهروند ساده» را بخرد و به «مافیا ساده» تبدیل کند؛ در شبی که خرید انجام می‌شود، گرداننده اعلام می‌کند خریداری انجام خواهد شد (طبق سناریو پدرخوانده).",
+            },
+          },
+          watson: {
+            pedarkhande: {
+              descFa: "مثل پزشک عمل می‌کند: هر شب می‌تواند جان یک نفر را نجات دهد و جان خودش را فقط یک‌بار در کل بازی می‌تواند نجات دهد (طبق سناریو پدرخوانده).",
+            },
+          },
+          leon: {
+            pedarkhande: {
+              descFa: "می‌تواند (طبق قوانین سناریو) محدود شلیک کند؛ اگر به شهروند شلیک کند، خودش کشته می‌شود و معمولاً دکتر نمی‌تواند او را نجات دهد. یک جلیقه هم دارد (طبق سناریو پدرخوانده).",
+            },
+          },
+          citizenKane: {
+            pedarkhande: {
+              descFa: "معمولاً یک‌بار یک نفر را به گرداننده نشان می‌دهد؛ اگر مافیا باشد، صبح ساید/مافیا بودن او اعلام می‌شود (بدون خروج فوری). در بعضی قوانین اگر استعلامش درست باشد، شب بعد خودِ کین از بازی خارج می‌شود (طبق قوانین سناریو).",
+            },
+          },
+          constantine: {
+            pedarkhande: {
+              descFa: "یک‌بار می‌تواند یکی از بازیکنان اخراجی (در صورتی که نقش او افشا نشده باشد) را به بازی برگرداند (طبق سناریو پدرخوانده).",
+            },
+          },
+          nostradamus: {
+            pedarkhande: {
+              descFa: "فقط شب معارفه بیدار می‌شود. ۳ نفر را نشان می‌دهد و گرداننده تعداد مافیاهای داخل این ۳ نفر را اعلام می‌کند. سپس نوستراداموس ساید خود را انتخاب می‌کند؛ اگر بین ۳ نفر، ۲ مافیا باشد معمولاً مجبور است در ساید مافیا بازی کند (طبق سناریو پدرخوانده).",
+            },
+          },
+        };
 
-            // Apply RTL for Farsi
-            if (currentLang === 'fa') {
-                document.body.classList.add('rtl');
+        const toggleDefs = [
+          // mafia
+          { key: "mafiaBoss", roleId: "mafiaBoss", group: "mafia" },
+          { key: "godfather", roleId: "godfather", group: "mafia" },
+          { key: "alcapone", roleId: "alcapone", group: "mafia" },
+          { key: "danMafia", roleId: "danMafia", group: "mafia" },
+          { key: "doctorLecter", roleId: "doctorLecter", group: "mafia" },
+          { key: "jokerMafia", roleId: "jokerMafia", group: "mafia" },
+          { key: "swindler", roleId: "swindler", group: "mafia" },
+          { key: "nato", roleId: "nato", group: "mafia" },
+          { key: "negotiator", roleId: "negotiator", group: "mafia" },
+          { key: "natasha", roleId: "natasha", group: "mafia" },
+          { key: "matador", roleId: "matador", group: "mafia" },
+          { key: "saulGoodman", roleId: "saulGoodman", group: "mafia" },
+          { key: "witch", roleId: "witch", group: "mafia" },
+          { key: "executioner", roleId: "executioner", group: "mafia" },
+          { key: "informant", roleId: "informant", group: "mafia" },
+
+          // city
+          { key: "detective", roleId: "detective", group: "city" },
+          { key: "investigator", roleId: "investigator", group: "city" },
+          { key: "doctor", roleId: "doctor", group: "city" },
+          { key: "watson", roleId: "watson", group: "city" },
+          { key: "researcher", roleId: "researcher", group: "city" },
+          { key: "invulnerable", roleId: "invulnerable", group: "city" },
+          { key: "armored", roleId: "armored", group: "city" },
+          { key: "sniper", roleId: "sniper", group: "city" },
+          { key: "professional", roleId: "professional", group: "city" },
+          { key: "reporter", roleId: "reporter", group: "city" },
+          { key: "representative", roleId: "representative", group: "city" },
+          { key: "hardJohn", roleId: "hardJohn", group: "city" },
+          { key: "psychologist", roleId: "psychologist", group: "city" },
+          { key: "mayor", roleId: "mayor", group: "city" },
+          { key: "seller", roleId: "seller", group: "city" },
+          { key: "priest", roleId: "priest", group: "city" },
+          { key: "judge", roleId: "judge", group: "city" },
+          { key: "commander", roleId: "commander", group: "city" },
+          { key: "kadkhoda", roleId: "kadkhoda", group: "city" },
+          { key: "heir", roleId: "heir", group: "city" },
+          { key: "herbalist", roleId: "herbalist", group: "city" },
+          { key: "armorsmith", roleId: "armorsmith", group: "city" },
+          { key: "suspect", roleId: "suspect", group: "city" },
+          { key: "guard", roleId: "guard", group: "city" },
+          { key: "ocean", roleId: "ocean", group: "city" },
+          { key: "gunslinger", roleId: "gunslinger", group: "city" },
+          { key: "leon", roleId: "leon", group: "city" },
+          { key: "constantine", roleId: "constantine", group: "city" },
+          { key: "nostradamus", roleId: "nostradamus", group: "city" },
+          { key: "citizenKane", roleId: "citizenKane", group: "city" },
+
+          // independent
+          { key: "zodiac", roleId: "zodiac", group: "independent" },
+          { key: "showman", roleId: "showman", group: "independent" },
+          { key: "bomber", roleId: "bomber", group: "independent" },
+        ];
+
+        // Which special roles are even available per scenario.
+        // If a key isn't present, we assume "all roles allowed" (so the UI won't unexpectedly hide roles).
+        const scenarioRoleAllowList = {
+          // Sources used:
+          // - Classic: gorgine.com/scenarios/classic/
+          // - Shab Mafia: gorgine.com/scenarios/mafia-nights/
+          // - Zodiac: whitesho.com/ZodiacScenario/...
+          // - Capo/Den: whitesho.com/MafiaCapo/...
+          // - Bazras (Inspector): common "بازپرس/New TV" role set (multiple Persian sources)
+
+          classic: ["mafiaBoss", "detective", "doctor"],
+
+          // بازپرس (New TV / Inspector)
+          bazras: ["mafiaBoss", "nato", "swindler", "detective", "doctor", "investigator", "researcher", "sniper"],
+
+          // نماینده (limited info online; keep a light pack)
+          namayande: ["mafiaBoss", "detective", "doctor", "representative"],
+
+          // مذاکره (Negotiation)
+          mozaker: ["mafiaBoss", "negotiator", "detective", "doctor", "armored", "reporter", "sniper"],
+          "mozakerه": ["mafiaBoss", "negotiator", "detective", "doctor", "armored", "reporter", "sniper"],
+
+          // تکاور (sniper-heavy classic)
+          takavar: ["mafiaBoss", "detective", "doctor", "sniper"],
+
+          // کاپو (Capo/Den)
+          kabo: ["danMafia", "witch", "executioner", "informant", "detective", "kadkhoda", "heir", "herbalist", "armorsmith", "suspect"],
+
+          // پدرخوانده (game)
+          pedarkhande: ["godfather", "matador", "saulGoodman", "watson", "leon", "citizenKane", "constantine", "nostradamus"],
+
+          // زودیاک
+          zodiac: ["alcapone", "zodiac", "showman", "bomber", "detective", "doctor", "professional", "guard", "ocean", "gunslinger"],
+
+          // میتینگ/اپیک و پیشرفته (approx. "advanced classic" subset)
+          meeting_epic: ["mafiaBoss", "nato", "natasha", "doctorLecter", "detective", "doctor", "sniper", "armored", "judge", "commander", "priest"],
+          pishrafte: ["mafiaBoss", "godfather", "doctorLecter", "jokerMafia", "nato", "natasha", "swindler", "detective", "doctor", "sniper", "professional", "armored", "invulnerable", "judge", "commander", "priest", "researcher", "investigator"],
+
+          // شب مافیا (فیلیمو)
+          shab_mafia: ["godfather", "doctorLecter", "jokerMafia", "detective", "doctor", "professional", "hardJohn", "psychologist", "mayor", "seller"],
+        };
+
+        function clamp(n, min, max) { return Math.max(min, Math.min(max, n)); }
+        function shuffle(arr) {
+          for (let i = arr.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [arr[i], arr[j]] = [arr[j], arr[i]];
+          }
+          return arr;
+        }
+
+        function computeSuggestedMafia(nPlayers) {
+          // classic-ish: ~1/4
+          if (nPlayers <= 6) return 1;
+          if (nPlayers <= 9) return 2;
+          if (nPlayers <= 12) return 3;
+          if (nPlayers <= 15) return 4;
+          return 5;
+        }
+
+        function defaultTogglesForScenario(scenario) {
+          // defaults reflect the typical role-set; users can still toggle roles on/off (within scenario allow list)
+          const baseOff = Object.fromEntries(toggleDefs.map((d) => [d.key, false]));
+          const on = (...keys) => {
+            const out = { ...baseOff };
+            for (const k of keys) out[k] = true;
+            return out;
+          };
+
+          switch (scenario) {
+            case "classic":
+              return on("mafiaBoss", "detective", "doctor");
+            case "bazras":
+              return on("mafiaBoss", "nato", "swindler", "detective", "doctor", "investigator", "researcher");
+            case "namayande":
+              return on("mafiaBoss", "detective", "doctor", "representative");
+            case "mozaker":
+            case "mozakerه":
+              return on("mafiaBoss", "negotiator", "detective", "doctor", "armored", "reporter");
+            case "takavar":
+              return on("mafiaBoss", "detective", "doctor", "sniper");
+            case "kabo":
+              return on("danMafia", "witch", "executioner", "detective", "heir", "herbalist", "armorsmith", "suspect");
+            case "pedarkhande":
+              return on("godfather", "matador", "saulGoodman", "watson", "leon", "citizenKane", "constantine", "nostradamus");
+            case "zodiac":
+              return on("alcapone", "zodiac", "showman", "bomber", "detective", "doctor", "professional", "guard", "ocean", "gunslinger");
+            case "shab_mafia":
+              return on("godfather", "doctorLecter", "jokerMafia", "detective", "doctor", "professional", "hardJohn", "psychologist", "mayor");
+            case "meeting_epic":
+              return on("mafiaBoss", "nato", "natasha", "doctorLecter", "detective", "doctor", "sniper", "armored");
+            case "pishrafte":
+              return on("mafiaBoss", "doctorLecter", "jokerMafia", "nato", "natasha", "detective", "doctor", "sniper", "armored", "professional", "researcher");
+            default:
+              return on("mafiaBoss", "detective", "doctor");
+          }
+        }
+
+        function sanitizeScenarioValue(v) {
+          const sel = $("scenario");
+          if (!sel) return "classic";
+          const vv = (v || "").trim();
+          const exists = Array.from(sel.options).some((o) => o.value === vv);
+          return exists ? vv : "classic";
+        }
+
+        function getAllowedToggleKeysForScenario(scenario) {
+          const allow = scenarioRoleAllowList[scenario];
+          if (!allow) return null; // null means "all allowed"
+          return new Set(allow);
+        }
+
+        function normalizeTogglesForScenario(toggles, scenario) {
+          const allowed = getAllowedToggleKeysForScenario(scenario);
+          if (!allowed) return { ...toggles };
+          const out = { ...toggles };
+          for (const def of toggleDefs) {
+            if (!allowed.has(def.key)) out[def.key] = false;
+          }
+          return out;
+        }
+
+        function buildRolePool(nPlayers, mafiaCount, toggles) {
+          if (!Number.isFinite(nPlayers) || !Number.isFinite(mafiaCount)) {
+            return { ok: false, error: "اعداد نامعتبر هستند." };
+          }
+          if (nPlayers < 5) return { ok: false, error: "حداقل ۵ بازیکن لازم است." };
+          if (mafiaCount < 1) return { ok: false, error: "تعداد مافیا باید حداقل ۱ باشد." };
+          if (mafiaCount >= nPlayers) return { ok: false, error: "تعداد مافیا باید کمتر از تعداد بازیکن‌ها باشد." };
+
+          // enforce scenario availability even if state was loaded from storage
+          const scenario = $("scenario") ? $("scenario").value : "";
+          const safeToggles = normalizeTogglesForScenario(toggles, scenario);
+
+          const mafiaSpecials = [];
+          const citySpecials = [];
+          const independentSpecials = [];
+
+          for (const def of toggleDefs) {
+            if (!safeToggles[def.key]) continue;
+            if (def.group === "mafia") mafiaSpecials.push(def.roleId);
+            else if (def.group === "city") citySpecials.push(def.roleId);
+            else independentSpecials.push(def.roleId);
+          }
+
+          if (mafiaSpecials.length > mafiaCount) {
+            return {
+              ok: false,
+              error: "نقش‌های ویژه مافیا از تعداد مافیا بیشتر شده‌اند. یکی را خاموش کنید یا تعداد مافیا را زیاد کنید.",
+            };
+          }
+
+          const pool = [];
+          pool.push(...mafiaSpecials);
+          pool.push(...Array(Math.max(0, mafiaCount - mafiaSpecials.length)).fill("mafia"));
+          pool.push(...citySpecials);
+          pool.push(...independentSpecials);
+
+          const remaining = nPlayers - pool.length;
+          if (remaining < 0) {
+            return {
+              ok: false,
+              error: "تعداد نقش‌های ویژه بیشتر از تعداد بازیکن‌هاست. چند نقش ویژه را خاموش کنید.",
+            };
+          }
+
+          pool.push(...Array(remaining).fill("citizen"));
+          shuffle(pool);
+          return { ok: true, pool };
+        }
+
+        function summarizePool(pool) {
+          const c = {};
+          for (const r of pool) c[r] = (c[r] || 0) + 1;
+          let mafiaTotal = 0;
+          let cityTotal = 0;
+          let independentTotal = 0;
+          for (const rid of pool) {
+            const t = (roles[rid] && roles[rid].teamFa) ? roles[rid].teamFa : "شهر";
+            if (t === "مافیا") mafiaTotal++;
+            else if (t === "شهر") cityTotal++;
+            else independentTotal++;
+          }
+          return { counts: c, mafiaTotal, cityTotal, independentTotal };
+        }
+
+        function setError(msg) {
+          const boxes = [$("errorBox"), $("errorBoxPlayers")].filter(Boolean);
+          for (const box of boxes) {
+            if (!msg) {
+              box.style.display = "none";
+              box.textContent = "";
             } else {
-                document.body.classList.remove('rtl');
+              box.style.display = "block";
+              box.textContent = msg;
             }
+          }
         }
 
-        function toggleLanguage() {
-            currentLang = currentLang === 'en' ? 'fa' : 'en';
-            localStorage.setItem('language', currentLang);
-            updateLanguage();
+        function setSaveState(enabled) {
+          const el = $("saveState");
+          if (!el) return;
+          el.textContent = "ذخیره: " + (enabled ? "روشن" : "خاموش");
         }
 
-        // Initialize on page load
-        updateLanguage();
+        function readUIState() {
+          const scenario = $("scenario").value;
+          const nPlayers = parseInt($("playersCount").value, 10);
+          const mafiaCount = parseInt($("mafiaCount").value, 10);
+          const toggles = {};
+          for (const def of toggleDefs) {
+            const el = $("tg_" + def.key);
+            toggles[def.key] = !!(el && el.checked);
+          }
+          return { scenario, nPlayers, mafiaCount, toggles };
+        }
+
+        function applyToggles(toggles, { disableMafiaBoss, disableSwindler } = {}) {
+          for (const def of toggleDefs) {
+            const el = $("tg_" + def.key);
+            if (!el) continue;
+            const val = !!toggles[def.key];
+            el.checked = val;
+            el.disabled = false;
+          }
+          if (disableMafiaBoss) $("tg_mafiaBoss").disabled = true;
+          if (disableSwindler) $("tg_swindler").disabled = true;
+        }
+
+        function applyScenarioAvailability(scenario) {
+          const allowed = getAllowedToggleKeysForScenario(scenario);
+          for (const def of toggleDefs) {
+            const wrap = $("tgwrap_" + def.key);
+            const el = $("tg_" + def.key);
+            if (!wrap || !el) continue;
+            const isAllowed = !allowed || allowed.has(def.key);
+            wrap.style.display = isAllowed ? "flex" : "none";
+            if (!isAllowed) {
+              el.checked = false;
+              el.disabled = true;
+            } else {
+              // don't force-enable; just re-enable
+              el.disabled = false;
+            }
+          }
+        }
+
+        function renderToggles() {
+          const host = $("toggles");
+          host.innerHTML = "";
+
+          // Always show base roles with counters (can be > 1)
+          const baseCitizen = document.createElement("div");
+          baseCitizen.className = "toggle base";
+          baseCitizen.id = "base_citizen";
+          baseCitizen.innerHTML = `
+            <span class="meta">
+              <span class="name">${roles.citizen.faName}</span>
+              <span class="hint">تعداد: متغیر</span>
+            </span>
+            <span class="right">
+              <button class="miniHelp" type="button" data-rolehelp="citizen" aria-label="راهنمای نقش">؟</button>
+              <span class="countpill" id="cnt_citizen">× 0</span>
+            </span>
+          `;
+          host.appendChild(baseCitizen);
+
+          const baseMafia = document.createElement("div");
+          baseMafia.className = "toggle base";
+          baseMafia.id = "base_mafia";
+          baseMafia.innerHTML = `
+            <span class="meta">
+              <span class="name">${roles.mafia.faName}</span>
+              <span class="hint">تعداد: متغیر</span>
+            </span>
+            <span class="right">
+              <button class="miniHelp" type="button" data-rolehelp="mafia" aria-label="راهنمای نقش">؟</button>
+              <span class="countpill" id="cnt_mafia">× 0</span>
+            </span>
+          `;
+          host.appendChild(baseMafia);
+
+          for (const def of toggleDefs) {
+            const r = roles[def.roleId];
+            // If a toggle points to a missing role, skip it (prevents app crash on load)
+            if (!r) continue;
+            const el = document.createElement("label");
+            el.className = "toggle";
+            el.id = "tgwrap_" + def.key;
+            el.innerHTML = `
+              <span class="meta">
+                <span class="name">${r.faName}</span>
+                <span class="hint">${r.hintFa}</span>
+              </span>
+              <span class="right">
+                <button class="miniHelp" type="button" data-rolehelp="${escapeHtml(def.roleId)}" aria-label="راهنمای نقش">؟</button>
+                <input id="tg_${def.key}" type="checkbox" />
+              </span>
+            `;
+            host.appendChild(el);
+          }
+        }
+
+        function fillPlayersSelect() {
+          const sel = $("playersCount");
+          sel.innerHTML = "";
+          for (let n = 5; n <= 20; n++) {
+            const opt = document.createElement("option");
+            opt.value = String(n);
+            opt.textContent = String(n);
+            sel.appendChild(opt);
+          }
+        }
+
+        function fillMafiaSelect(nPlayers, suggested) {
+          const sel = $("mafiaCount");
+          const current = parseInt(sel.value || String(suggested), 10);
+          sel.innerHTML = "";
+          const maxMafia = Math.max(1, Math.floor((nPlayers - 1) / 2));
+          for (let m = 1; m <= maxMafia; m++) {
+            const opt = document.createElement("option");
+            opt.value = String(m);
+            opt.textContent = String(m);
+            sel.appendChild(opt);
+          }
+          sel.value = String(clamp(current, 1, maxMafia));
+        }
+
+        function updateQuickStat() {
+          const s = readUIState();
+          const res = buildRolePool(s.nPlayers, s.mafiaCount, s.toggles);
+          if (!res.ok) {
+            $("quickStat").textContent = "خطا در تنظیمات";
+            return;
+          }
+          const sum = summarizePool(res.pool);
+          $("quickStat").textContent = sum.independentTotal
+            ? `مافیا: ${sum.mafiaTotal} • شهر: ${sum.cityTotal} • مستقل: ${sum.independentTotal}`
+            : `مافیا: ${sum.mafiaTotal} • شهر: ${sum.cityTotal}`;
+
+          // update base role counters
+          const cCitizen = $("cnt_citizen");
+          const cMafia = $("cnt_mafia");
+          if (cCitizen) cCitizen.textContent = `× ${sum.counts.citizen || 0}`;
+          if (cMafia) cMafia.textContent = `× ${sum.counts.mafia || 0}`;
+        }
+
+        function shouldPersist() {
+          try { return !!localStorage; } catch { return false; }
+        }
+
+        function loadLastNames() {
+          if (!shouldPersist()) return null;
+          const raw = localStorage.getItem(LAST_NAMES_KEY);
+          if (!raw) return null;
+          try {
+            const v = JSON.parse(raw);
+            return Array.isArray(v) ? v : null;
+          } catch {
+            return null;
+          }
+        }
+
+        function saveLastNames(names) {
+          if (!shouldPersist()) return;
+          localStorage.setItem(LAST_NAMES_KEY, JSON.stringify(names));
+        }
+
+        function saveState(state) {
+          if (!shouldPersist()) return;
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+          setSaveState(true);
+        }
+
+        function loadState() {
+          if (!shouldPersist()) return null;
+          const raw = localStorage.getItem(STORAGE_KEY);
+          if (!raw) return null;
+          try { return JSON.parse(raw); } catch { return null; }
+        }
+
+        function clearState() {
+          if (!shouldPersist()) return;
+          localStorage.removeItem(STORAGE_KEY);
+          setSaveState(false);
+        }
+
+        function showSetup() {
+          $("playersCard").classList.add("hidden");
+          $("setupCard").classList.remove("hidden");
+          $("cardsCard").classList.add("hidden");
+          $("castCard").classList.add("hidden");
+          window.scrollTo({ top: 0, behavior: "instant" });
+        }
+        function showPlayers() {
+          $("setupCard").classList.add("hidden");
+          $("playersCard").classList.remove("hidden");
+          $("cardsCard").classList.add("hidden");
+          $("castCard").classList.add("hidden");
+          window.scrollTo({ top: 0, behavior: "instant" });
+        }
+        function showCards() {
+          $("setupCard").classList.add("hidden");
+          $("playersCard").classList.add("hidden");
+          $("cardsCard").classList.remove("hidden");
+          $("castCard").classList.add("hidden");
+          window.scrollTo({ top: 0, behavior: "instant" });
+        }
+        function showCast() {
+          $("setupCard").classList.add("hidden");
+          $("playersCard").classList.add("hidden");
+          $("cardsCard").classList.add("hidden");
+          $("castCard").classList.remove("hidden");
+          window.scrollTo({ top: 0, behavior: "instant" });
+        }
+
+        function openModal() {
+          const m = $("modal");
+          m.style.display = "flex";
+          m.setAttribute("aria-hidden", "false");
+        }
+        function closeModal() {
+          const m = $("modal");
+          m.style.display = "none";
+          m.setAttribute("aria-hidden", "true");
+        }
+
+        function renderCards() {
+          const draw = appState.draw;
+          if (!draw || !draw.deck || !draw.players) return;
+
+          const n = draw.players.length;
+          const cur = draw.currentIdx || 0;
+          const done = cur >= n;
+
+          $("cardsStat").textContent = `${Math.min(cur, n)} / ${n}`;
+          $("cardsWho").textContent = done
+            ? "تمام شد"
+            : `نوبت: ${((appState.ui.playerNames && appState.ui.playerNames[cur]) ? appState.ui.playerNames[cur] : `بازیکن ${cur + 1}`)}`;
+
+          const nextBtn = $("cardsNextBtn");
+          nextBtn.disabled = !done;
+
+          const host = $("cardsGrid");
+          host.innerHTML = "";
+          for (let i = 0; i < n; i++) {
+            const used = !!(draw.usedCards && draw.usedCards[i]);
+            const b = document.createElement("button");
+            b.type = "button";
+            b.className = "cardBtn" + (used ? " used" : "");
+            b.textContent = used ? "برداشته شد" : `کارت ${i + 1}`;
+            b.disabled = used || done;
+            b.addEventListener("click", () => onPickCard(i));
+            host.appendChild(b);
+          }
+        }
+
+        let appState = {
+          ui: {
+            scenario: "classic",
+            nPlayers: 10,
+            mafiaCount: 3,
+            toggles: defaultTogglesForScenario("classic"),
+            playerNames: [],
+            namesMode: "default", // default | last
+          },
+          draw: null, // cards mode: { deck, usedCards, players, currentIdx, createdAt, uiAtDraw }
+          god: {
+            status: null,
+            lastMove: null,
+            timers: null,
+            chance: null,
+          },
+        };
+
+        function openToolModal(title, bodyHtml, { hideBottom } = {}) {
+          $("toolTitle").textContent = title;
+          $("toolBody").innerHTML = bodyHtml;
+          $("toolBottom").style.display = hideBottom ? "none" : "flex";
+          const m = $("toolModal");
+          m.style.display = "flex";
+          m.setAttribute("aria-hidden", "false");
+        }
+        function closeToolModal() {
+          const m = $("toolModal");
+          m.style.display = "none";
+          m.setAttribute("aria-hidden", "true");
+        }
+
+        function getScenario() {
+          return (appState.ui && appState.ui.scenario) ? appState.ui.scenario : (($("scenario") && $("scenario").value) || "classic");
+        }
+
+        function formatMMSS(sec) {
+          const s = Math.max(0, Math.floor(sec));
+          const m = Math.floor(s / 60);
+          const r = s % 60;
+          return String(m).padStart(1, "0") + ":" + String(r).padStart(2, "0");
+        }
+
+        function countTeamsFromDraw() {
+          const draw = appState.draw;
+          if (!draw || !draw.players) {
+            return {
+              alive: 0, dead: 0, total: 0,
+              mafiaAlive: 0, mafiaDead: 0,
+              cityAlive: 0, cityDead: 0,
+              indAlive: 0, indDead: 0,
+            };
+          }
+          let mafiaAlive = 0, mafiaDead = 0, cityAlive = 0, cityDead = 0, indAlive = 0, indDead = 0;
+          for (const p of draw.players) {
+            const rid = p.roleId || "citizen";
+            const t = (roles[rid] && roles[rid].teamFa) ? roles[rid].teamFa : "شهر";
+            const alive = p.alive !== false; // default alive
+            if (t === "مافیا") {
+              if (alive) mafiaAlive++;
+              else mafiaDead++;
+            } else if (t === "شهر") {
+              if (alive) cityAlive++;
+              else cityDead++;
+            } else {
+              if (alive) indAlive++;
+              else indDead++;
+            }
+          }
+          const total = draw.players.length;
+          const alive = mafiaAlive + cityAlive + indAlive;
+          const dead = mafiaDead + cityDead + indDead;
+          return { alive, dead, total, mafiaAlive, mafiaDead, cityAlive, cityDead, indAlive, indDead };
+        }
+
+        function syncGodStatusFromPlayers() {
+          appState.god.status = countTeamsFromDraw();
+        }
+
+        function getAllowedRoleIdsForScenario() {
+          const scenario = getScenario();
+          const allowedKeys = scenarioRoleAllowList[scenario] || [];
+          const keyToRole = {};
+          for (const d of toggleDefs) keyToRole[d.key] = d.roleId;
+          const ids = new Set(["citizen", "mafia"]);
+          for (const k of allowedKeys) {
+            const rid = keyToRole[k] || k; // many lists are keys; some might already be roleIds
+            if (roles[rid]) ids.add(rid);
+          }
+          return Array.from(ids);
+        }
+
+        const scenarioWakeOrder = {
+          classic: ["تیم مافیا", "پزشک", "کارآگاه"],
+          bazras: ["محقق", "شیاد", "تیم مافیا", "پزشک", "تک‌تیرانداز", "کارآگاه", "بازپرس"],
+          namayande: ["تیم مافیا", "پزشک", "کارآگاه", "نماینده"],
+          mozaker: ["تیم مافیا", "پزشک", "کارآگاه", "مذاکره‌کننده", "خبرنگار"],
+          takavar: ["تیم مافیا", "پزشک", "کارآگاه", "تک‌تیرانداز"],
+          kabo: ["وارث", "عطار", "کارآگاه", "زره‌ساز", "تیم مافیا (جادوگر/دن/جلاد)"],
+          pedarkhande: ["نوستراداموس (فقط شب معارفه)", "تیم مافیا (پدرخوانده/ماتادور/ساول)", "دکتر واتسون", "لئون", "همشهری کین", "کنستانتین"],
+          zodiac: ["تیم مافیا", "زودیاک", "حرفه‌ای", "پزشک", "کارآگاه", "تفنگدار", "اوشن"],
+          meeting_epic: ["تیم مافیا", "پزشک", "کارآگاه", "تک‌تیرانداز"],
+          pishrafte: ["تیم مافیا", "پزشک", "کارآگاه", "تک‌تیرانداز"],
+          shab_mafia: ["تیم مافیا", "جوکر مافیا", "کارآگاه", "حرفه‌ای", "پزشک", "جان‌سخت", "روانپزشک", "شهردار", "فروشنده"],
+        };
+
+        function showWakeTool() {
+          const scenario = getScenario();
+          const title = "ترتیب بیداری";
+          const list = scenarioWakeOrder[scenario] || [];
+          const scenarioName = (($("scenario") && $("scenario").selectedOptions && $("scenario").selectedOptions[0]) ? $("scenario").selectedOptions[0].textContent : scenario);
+          const itemsHtml = list.length
+            ? `<div class="toolBox"><div style="font-weight:1100;margin-bottom:6px">سناریو: ${escapeHtml(scenarioName)}</div>${list.map((x, i) => `<div style="padding:6px 0;font-weight:950">${i + 1}. ${escapeHtml(x)}</div>`).join("")}</div>`
+            : `<div class="toolBox">برای این سناریو ترتیب بیداری ثبت نشده است.</div>`;
+          openToolModal(title, itemsHtml);
+        }
+
+        function showStatusTool() {
+          syncGodStatusFromPlayers();
+          const s = appState.god.status;
+          openToolModal("استعلام وضعیت", `
+            <div class="toolGrid">
+              <div class="toolBox">
+                <div class="kv"><div class="k">افراد زنده</div><div class="v">${s.alive}</div></div>
+              </div>
+              <div class="toolBox">
+                <div class="kv"><div class="k">افراد مرده</div><div class="v">${s.dead}</div></div>
+              </div>
+              <div class="toolBox" style="border-color: rgba(53,208,127,.22)">
+                <div class="kv"><div class="k">مافیا زنده</div><div class="v">${s.mafiaAlive}</div></div>
+              </div>
+              <div class="toolBox" style="border-color: rgba(255,92,116,.22)">
+                <div class="kv"><div class="k">مافیا مرده</div><div class="v">${s.mafiaDead}</div></div>
+              </div>
+              <div class="toolBox" style="border-color: rgba(110,168,255,.22)">
+                <div class="kv"><div class="k">شهر زنده</div><div class="v">${s.cityAlive}</div></div>
+              </div>
+              <div class="toolBox" style="border-color: rgba(255,92,116,.22)">
+                <div class="kv"><div class="k">شهر مرده</div><div class="v">${s.cityDead}</div></div>
+              </div>
+            </div>
+            <div style="height:10px"></div>
+            <div class="toolBox">
+              <div class="kv"><div class="k">مستقل زنده</div><div class="v">${s.indAlive}</div></div>
+              <div style="height:10px"></div>
+              <div class="kv"><div class="k">مستقل مرده</div><div class="v">${s.indDead}</div></div>
+              <div style="height:10px"></div>
+              <div style="color: var(--muted); font-weight:900; font-size:12px; line-height:1.6">
+                برای تغییر وضعیت هر بازیکن، در صفحه «فهرست شخصیت‌ها» روی نام بازیکن بزنید و «کشته شد/خارج شد» را انتخاب کنید.
+              </div>
+            </div>
+          `);
+        }
+
+        function showLastMoveTool() {
+          const scenario = getScenario();
+          const supports = scenario === "shab_mafia";
+          if (!supports) {
+            openToolModal("کارت حرکت آخر", `<div class="toolBox">این سناریو کارت حرکت آخر ندارد!</div>`);
+            return;
+          }
+          const cards = ["بی‌خوابی", "شلیک نهایی", "ذهن زیبا", "دروغ سیزده", "مسیر سبز", "فرش قرمز"];
+          const last = appState.god.lastMove && appState.god.lastMove.last ? appState.god.lastMove.last : null;
+          openToolModal("کارت حرکت آخر", `
+            <div class="toolBox">
+              <div style="font-weight:1100;margin-bottom:8px">کارت‌های حرکت آخر:</div>
+              ${cards.map((c) => `<div style="padding:6px 0;font-weight:950">${escapeHtml(c)}</div>`).join("")}
+              <div style="height:10px"></div>
+              <button class="btn primary" id="lm_draw" type="button">قرعه کارت</button>
+              <div style="height:10px"></div>
+              <div style="font-weight:1100">نتیجه: <span id="lm_res">${last ? escapeHtml(last) : "—"}</span></div>
+            </div>
+          `);
+          $("lm_draw").onclick = () => {
+            const c = cards[Math.floor(Math.random() * cards.length)];
+            appState.god.lastMove = { last: c, at: Date.now() };
+            $("lm_res").textContent = c;
+            saveState(appState);
+          };
+        }
+
+        function showRoleChangeTool() {
+          const draw = appState.draw;
+          if (!draw || !draw.players) {
+            openToolModal("تغییر نقش", `<div class="toolBox">ابتدا نقش‌ها را تقسیم کنید.</div>`);
+            return;
+          }
+          const roleIds = getAllowedRoleIdsForScenario();
+          const playerOpts = draw.players.map((p, i) => {
+            const name = (appState.ui.playerNames && appState.ui.playerNames[i]) ? appState.ui.playerNames[i] : `بازیکن ${i + 1}`;
+            return `<option value="${i}">${escapeHtml(name)}</option>`;
+          }).join("");
+          const roleOpts = roleIds.map((rid) => `<option value="${rid}">${escapeHtml(roles[rid].faName)}</option>`).join("");
+
+          openToolModal("تغییر نقش", `
+            <div class="toolBox">
+              <div style="font-weight:1100;margin-bottom:10px">یک نفر را انتخاب کن تا نقشِش را تغییر بدهی</div>
+              <div class="row one">
+                <label>نقش ایشون رو
+                  <select id="rc_player">${playerOpts}</select>
+                </label>
+                <label>تغییر بده به
+                  <select id="rc_role">${roleOpts}</select>
+                </label>
+              </div>
+              <div style="height:10px"></div>
+              <button class="btn primary" id="rc_apply" type="button">اعمال تغییر نقش</button>
+            </div>
+          `);
+
+          $("rc_apply").onclick = () => {
+            const idx = parseInt($("rc_player").value, 10);
+            const rid = $("rc_role").value;
+            if (!Number.isFinite(idx) || !roles[rid]) return;
+            draw.players[idx].roleId = rid;
+            saveState(appState);
+            renderCast();
+            closeToolModal();
+          };
+        }
+
+        function showChanceTool() {
+          const draw = appState.draw;
+          if (!draw || !draw.players) {
+            openToolModal("قرعه", `<div class="toolBox">ابتدا نقش‌ها را تقسیم کنید.</div>`);
+            return;
+          }
+          const n = draw.players.length;
+          openToolModal("قرعه", `
+            <div class="toolBox">
+              <div style="font-weight:1100;margin-bottom:10px">چند نفر وارد قرعه می‌شوند؟</div>
+              <label>
+                تعداد
+                <select id="ch_n">
+                  ${Array.from({ length: Math.min(10, n) }, (_, i) => i + 2)
+                    .filter((k) => k <= n)
+                    .map((k) => `<option value="${k}">${k}</option>`)
+                    .join("")}
+                </select>
+              </label>
+              <div style="height:10px"></div>
+              <button class="btn primary" id="ch_spin" type="button">قرعه</button>
+              <div style="height:10px"></div>
+              <div style="font-weight:1100">نتیجه:</div>
+              <div id="ch_res" style="padding-top:6px; font-weight:950; line-height:1.9">—</div>
+            </div>
+          `);
+          $("ch_spin").onclick = () => {
+            const k = parseInt($("ch_n").value, 10);
+            const kk = Math.max(1, Math.min(n, Number.isFinite(k) ? k : 1));
+            const picked = 1 + Math.floor(Math.random() * kk);
+            const res = `بازیکن ${picked}`;
+            $("ch_res").textContent = res;
+            appState.god.chance = { last: picked, at: Date.now() };
+            saveState(appState);
+          };
+        }
+
+        let timerInterval = null;
+        let audioCtx = null;
+        function ensureTimers() {
+          if (appState.god.timers) return;
+          appState.god.timers = {
+            talk: 60,
+            challenge: 30,
+            defense: 75,
+            running: null, // key
+            remaining: { talk: 60, challenge: 30, defense: 75 },
+            startedAt: null,
+          };
+        }
+        function stopTimerInterval() {
+          if (timerInterval) clearInterval(timerInterval);
+          timerInterval = null;
+        }
+
+        function playBeep() {
+          try {
+            const AC = window.AudioContext || window.webkitAudioContext;
+            if (!AC) return;
+            if (!audioCtx) audioCtx = new AC();
+            if (audioCtx.state === "suspended") audioCtx.resume();
+
+            const now = audioCtx.currentTime;
+            const gain = audioCtx.createGain();
+            gain.gain.setValueAtTime(0.0001, now);
+            gain.gain.linearRampToValueAtTime(0.18, now + 0.01);
+            gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.35);
+            gain.connect(audioCtx.destination);
+
+            const osc = audioCtx.createOscillator();
+            osc.type = "sine";
+            osc.frequency.setValueAtTime(880, now);
+            osc.connect(gain);
+            osc.start(now);
+            osc.stop(now + 0.36);
+
+            // small second beep
+            const gain2 = audioCtx.createGain();
+            gain2.gain.setValueAtTime(0.0001, now + 0.45);
+            gain2.gain.linearRampToValueAtTime(0.16, now + 0.46);
+            gain2.gain.exponentialRampToValueAtTime(0.0001, now + 0.72);
+            gain2.connect(audioCtx.destination);
+
+            const osc2 = audioCtx.createOscillator();
+            osc2.type = "sine";
+            osc2.frequency.setValueAtTime(880, now + 0.45);
+            osc2.connect(gain2);
+            osc2.start(now + 0.45);
+            osc2.stop(now + 0.73);
+          } catch {
+            // ignore audio errors (autoplay policies, etc.)
+          }
+        }
+        function tickTimers() {
+          const t = appState.god.timers;
+          if (!t || !t.running) return;
+          if (!t.startedAt) t.startedAt = Date.now();
+          const now = Date.now();
+          const elapsed = Math.floor((now - t.startedAt) / 1000);
+          const base = t.remaining[t.running + "_base"] ?? t.remaining[t.running];
+          const rem = Math.max(0, base - elapsed);
+          t.remaining[t.running] = rem;
+          const el = document.getElementById("tm_" + t.running);
+          if (el) el.textContent = formatMMSS(rem);
+          if (rem <= 0) {
+            const endedKey = t.running;
+            t.running = null;
+            t.startedAt = null;
+            stopTimerInterval();
+            playBeep();
+            // reset this timer to runner-configured duration
+            if (endedKey && typeof t[endedKey] === "number") {
+              t.remaining[endedKey] = t[endedKey];
+              delete t.remaining[endedKey + "_base"];
+              const el2 = document.getElementById("tm_" + endedKey);
+              if (el2) el2.textContent = formatMMSS(t.remaining[endedKey]);
+            }
+            saveState(appState);
+          }
+          // refresh play/pause icons if tool is open
+          updateTimerIcons();
+        }
+
+        function updateTimerIcons() {
+          const t = appState.god.timers;
+          if (!t) return;
+          const set = (key) => {
+            const b = document.getElementById("tm_btn_" + key);
+            if (!b) return;
+            b.textContent = (t.running === key) ? "⏸" : "▶";
+          };
+          set("talk");
+          set("challenge");
+          set("defense");
+        }
+
+        function showTimerPicker(key) {
+          ensureTimers();
+          const t = appState.god.timers;
+          const labels = { talk: "ترن", challenge: "چالش", defense: "دفاعیه" };
+          const presets = [
+            10, 15, 20, 30, 40, 45, 50, 55, 60, 75, 90, 120, 150, 180,
+          ];
+          openToolModal("تنظیم تایمر", `
+            <div class="toolBox">
+              <div style="font-weight:1100;margin-bottom:10px">مدت زمان «${escapeHtml(labels[key] || key)}» را انتخاب کنید</div>
+              <label>
+                زمان (ثانیه)
+                <select id="tp_val">
+                  ${presets.map((s) => `<option value="${s}" ${t[key] === s ? "selected" : ""}>${s} ثانیه</option>`).join("")}
+                </select>
+              </label>
+              <div style="height:12px"></div>
+              <button class="btn primary" id="tp_apply" type="button">ثبت</button>
+              <div style="height:10px"></div>
+              <button class="btn" id="tp_cancel" type="button">بازگشت</button>
+            </div>
+          `, { hideBottom: true });
+
+          $("tp_apply").onclick = () => {
+            const v = parseInt($("tp_val").value, 10);
+            if (!Number.isFinite(v) || v <= 0) return;
+            // stop if currently running this timer
+            if (t.running === key) {
+              t.running = null;
+              t.startedAt = null;
+              stopTimerInterval();
+            }
+            t[key] = v;
+            t.remaining[key] = v;
+            delete t.remaining[key + "_base"];
+            saveState(appState);
+            showTimerTool();
+          };
+          $("tp_cancel").onclick = () => showTimerTool();
+        }
+        function startOrPauseTimer(key) {
+          ensureTimers();
+          const t = appState.god.timers;
+          if (t.running === key) {
+            // pause
+            t.running = null;
+            t.startedAt = null;
+            stopTimerInterval();
+            saveState(appState);
+            updateTimerIcons();
+            return;
+          }
+          // set base snapshot
+          t.remaining[key + "_base"] = t.remaining[key];
+          t.running = key;
+          t.startedAt = Date.now();
+          stopTimerInterval();
+          timerInterval = setInterval(tickTimers, 250);
+          saveState(appState);
+          updateTimerIcons();
+        }
+        function resetTimers() {
+          ensureTimers();
+          const t = appState.god.timers;
+          t.running = null;
+          t.startedAt = null;
+          t.remaining = { talk: t.talk, challenge: t.challenge, defense: t.defense };
+          stopTimerInterval();
+          saveState(appState);
+          updateTimerIcons();
+        }
+        function showTimerTool() {
+          ensureTimers();
+          const t = appState.god.timers;
+          openToolModal("تایمر", `
+            <div class="timerRow">
+              <div class="timerCard">
+                <div class="tname">ترن</div>
+                <div class="tval clickable" id="tm_talk">${formatMMSS(t.remaining.talk)}</div>
+                <button class="tbtn" id="tm_btn_talk" type="button">▶</button>
+              </div>
+              <div class="timerCard">
+                <div class="tname">چالش</div>
+                <div class="tval clickable" id="tm_challenge">${formatMMSS(t.remaining.challenge)}</div>
+                <button class="tbtn" id="tm_btn_challenge" type="button">▶</button>
+              </div>
+              <div class="timerCard" style="grid-column: 1 / -1;">
+                <div class="tname">دفاعیه</div>
+                <div class="tval clickable" id="tm_defense">${formatMMSS(t.remaining.defense)}</div>
+                <button class="tbtn" id="tm_btn_defense" type="button">▶</button>
+              </div>
+            </div>
+            <div class="timerActions">
+              <button class="reset" id="tm_reset" type="button">ریست</button>
+              <button class="close" id="tm_close" type="button">بستن</button>
+            </div>
+          `, { hideBottom: true });
+
+          $("tm_btn_talk").onclick = () => startOrPauseTimer("talk");
+          $("tm_btn_challenge").onclick = () => startOrPauseTimer("challenge");
+          $("tm_btn_defense").onclick = () => startOrPauseTimer("defense");
+          $("tm_talk").onclick = () => showTimerPicker("talk");
+          $("tm_challenge").onclick = () => showTimerPicker("challenge");
+          $("tm_defense").onclick = () => showTimerPicker("defense");
+          $("tm_reset").onclick = resetTimers;
+          $("tm_close").onclick = closeToolModal;
+
+          updateTimerIcons();
+
+          // if a timer is running, ensure UI ticks
+          if (appState.god.timers.running && !timerInterval) {
+            timerInterval = setInterval(tickTimers, 250);
+          }
+        }
+
+        function ensureNamesLength(n) {
+          if (!Array.isArray(appState.ui.playerNames)) appState.ui.playerNames = [];
+          const cur = appState.ui.playerNames.slice(0, n);
+          while (cur.length < n) cur.push("");
+          appState.ui.playerNames = cur;
+        }
+
+        function setNamesMode(mode) {
+          appState.ui.namesMode = mode;
+          $("namesDefaultBtn").classList.toggle("active", mode === "default");
+          $("namesLastBtn").classList.toggle("active", mode === "last");
+          if (mode === "last") {
+            const last = loadLastNames();
+            if (last && last.length) {
+              ensureNamesLength(appState.ui.nPlayers);
+              for (let i = 0; i < appState.ui.nPlayers; i++) {
+                appState.ui.playerNames[i] = (last[i] || "").trim();
+              }
+            }
+          }
+          renderNameGrid();
+          saveState(appState);
+        }
+
+        function renderNameGrid() {
+          const host = $("nameGrid");
+          host.innerHTML = "";
+          ensureNamesLength(appState.ui.nPlayers);
+          for (let i = 0; i < appState.ui.nPlayers; i++) {
+            const row = document.createElement("div");
+            row.className = "nameRow";
+            row.innerHTML = `
+              <div class="num">${i + 1}</div>
+              <input id="nm_${i}" type="text" inputmode="text" placeholder="بازیکن ${i + 1}" value="${escapeHtml(appState.ui.playerNames[i] || "")}" />
+            `;
+            host.appendChild(row);
+          }
+          for (let i = 0; i < appState.ui.nPlayers; i++) {
+            const el = $("nm_" + i);
+            el.addEventListener("input", () => {
+              appState.ui.playerNames[i] = el.value;
+              saveState(appState);
+              validatePlayerNamesAndShowError();
+            });
+          }
+        }
+
+        function normalizeNameForCompare(name) {
+          return String(name || "")
+            .trim()
+            .replace(/\s+/g, " ")
+            .toLocaleLowerCase("fa");
+        }
+
+        function readNamesFromInputs() {
+          ensureNamesLength(appState.ui.nPlayers);
+          const names = [];
+          for (let i = 0; i < appState.ui.nPlayers; i++) {
+            const el = $("nm_" + i);
+            names.push((el ? el.value : appState.ui.playerNames[i] || "").trim());
+          }
+          return names;
+        }
+
+        function getDuplicateNames(names) {
+          const seen = new Map(); // norm -> firstIndex
+          const dups = new Set();
+          for (let i = 0; i < names.length; i++) {
+            const norm = normalizeNameForCompare(names[i]);
+            if (!norm) continue; // ignore empty names
+            if (seen.has(norm)) dups.add(norm);
+            else seen.set(norm, i);
+          }
+          return Array.from(dups);
+        }
+
+        function getFirstRepeatedName(names) {
+          const seen = new Map(); // norm -> displayName
+          for (let i = 0; i < names.length; i++) {
+            const display = String(names[i] || "").trim();
+            const norm = normalizeNameForCompare(display);
+            if (!norm) continue;
+            if (seen.has(norm)) return seen.get(norm) || display;
+            seen.set(norm, display);
+          }
+          return null;
+        }
+
+        function validatePlayerNamesAndShowError() {
+          const names = readNamesFromInputs();
+          const repeated = getFirstRepeatedName(names);
+          if (repeated) {
+            setError(`نام «${repeated}» تکراری است.`);
+            return false;
+          }
+          // don't clear other errors if set elsewhere; only clear if this was the reason
+          setError("");
+          return true;
+        }
+
+        function escapeHtml(s) {
+          return String(s)
+            .replaceAll("&", "&amp;")
+            .replaceAll("<", "&lt;")
+            .replaceAll(">", "&gt;")
+            .replaceAll('"', "&quot;")
+            .replaceAll("'", "&#39;");
+        }
+
+        function openRoleHelpOverlay(roleId) {
+          const rid = roleId || "";
+          const scenario = (appState.draw && appState.draw.uiAtDraw && appState.draw.uiAtDraw.scenario)
+            ? appState.draw.uiAtDraw.scenario
+            : getScenario();
+          const rBase = roles[rid];
+          const rOv = (roleScenarioOverrides[rid] && roleScenarioOverrides[rid][scenario]) ? roleScenarioOverrides[rid][scenario] : null;
+          const r = rBase ? { ...rBase, ...(rOv || {}) } : null;
+          openToolModal("راهنمای نقش", `
+            <div class="toolBox">
+              <div style="font-weight:1100;margin-bottom:6px">${escapeHtml(r ? r.faName : rid)}</div>
+              <div style="font-weight:900;font-size:12px;line-height:1.9;color: var(--muted)">
+                ${escapeHtml((r && r.descFa) ? r.descFa : "توضیحی برای این نقش ثبت نشده است.")}
+              </div>
+            </div>
+          `);
+        }
+
+        function applyUIFromState() {
+          appState.ui.scenario = sanitizeScenarioValue(appState.ui.scenario);
+          $("scenario").value = appState.ui.scenario;
+          $("playersCount").value = String(appState.ui.nPlayers);
+          fillMafiaSelect(appState.ui.nPlayers, computeSuggestedMafia(appState.ui.nPlayers));
+          $("mafiaCount").value = String(appState.ui.mafiaCount);
+
+          const mafiaCount = parseInt($("mafiaCount").value, 10);
+          const disableMafiaBoss = mafiaCount <= 0;
+          const disableSwindler = mafiaCount <= 1; // need room for specials
+          // scenario may have changed since last save; normalize then apply
+          appState.ui.toggles = normalizeTogglesForScenario(appState.ui.toggles, $("scenario").value);
+          applyToggles(appState.ui.toggles, { disableMafiaBoss, disableSwindler });
+          applyScenarioAvailability($("scenario").value);
+
+          // enforce disabled constraints
+          if (disableSwindler) {
+            const el = $("tg_swindler");
+            if (el) el.checked = false;
+          }
+          if (disableMafiaBoss) {
+            const el = $("tg_mafiaBoss");
+            if (el) el.checked = false;
+          }
+
+          renderNameGrid();
+          setNamesMode(appState.ui.namesMode || "default");
+          $("playersStat").textContent = `بازیکن: ${appState.ui.nPlayers}`;
+        }
+
+        function syncUIToState() {
+          const s = readUIState();
+          appState.ui = {
+            scenario: sanitizeScenarioValue(s.scenario),
+            nPlayers: s.nPlayers,
+            mafiaCount: s.mafiaCount,
+            toggles: s.toggles,
+            playerNames: appState.ui.playerNames || [],
+            namesMode: appState.ui.namesMode || "default",
+          };
+        }
+
+        function regenerateFromUI() {
+          syncUIToState();
+          saveState(appState);
+          updateQuickStat();
+        }
+
+        function openRoleModal({ who, roleId, onConfirm }) {
+          const scenario = (appState.draw && appState.draw.uiAtDraw && appState.draw.uiAtDraw.scenario)
+            ? appState.draw.uiAtDraw.scenario
+            : getScenario();
+          const rBase = roles[roleId];
+          const rOv = (roleScenarioOverrides[roleId] && roleScenarioOverrides[roleId][scenario]) ? roleScenarioOverrides[roleId][scenario] : null;
+          const r = rBase ? { ...rBase, ...(rOv || {}) } : null;
+          $("modalWho").textContent = who;
+          $("roleName").textContent = r ? r.faName : roleId;
+          $("roleTeam").textContent = r ? `تیم: ${r.teamFa}` : "—";
+          // show role description in the note area (per request)
+          const noteEl = $("modalNote");
+          noteEl.textContent = r && r.descFa ? r.descFa : "توضیحی برای این نقش ثبت نشده است.";
+          noteEl.classList.remove("collapsed");
+
+          // keep the help button; it toggles showing/hiding the description
+          const helpBtn = $("roleHelpBtn");
+          helpBtn.onclick = (e) => {
+            if (e && e.stopPropagation) e.stopPropagation();
+            openRoleHelpOverlay(roleId);
+          };
+
+          // keep roleDesc hidden (legacy element)
+          const descEl = $("roleDesc");
+          descEl.textContent = "";
+          descEl.classList.add("collapsed");
+
+          $("markRevealedBtn").onclick = () => {
+            if (typeof onConfirm === "function") onConfirm();
+            closeModal();
+          };
+          openModal();
+        }
+
+        function startDeal() {
+          const s = readUIState();
+          const res = buildRolePool(s.nPlayers, s.mafiaCount, s.toggles);
+          if (!res.ok) {
+            setError(res.error);
+            return false;
+          }
+          const names = readNamesFromInputs();
+          const repeated = getFirstRepeatedName(names);
+          if (repeated) {
+            setError(`نام «${repeated}» تکراری است.`);
+            return false;
+          }
+          appState.ui.playerNames = names;
+          saveLastNames(names);
+          setError("");
+          syncUIToState();
+          ensureNamesLength(appState.ui.nPlayers);
+
+          const deck = res.pool.slice(); // already shuffled
+          const n = deck.length;
+          appState.draw = {
+            deck,
+            usedCards: Array(n).fill(false),
+            players: Array(n).fill(0).map(() => ({ roleId: null, revealed: false, cardIdx: null, alive: true, deathReason: null })),
+            currentIdx: 0,
+            createdAt: Date.now(),
+            uiAtDraw: { ...appState.ui, mode: "cards" },
+          };
+          saveState(appState);
+          renderCards();
+          showCards();
+          return true;
+        }
+
+        function onPickCard(cardIdx) {
+          const draw = appState.draw;
+          if (!draw || !draw.deck || !draw.players) return;
+          const n = draw.players.length;
+          const cur = draw.currentIdx || 0;
+          if (cur >= n) return;
+          if (draw.usedCards && draw.usedCards[cardIdx]) return;
+
+          const who = (appState.ui.playerNames && appState.ui.playerNames[cur]) ? appState.ui.playerNames[cur] : `بازیکن ${cur + 1}`;
+          const roleId = draw.deck[cardIdx];
+
+          openRoleModal({
+            who,
+            roleId,
+            onConfirm: () => {
+              draw.usedCards[cardIdx] = true;
+              const prev = draw.players[cur] || {};
+              draw.players[cur] = { ...prev, roleId, revealed: true, cardIdx, alive: prev.alive !== false, deathReason: prev.deathReason || null };
+              draw.currentIdx = cur + 1;
+              saveState(appState);
+              renderCards();
+            },
+          });
+        }
+
+        function autoAssignAllRemaining() {
+          const draw = appState.draw;
+          if (!draw || !draw.deck || !draw.players || !draw.usedCards) return;
+          const n = draw.players.length;
+          let cur = draw.currentIdx || 0;
+          if (cur >= n) {
+            renderCards();
+            return;
+          }
+
+          const remainingCardIdxs = [];
+          for (let i = 0; i < n; i++) {
+            if (!draw.usedCards[i]) remainingCardIdxs.push(i);
+          }
+          shuffle(remainingCardIdxs);
+
+          while (cur < n && remainingCardIdxs.length) {
+            const cardIdx = remainingCardIdxs.shift();
+            const roleId = draw.deck[cardIdx];
+            draw.usedCards[cardIdx] = true;
+            const prev = draw.players[cur] || {};
+            draw.players[cur] = {
+              ...prev,
+              roleId,
+              revealed: true,
+              cardIdx,
+              alive: prev.alive !== false,
+              deathReason: prev.deathReason || null,
+            };
+            cur++;
+          }
+
+          draw.currentIdx = n;
+          saveState(appState);
+          renderCards();
+        }
+
+        function setPlayerLife(idx, { alive, reason }) {
+          const draw = appState.draw;
+          if (!draw || !draw.players || !draw.players[idx]) return;
+          draw.players[idx].alive = !!alive;
+          draw.players[idx].deathReason = alive ? null : (reason || "vote");
+          syncGodStatusFromPlayers();
+          saveState(appState);
+        }
+
+        function openPlayerLifeSheet(idx) {
+          const draw = appState.draw;
+          if (!draw || !draw.players || !draw.players[idx]) return;
+          const p = draw.players[idx];
+          const name = (appState.ui.playerNames && appState.ui.playerNames[idx]) ? appState.ui.playerNames[idx] : `بازیکن ${idx + 1}`;
+          const rid = p.roleId || "citizen";
+          const r = roles[rid];
+          const alive = p.alive !== false;
+          const reason = p.deathReason || null;
+
+          const statusText = alive ? "زنده" : (reason === "shot" ? "کشته شد (شات)" : "خارج شد (رای)");
+
+          openToolModal("وضعیت بازیکن", `
+            <div class="toolBox">
+              <div style="font-weight:1100; font-size:14px">${escapeHtml(name)}</div>
+              <div style="margin-top:6px; color: var(--muted); font-weight:950; font-size:12px">
+                نقش: ${escapeHtml(r ? r.faName : rid)} • وضعیت: <b>${escapeHtml(statusText)}</b>
+              </div>
+              <div style="height:12px"></div>
+              <div class="actions" style="margin-top:0">
+                <button class="btn danger" id="life_shot" type="button">کشته شد (شات)</button>
+                <button class="btn" id="life_vote" type="button">خارج شد (رای)</button>
+              </div>
+              <div style="height:10px"></div>
+              <button class="btn primary" id="life_revive" type="button">برگرداندن به بازی (زنده)</button>
+            </div>
+          `, { hideBottom: true });
+
+          $("life_shot").onclick = () => { setPlayerLife(idx, { alive: false, reason: "shot" }); renderCast(); closeToolModal(); };
+          $("life_vote").onclick = () => { setPlayerLife(idx, { alive: false, reason: "vote" }); renderCast(); closeToolModal(); };
+          $("life_revive").onclick = () => { setPlayerLife(idx, { alive: true }); renderCast(); closeToolModal(); };
+        }
+
+        function renderCast() {
+          const draw = appState.draw;
+          if (!draw) return;
+          const mafiaHost = $("castMafia");
+          const cityHost = $("castCity");
+          const indHost = $("castInd");
+          mafiaHost.innerHTML = "";
+          cityHost.innerHTML = "";
+          if (indHost) indHost.innerHTML = "";
+
+          const entries = draw.players.map((p, idx) => {
+            const rid = p.roleId || "citizen";
+            const r = roles[rid];
+            const name = (appState.ui.playerNames && appState.ui.playerNames[idx]) ? appState.ui.playerNames[idx] : `بازیکن ${idx + 1}`;
+            const alive = p.alive !== false;
+            const deathReason = p.deathReason || null;
+            return { idx, name, roleId: rid, role: r ? r.faName : rid, team: r ? r.teamFa : "شهر", alive, deathReason };
+          });
+          const mafia = entries.filter((e) => e.team === "مافیا");
+          const city = entries.filter((e) => e.team === "شهر");
+          const indep = entries.filter((e) => e.team !== "مافیا" && e.team !== "شهر");
+
+          function rowHtml(e) {
+            const av = (e.role || "?").trim().slice(0, 1);
+            const stText = e.alive ? "زنده" : (e.deathReason === "shot" ? "شات" : "رای");
+            const stCls = e.alive ? "alive" : "dead";
+            return `
+              <div class="castRow ${e.alive ? "" : "dead"}" data-idx="${e.idx}">
+                <div class="leftMeta">
+                  <div>${escapeHtml(e.name)}</div>
+                  <div class="statusPill ${stCls}">${escapeHtml(stText)}</div>
+                </div>
+                <div class="who">
+                  <div class="avatar">${escapeHtml(av)}</div>
+                  <div class="role">${escapeHtml(e.role)}</div>
+                  <button class="miniHelp" type="button" data-rolehelp="${escapeHtml(e.roleId)}" aria-label="راهنمای نقش">؟</button>
+                </div>
+              </div>
+            `;
+          }
+
+          if (!mafia.length) mafiaHost.innerHTML = `<div class="castRow"><div>—</div><div class="who"><div class="avatar">?</div><div class="role">بدون مافیا</div></div></div>`;
+          else mafiaHost.innerHTML = mafia.map(rowHtml).join("");
+
+          if (!city.length) cityHost.innerHTML = `<div class="castRow"><div>—</div><div class="who"><div class="avatar">?</div><div class="role">بدون شهر</div></div></div>`;
+          else cityHost.innerHTML = city.map(rowHtml).join("");
+
+          if (indHost) {
+            indHost.style.display = indep.length ? "block" : "none";
+            if (indep.length) indHost.innerHTML = indep.map(rowHtml).join("");
+          }
+
+          $("castStat").textContent = indep.length
+            ? `بازیکن: ${entries.length} • مافیا: ${mafia.length} • شهر: ${city.length} • مستقل: ${indep.length}`
+            : `بازیکن: ${entries.length} • مافیا: ${mafia.length} • شهر: ${city.length}`;
+
+          // click-to-set life status
+          document.querySelectorAll("#castCard .castRow[data-idx]").forEach((el) => {
+            el.addEventListener("click", () => {
+              const idx = parseInt(el.getAttribute("data-idx"), 10);
+              openPlayerLifeSheet(idx);
+            });
+          });
+
+          // role help overlay (stop row click)
+          document.querySelectorAll('#castCard button[data-rolehelp]').forEach((btn) => {
+            btn.addEventListener("click", (e) => {
+              try { e.preventDefault(); } catch {}
+              try { e.stopPropagation(); } catch {}
+              const rid = btn.getAttribute("data-rolehelp") || "";
+              openRoleHelpOverlay(rid);
+            });
+          });
+
+          // keep GOD status in sync
+          syncGodStatusFromPlayers();
+        }
+
+        function resetAll() {
+          // stop any running timers / close overlays
+          try { stopTimerInterval(); } catch {}
+          try { closeModal(); } catch {}
+          try { closeToolModal(); } catch {}
+
+          appState = {
+            ui: {
+              scenario: "classic",
+              nPlayers: 10,
+              mafiaCount: 3,
+              toggles: defaultTogglesForScenario("classic"),
+              playerNames: [],
+              namesMode: "default",
+            },
+            draw: null,
+            god: {
+              status: null,
+              lastMove: null,
+              timers: null,
+              chance: null,
+            },
+          };
+          clearState();
+          applyUIFromState();
+          updateQuickStat();
+          showSetup();
+          setError("");
+          updateResumeUI();
+        }
+
+        function showHelp() {
+          openToolModal("راهنما", `
+            <div class="toolBox">
+              <div style="font-weight:1100; margin-bottom:10px">راهنمای سریع</div>
+              <div style="font-weight:900; font-size:12px; line-height:1.9; color: var(--muted)">
+                1) سناریو، تعداد بازیکن‌ها و تعداد مافیا را تنظیم کنید.<br />
+                2) نقش‌های فعال را (طبق سناریو) روشن/خاموش کنید.<br />
+                3) «شروع بازی» را بزنید و اسامی را وارد کنید.<br />
+                4) «تقسیم نقش» را بزنید؛ هر بازیکن یک کارت انتخاب می‌کند و «دیدم» را می‌زند.<br />
+                5) در «فهرست شخصیت‌ها»، راوی می‌تواند ابزارها (تایمر/قرعه/تغییر نقش/وضعیت) را استفاده کند.
+              </div>
+            </div>
+          `);
+        }
+
+        function hasSavedGame() {
+          return !!(appState.draw && appState.draw.players && appState.draw.players.length);
+        }
+
+        function updateResumeUI() {
+          const btn = $("resumeBtn");
+          if (!btn) return;
+          if (!hasSavedGame()) {
+            btn.style.display = "none";
+            return;
+          }
+          btn.style.display = "block";
+          btn.textContent = "ادامه بازی";
+        }
+
+        function resumeGame() {
+          if (!appState.draw || !appState.draw.players || !appState.draw.players.length) return;
+          const mode = (appState.draw.uiAtDraw && appState.draw.uiAtDraw.mode) ? appState.draw.uiAtDraw.mode : null;
+          if (mode === "cards") {
+            renderCards();
+            showCards();
+            return;
+          }
+          // fallback
+          renderCast();
+          showCast();
+        }
+
+        // --- wire up ---
+        renderToggles();
+        fillPlayersSelect();
+
+        // load saved
+        const saved = loadState();
+        if (saved && typeof saved === "object") {
+          // merge lightly (avoid breaking on partial state)
+          appState.ui = { ...appState.ui, ...(saved.ui || {}) };
+          appState.draw = saved.draw || null;
+          // drop incompatible older saved games
+          if (
+            appState.draw &&
+            (!Array.isArray(appState.draw.deck) ||
+              !Array.isArray(appState.draw.players) ||
+              !Array.isArray(appState.draw.usedCards))
+          ) {
+            appState.draw = null;
+          }
+          setSaveState(true);
+        } else {
+          setSaveState(false);
+        }
+
+        // initial UI
+        applyUIFromState();
+        updateQuickStat();
+        showSetup();
+        updateResumeUI();
+
+        $("helpChip").addEventListener("click", showHelp);
+        $("helpChip").addEventListener("keydown", (e) => {
+          if (e.key === "Enter" || e.key === " ") showHelp();
+        });
+        $("helpBtn").addEventListener("click", (e) => {
+          e.stopPropagation();
+          showHelp();
+        });
+        const onReset = (e) => {
+          try { e.preventDefault(); } catch {}
+          try { e.stopPropagation(); } catch {}
+          resetAll();
+        };
+        // bind multiple events for mobile reliability
+        $("resetBtn").addEventListener("click", onReset);
+        $("resetBtn").addEventListener("touchend", onReset, { passive: false });
+        $("resetBtn").addEventListener("pointerup", onReset);
+        $("resumeBtn").addEventListener("click", resumeGame);
+        $("startGameBtn").addEventListener("click", () => {
+          setError("");
+          regenerateFromUI();
+          ensureNamesLength(appState.ui.nPlayers);
+          // if user has namesMode=last, load them now
+          if (appState.ui.namesMode === "last") setNamesMode("last");
+          $("playersStat").textContent = `بازیکن: ${appState.ui.nPlayers}`;
+          showPlayers();
+        });
+
+        $("playersBackBtn").addEventListener("click", showSetup);
+        $("dealBtn").addEventListener("click", () => startDeal());
+
+        $("cardsBackBtn").addEventListener("click", () => showPlayers());
+        $("autoAssignBtn").addEventListener("click", autoAssignAllRemaining);
+        $("cardsNextBtn").addEventListener("click", () => {
+          renderCast();
+          showCast();
+        });
+        $("castBackBtn").addEventListener("click", showSetup);
+        $("castNewBtn").addEventListener("click", () => {
+          showSetup();
+          startNewDraw({ keepUI: true });
+        });
+
+        // role help buttons on setup page (before start)
+        $("toggles").addEventListener("click", (e) => {
+          const btn = e && e.target && e.target.closest ? e.target.closest('button[data-rolehelp]') : null;
+          if (!btn) return;
+          try { e.preventDefault(); } catch {}
+          try { e.stopPropagation(); } catch {}
+          const rid = btn.getAttribute("data-rolehelp") || "";
+          openRoleHelpOverlay(rid);
+        });
+
+        $("modalCloseBtn").addEventListener("click", closeModal);
+        $("modal").addEventListener("click", (e) => {
+          if (e.target === $("modal")) closeModal();
+        });
+
+        $("toolCloseBtn").addEventListener("click", closeToolModal);
+        $("toolOkBtn").addEventListener("click", closeToolModal);
+        $("toolModal").addEventListener("click", (e) => {
+          if (e.target === $("toolModal")) closeToolModal();
+        });
+
+        // GOD tools
+        $("toolWake").addEventListener("click", showWakeTool);
+        $("toolStatus").addEventListener("click", showStatusTool);
+        $("toolLastMove").addEventListener("click", showLastMoveTool);
+        $("toolRoleChange").addEventListener("click", showRoleChangeTool);
+        $("toolChance").addEventListener("click", showChanceTool);
+        $("toolTimer").addEventListener("click", showTimerTool);
+
+        $("namesDefaultBtn").addEventListener("click", () => setNamesMode("default"));
+        $("namesLastBtn").addEventListener("click", () => setNamesMode("last"));
+        // update mafia select based on players
+        $("playersCount").addEventListener("change", () => {
+          const n = parseInt($("playersCount").value, 10);
+          fillMafiaSelect(n, computeSuggestedMafia(n));
+          $("mafiaCount").value = String(clamp(computeSuggestedMafia(n), 1, parseInt($("mafiaCount").lastChild.value, 10)));
+          appState.ui.nPlayers = n;
+          ensureNamesLength(n);
+          renderNameGrid();
+          regenerateFromUI();
+          // enforce constraints on mafia specials
+          const mafiaCount = parseInt($("mafiaCount").value, 10);
+          if (mafiaCount <= 1) {
+            const el = $("tg_swindler");
+            if (el) el.checked = false;
+          }
+          updateQuickStat();
+        });
+
+        $("mafiaCount").addEventListener("change", () => {
+          const mafiaCount = parseInt($("mafiaCount").value, 10);
+          if (mafiaCount <= 1) {
+            const el = $("tg_swindler");
+            if (el) el.checked = false;
+          }
+          regenerateFromUI();
+        });
+
+        $("scenario").addEventListener("change", () => {
+          const scenario = $("scenario").value;
+          // IMPORTANT: update state first (avoid snapping back to previous scenario)
+          appState.ui.scenario = scenario;
+
+          // reset to scenario defaults (then hide/disallow non-scenario roles)
+          appState.ui.toggles = normalizeTogglesForScenario(defaultTogglesForScenario(scenario), scenario);
+
+          // apply availability + toggle checks without re-setting the scenario select
+          applyScenarioAvailability(scenario);
+          const mafiaCount = parseInt($("mafiaCount").value, 10);
+          const disableMafiaBoss = mafiaCount <= 0;
+          const disableSwindler = mafiaCount <= 1;
+          applyToggles(appState.ui.toggles, { disableMafiaBoss, disableSwindler });
+          if (disableSwindler) {
+            const el = $("tg_swindler");
+            if (el) el.checked = false;
+          }
+          if (disableMafiaBoss) {
+            const el = $("tg_mafiaBoss");
+            if (el) el.checked = false;
+          }
+
+          saveState(appState);
+          updateQuickStat();
+        });
+
+        // any toggle change => just recompute stats/save
+        for (const def of toggleDefs) {
+          const el = $("tg_" + def.key);
+          el.addEventListener("change", () => regenerateFromUI());
+        }
+
+        // initial scenario availability
+        applyScenarioAvailability($("scenario").value);
+
+        // final persist ui
+        syncUIToState();
+        if (shouldPersist()) saveState(appState);
+      })();
     </script>
-</body>
+  </body>
 </html>
-
