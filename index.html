@@ -60,6 +60,11 @@
         justify-content:space-between;
         gap:10px;
       }
+      .topActions{
+        display:flex;
+        align-items:center;
+        gap:10px;
+      }
       .title{
         font-weight:800;
         letter-spacing:-.2px;
@@ -1253,24 +1258,29 @@
   <body>
     <div class="app">
       <div class="topbar">
-        <div class="title">اپلیکیشن بازی مافیا</div>
-        <div class="chip clickable" id="helpChip" role="button" tabindex="0" aria-label="راهنما">
-          <span class="label">راهنما</span>
-          <button id="helpBtn" type="button">؟</button>
+        <div class="title" data-i18n="app.title">اپلیکیشن بازی مافیا</div>
+        <div class="topActions">
+          <div class="chip clickable" id="langChip" role="button" tabindex="0" aria-label="تغییر زبان">
+            <span class="label" id="langLabel">English</span>
+            <button id="langBtn" type="button" aria-hidden="true">🌐</button>
+          </div>
+          <div class="chip clickable" id="helpChip" role="button" tabindex="0" aria-label="راهنما" data-i18n-aria-label="top.help">
+            <span class="label" data-i18n="top.help">راهنما</span>
+          </div>
         </div>
       </div>
 
       <div class="card" id="setupCard">
         <div class="hd">
-          <h2>تنظیمات بازی</h2>
+          <h2 data-i18n="setup.title">تنظیمات بازی</h2>
           <span class="chip" id="quickStat">—</span>
         </div>
         <div class="bd">
-          <button class="bigbtn redbar" id="backBarBtn" type="button" style="display:none">بازگشت به تنظیمات بازی</button>
+          <button class="bigbtn redbar" id="backBarBtn" type="button" style="display:none" data-i18n="setup.backToSetup">بازگشت به تنظیمات بازی</button>
 
           <div class="row">
             <label>
-              سناریو
+              <span data-i18n="setup.scenario">سناریو</span>
               <select id="scenario">
                 <option value="bazras">بازپرس</option>
                 <option value="namayande">نماینده</option>
@@ -1286,14 +1296,14 @@
               </select>
             </label>
             <label>
-              تعداد بازیکن‌ها
+              <span data-i18n="setup.playersCount">تعداد بازیکن‌ها</span>
               <select id="playersCount"></select>
             </label>
           </div>
 
           <div class="row one">
             <label>
-              تعداد مافیا
+              <span data-i18n="setup.mafiaCount">تعداد مافیا</span>
               <select id="mafiaCount"></select>
             </label>
           </div>
@@ -1308,18 +1318,18 @@
 
           <div class="row one" style="margin-top:12px">
             <div class="actions">
-              <button class="btn" id="scenarioDefaultsBtn" type="button">پیش‌فرض سناریو</button>
-              <button class="btn primary" id="startGameBtn" type="button">شروع بازی</button>
+              <button class="btn" id="scenarioDefaultsBtn" type="button" data-i18n="setup.defaults">پیش‌فرض سناریو</button>
+              <button class="btn primary" id="startGameBtn" type="button" data-i18n="setup.start">شروع بازی</button>
             </div>
             <button class="btn" id="resumeBtn" type="button" style="display:none">ادامه بازی</button>
           </div>
 
           <div class="row one" id="savedGameBarRow" style="display:none; margin-top:12px">
             <div class="defaultsBar savedGame">
-              <div class="txt" id="savedGameBarText">یک بازی ذخیره شده است.</div>
+              <div class="txt" id="savedGameBarText" data-i18n="setup.savedGame">یک بازی ذخیره شده است.</div>
               <div class="actions" id="savedGameBarActions">
-                <button class="btn" id="savedGameResumeBtn" type="button">ادامه بازی</button>
-                <button class="btn danger" id="savedGameClearBtn" type="button">حذف</button>
+                <button class="btn" id="savedGameResumeBtn" type="button" data-i18n="setup.resume">ادامه بازی</button>
+                <button class="btn danger" id="savedGameClearBtn" type="button" data-i18n="setup.delete">حذف</button>
               </div>
             </div>
           </div>
@@ -1328,26 +1338,24 @@
 
       <div class="card hidden" id="playersCard">
         <div class="hd">
-          <h2>بازیکنان</h2>
+          <h2 data-i18n="players.title">بازیکنان</h2>
           <span class="chip" id="playersStat">—</span>
         </div>
         <div class="bd">
           <div class="row one">
-            <div class="pill" role="tablist" aria-label="حالت نام‌ها">
-              <button id="namesDefaultBtn" type="button" class="active">اسامی پیش‌فرض</button>
-              <button id="namesLastBtn" type="button">اسامی بازی قبل</button>
+            <div class="pill" role="tablist" aria-label="حالت نام‌ها" data-i18n-aria-label="players.namesModeAria">
+              <button id="namesDefaultBtn" type="button" class="active" data-i18n="players.namesDefault">اسامی پیش‌فرض</button>
+              <button id="namesLastBtn" type="button" data-i18n="players.namesLast">اسامی بازی قبل</button>
             </div>
-            <div class="note">
-              اسامی بازیکنان را وارد کنید. اگر «اسامی بازی قبل» را انتخاب کنید، از ذخیره‌ی مرورگر استفاده می‌شود.
-            </div>
+            <div class="note" data-i18n="players.note">اسامی بازیکنان را وارد کنید. اگر «اسامی بازی قبل» را انتخاب کنید، از ذخیره‌ی مرورگر استفاده می‌شود.</div>
             <div class="nameGrid" id="nameGrid"></div>
             <div class="error" id="errorBoxPlayers"></div>
           </div>
 
           <div class="row one" style="margin-top:12px">
-            <button class="bigbtn primary" id="dealBtn" type="button">تقسیم نقش</button>
+            <button class="bigbtn primary" id="dealBtn" type="button" data-i18n="players.deal">تقسیم نقش</button>
             <div class="actions">
-              <button class="btn" id="playersBackBtn" type="button">بازگشت به تنظیمات</button>
+              <button class="btn" id="playersBackBtn" type="button" data-i18n="players.back">بازگشت به تنظیمات</button>
             </div>
           </div>
         </div>
@@ -1355,7 +1363,7 @@
 
       <div class="card hidden" id="cardsCard">
         <div class="hd">
-          <h2>تقسیم نقش</h2>
+          <h2 data-i18n="cards.title">تقسیم نقش</h2>
           <span class="chip" id="cardsStat">—</span>
         </div>
         <div class="bd">
@@ -1364,49 +1372,49 @@
               <div id="cardsWho">نوبت: —</div>
             </div>
 
-            <div class="note" id="cardsHint">بازیکن یک کارت را انتخاب می‌کند و نقش خودش را می‌بیند.</div>
+            <div class="note" id="cardsHint" data-i18n="cards.hint">بازیکن یک کارت را انتخاب می‌کند و نقش خودش را می‌بیند.</div>
 
             <div class="cardsGrid" id="cardsGrid"></div>
           </div>
 
           <div class="actions wrap">
-            <button class="btn" id="cardsBackBtn" type="button">بازگشت</button>
-            <button class="btn" id="autoAssignBtn" type="button">اختصاص اتومات نقش‌ها</button>
-            <button class="btn primary" id="cardsNextBtn" type="button" disabled>برو مرحله بعد!</button>
+            <button class="btn" id="cardsBackBtn" type="button" data-i18n="cards.back">بازگشت</button>
+            <button class="btn" id="autoAssignBtn" type="button" data-i18n="cards.autoAssign">اختصاص اتومات نقش‌ها</button>
+            <button class="btn primary" id="cardsNextBtn" type="button" disabled data-i18n="cards.next">برو مرحله بعد!</button>
           </div>
         </div>
       </div>
 
       <div class="card hidden" id="castCard">
         <div class="hd">
-          <h2>فهرست شخصیت‌ها</h2>
+          <h2 data-i18n="cast.title">فهرست شخصیت‌ها</h2>
           <span class="chip" id="castStat">—</span>
         </div>
         <div class="bd">
           <div class="toolBar" id="godTools">
             <button class="toolBtn" id="toolWake" type="button">
               <div class="ico">🌙</div>
-              <div class="lbl">بیداری</div>
+              <div class="lbl" data-i18n="tools.wake">بیداری</div>
             </button>
             <button class="toolBtn" id="toolStatus" type="button">
               <div class="ico">🔎</div>
-              <div class="lbl">استعلام</div>
+              <div class="lbl" data-i18n="tools.status">استعلام</div>
             </button>
             <button class="toolBtn" id="toolLastMove" type="button">
               <div class="ico">🃏</div>
-              <div class="lbl">حرکت آخر</div>
+              <div class="lbl" data-i18n="tools.lastMove">حرکت آخر</div>
             </button>
             <button class="toolBtn" id="toolRoleChange" type="button">
               <div class="ico">🎭</div>
-              <div class="lbl">تغییر نقش</div>
+              <div class="lbl" data-i18n="tools.roleChange">تغییر نقش</div>
             </button>
             <button class="toolBtn" id="toolChance" type="button">
               <div class="ico">🎲</div>
-              <div class="lbl">قرعه</div>
+              <div class="lbl" data-i18n="tools.chance">قرعه</div>
             </button>
             <button class="toolBtn" id="toolTimer" type="button">
               <div class="ico">⏱</div>
-              <div class="lbl">تایم</div>
+              <div class="lbl" data-i18n="tools.timer">تایم</div>
             </button>
           </div>
 
@@ -1417,8 +1425,8 @@
           <div class="castBox" id="castInd" style="display:none"></div>
 
           <div class="actions">
-            <button class="btn" id="castBackBtn" type="button">بازگشت به تنظیمات بازی</button>
-            <button class="btn primary" id="castNewBtn" type="button">قرعه‌کشی جدید</button>
+            <button class="btn" id="castBackBtn" type="button" data-i18n="cast.back">بازگشت به تنظیمات بازی</button>
+            <button class="btn primary" id="castNewBtn" type="button" data-i18n="cast.new">قرعه‌کشی جدید</button>
           </div>
         </div>
       </div>
@@ -1429,11 +1437,11 @@
       <div class="sheet">
         <div class="top">
           <div class="who" id="modalWho">—</div>
-          <button class="close" id="modalCloseBtn" type="button">بستن</button>
+          <button class="close" id="modalCloseBtn" type="button" data-i18n="common.close">بستن</button>
         </div>
         <div class="content">
           <div class="roleCard roleReveal" id="roleCard">
-            <button class="roleHelpBtn" id="roleHelpBtn" type="button" title="راهنمای نقش">؟</button>
+            <button class="roleHelpBtn" id="roleHelpBtn" type="button" title="راهنمای نقش" data-i18n-title="common.roleHelp">؟</button>
             <div class="ricon" id="roleIcon" aria-hidden="true"></div>
             <div class="rname" id="roleName">—</div>
             <div class="rteam" id="roleTeam">—</div>
@@ -1442,7 +1450,7 @@
           <div class="note roleRevealNote" id="modalNote"></div>
         </div>
         <div class="bottom">
-          <button class="btn primary" id="markRevealedBtn" type="button">دیدم</button>
+          <button class="btn primary" id="markRevealedBtn" type="button" data-i18n="common.seen">دیدم</button>
         </div>
       </div>
     </div>
@@ -1451,13 +1459,13 @@
       <div class="sheet">
         <div class="top">
           <div class="who" id="toolTitle">—</div>
-          <button class="close" id="toolCloseBtn" type="button">بستن</button>
+          <button class="close" id="toolCloseBtn" type="button" data-i18n="common.close">بستن</button>
         </div>
         <div class="content" id="toolBody">
           <!-- injected -->
         </div>
         <div class="bottom" id="toolBottom">
-          <button class="btn primary" id="toolOkBtn" type="button">بستن</button>
+          <button class="btn primary" id="toolOkBtn" type="button" data-i18n="common.close">بستن</button>
         </div>
       </div>
     </div>
@@ -1468,6 +1476,389 @@
 
         const STORAGE_KEY = "mafia_v2_simple_web_state_v1";
         const LAST_NAMES_KEY = "mafia_v2_simple_web_last_names_v1";
+
+        const LANG_KEY = "mafia_v2_simple_web_lang_v1";
+        let appLang = "fa"; // "fa" | "en"
+
+        const STR = {
+          fa: {
+            "doc.title": "اپلیکیشن بازی مافیا",
+            "app.title": "اپلیکیشن بازی مافیا",
+            "top.help": "راهنما",
+            "top.lang.aria": "تغییر زبان",
+            "top.lang.toFa": "فارسی",
+            "top.lang.toEn": "English",
+
+            "setup.title": "تنظیمات بازی",
+            "setup.backToSetup": "بازگشت به تنظیمات بازی",
+            "setup.scenario": "سناریو",
+            "setup.playersCount": "تعداد بازیکن‌ها",
+            "setup.mafiaCount": "تعداد مافیا",
+            "setup.defaults": "پیش‌فرض سناریو",
+            "setup.start": "شروع بازی",
+            "setup.savedGame": "یک بازی ذخیره شده است.",
+            "setup.resume": "ادامه بازی",
+            "setup.delete": "حذف",
+
+            "players.title": "بازیکنان",
+            "players.namesModeAria": "حالت نام‌ها",
+            "players.namesDefault": "اسامی پیش‌فرض",
+            "players.namesLast": "اسامی بازی قبل",
+            "players.note": "اسامی بازیکنان را وارد کنید. اگر «اسامی بازی قبل» را انتخاب کنید، از ذخیره‌ی مرورگر استفاده می‌شود.",
+            "players.deal": "تقسیم نقش",
+            "players.back": "بازگشت به تنظیمات",
+
+            "cards.title": "تقسیم نقش",
+            "cards.hint": "بازیکن یک کارت را انتخاب می‌کند و نقش خودش را می‌بیند.",
+            "cards.back": "بازگشت",
+            "cards.autoAssign": "اختصاص اتومات نقش‌ها",
+            "cards.next": "برو مرحله بعد!",
+
+            "cast.title": "فهرست شخصیت‌ها",
+            "cast.back": "بازگشت به تنظیمات بازی",
+            "cast.new": "قرعه‌کشی جدید",
+
+            "tools.wake": "بیداری",
+            "tools.status": "استعلام",
+            "tools.lastMove": "حرکت آخر",
+            "tools.roleChange": "تغییر نقش",
+            "tools.chance": "قرعه",
+            "tools.timer": "تایم",
+
+            "common.close": "بستن",
+            "common.seen": "دیدم",
+            "common.roleHelp": "راهنمای نقش",
+            "common.on": "روشن",
+            "common.off": "خاموش",
+            "common.done": "تمام شد",
+            "common.turn": "نوبت",
+            "common.playerN": "بازیکن {n}",
+            "common.cardN": "کارت {n}",
+            "common.taken": "برداشته شد",
+
+            "saveState.label": "ذخیره: {state}",
+            "error.config": "خطا در تنظیمات بازی.",
+            "error.quick": "خطا در تنظیمات",
+            "error.duplicateName": "نام «{name}» تکراری است.",
+
+            "teams.mafia": "مافیا",
+            "teams.city": "شهر",
+            "teams.independent": "مستقل",
+            "teams.mafiaTeam": "تیم مافیا",
+            "teams.cityTeam": "تیم شهر",
+
+            "toggles.variableCount": "تعداد: متغیر",
+
+            "quickStat.withInd": "مافیا: {m} • شهر: {c} • مستقل: {i}",
+            "quickStat.noInd": "مافیا: {m} • شهر: {c}",
+
+            "help.title": "راهنما",
+            "help.quick": "راهنمای سریع",
+            "help.body": `1) سناریو، تعداد بازیکن‌ها و تعداد مافیا را تنظیم کنید.<br />
+2) نقش‌های فعال را (طبق سناریو) روشن/خاموش کنید.<br />
+3) «شروع بازی» را بزنید و اسامی را وارد کنید.<br />
+4) «تقسیم نقش» را بزنید؛ هر بازیکن یک کارت انتخاب می‌کند و «دیدم» را می‌زند.<br />
+5) در «فهرست شخصیت‌ها»، راوی می‌تواند ابزارها (تایمر/قرعه/تغییر نقش/وضعیت) را استفاده کند.`,
+
+            "tool.wake.title": "ترتیب بیداری",
+            "tool.wake.scenario": "سناریو: {name}",
+            "tool.wake.none": "برای این سناریو ترتیب بیداری ثبت نشده است.",
+
+            "tool.status.title": "استعلام وضعیت",
+            "tool.status.alive": "افراد زنده",
+            "tool.status.dead": "افراد مرده",
+            "tool.status.mafiaAlive": "مافیا زنده",
+            "tool.status.mafiaDead": "مافیا مرده",
+            "tool.status.cityAlive": "شهر زنده",
+            "tool.status.cityDead": "شهر مرده",
+            "tool.status.indAlive": "مستقل زنده",
+            "tool.status.indDead": "مستقل مرده",
+            "tool.status.hint": "برای تغییر وضعیت هر بازیکن، در صفحه «فهرست شخصیت‌ها» روی نام بازیکن بزنید و «کشته شد/خارج شد» را انتخاب کنید.",
+            "tool.status.summary": "از بازی شما {out} نفر خارج شده‌اند. {m} مافیا، {c} شهروند و {i} مستقل.",
+
+            "tool.lastMove.title": "کارت حرکت آخر",
+            "tool.lastMove.none": "این سناریو کارت حرکت آخر ندارد!",
+            "tool.lastMove.header": "کارت‌های حرکت آخر:",
+            "tool.lastMove.draw": "قرعه کارت",
+            "tool.lastMove.result": "نتیجه:",
+            "tool.lastMove.allUsed": "همهٔ کارت‌ها استفاده شده‌اند.",
+
+            "tool.roleChange.title": "تغییر نقش",
+            "tool.roleChange.needDeal": "ابتدا نقش‌ها را تقسیم کنید.",
+            "tool.roleChange.pick": "یک نفر را انتخاب کن تا نقشِش را تغییر بدهی",
+            "tool.roleChange.labelPlayer": "نقش ایشون رو",
+            "tool.roleChange.labelRole": "تغییر بده به",
+            "tool.roleChange.apply": "اعمال تغییر نقش",
+            "tool.roleChange.shuffleAll": "بر زدن نقش‌ها (همه)",
+            "tool.roleChange.shuffleConfirm": "تأیید بر زدن نقش‌ها",
+            "tool.roleChange.shuffleWarn": "هشدار: این کار نقش‌های همهٔ بازیکن‌ها را جابه‌جا می‌کند و قابل برگشت نیست.",
+
+            "tool.chance.title": "قرعه",
+            "tool.chance.ask": "چند نفر وارد قرعه می‌شوند؟",
+            "tool.chance.count": "تعداد",
+            "tool.chance.spin": "قرعه",
+            "tool.chance.result": "نتیجه:",
+
+            "tool.timer.pick.title": "تنظیم تایمر",
+            "tool.timer.pick.ask": "مدت زمان «{label}» را انتخاب کنید",
+            "tool.timer.pick.seconds": "زمان (ثانیه)",
+            "tool.timer.pick.apply": "ثبت",
+            "tool.timer.pick.back": "بازگشت",
+            "tool.timer.title": "تایمر",
+            "tool.timer.turn": "ترن",
+            "tool.timer.challenge": "چالش",
+            "tool.timer.defense": "دفاعیه",
+            "tool.timer.reset": "ریست",
+            "tool.timer.close": "بستن",
+
+            "lifeSheet.title": "وضعیت بازیکن",
+            "lifeSheet.role": "نقش",
+            "lifeSheet.team": "تیم",
+            "lifeSheet.status": "وضعیت",
+            "lifeSheet.alive": "زنده",
+            "lifeSheet.deadShot": "کشته شد (شات)",
+            "lifeSheet.deadVote": "خارج شد (رای)",
+            "lifeSheet.deadShortShot": "شات",
+            "lifeSheet.deadShortVote": "رای",
+            "lifeSheet.actionShot": "کشته شد (شات)",
+            "lifeSheet.actionVote": "خارج شد (رای)",
+            "lifeSheet.actionRevive": "برگرداندن به بازی (زنده)",
+
+            "cast.noneMafia": "بدون مافیا",
+            "cast.noneCity": "بدون شهر",
+            "cast.stat.withInd": "بازیکن: {p} • مافیا: {m} • شهر: {c} • مستقل: {i}",
+            "cast.stat.noInd": "بازیکن: {p} • مافیا: {m} • شهر: {c}",
+          },
+          en: {
+            "doc.title": "Mafia Game Assistant",
+            "app.title": "Mafia Game Assistant",
+            "top.help": "Help",
+            "top.lang.aria": "Change language",
+            "top.lang.toFa": "فارسی",
+            "top.lang.toEn": "English",
+
+            "setup.title": "Game setup",
+            "setup.backToSetup": "Back to setup",
+            "setup.scenario": "Scenario",
+            "setup.playersCount": "Players",
+            "setup.mafiaCount": "Mafia",
+            "setup.defaults": "Scenario defaults",
+            "setup.start": "Start game",
+            "setup.savedGame": "A saved game is available.",
+            "setup.resume": "Resume",
+            "setup.delete": "Delete",
+
+            "players.title": "Players",
+            "players.namesModeAria": "Names mode",
+            "players.namesDefault": "Default names",
+            "players.namesLast": "Last game names",
+            "players.note": "Enter player names. If you choose “Last game names”, the app will use your browser’s saved list.",
+            "players.deal": "Deal roles",
+            "players.back": "Back to setup",
+
+            "cards.title": "Deal",
+            "cards.hint": "Each player picks a card and sees their role.",
+            "cards.back": "Back",
+            "cards.autoAssign": "Auto-assign roles",
+            "cards.next": "Next step",
+
+            "cast.title": "Cast list",
+            "cast.back": "Back to setup",
+            "cast.new": "New draw",
+
+            "tools.wake": "Wake",
+            "tools.status": "Status",
+            "tools.lastMove": "Last move",
+            "tools.roleChange": "Change role",
+            "tools.chance": "Draw",
+            "tools.timer": "Timer",
+
+            "common.close": "Close",
+            "common.seen": "Seen",
+            "common.roleHelp": "Role help",
+            "common.on": "On",
+            "common.off": "Off",
+            "common.done": "Done",
+            "common.turn": "Turn",
+            "common.playerN": "Player {n}",
+            "common.cardN": "Card {n}",
+            "common.taken": "Taken",
+
+            "saveState.label": "Save: {state}",
+            "error.config": "Invalid game setup.",
+            "error.quick": "Setup error",
+            "error.duplicateName": "Name “{name}” is duplicated.",
+
+            "teams.mafia": "Mafia",
+            "teams.city": "City",
+            "teams.independent": "Independent",
+            "teams.mafiaTeam": "Mafia team",
+            "teams.cityTeam": "City team",
+
+            "toggles.variableCount": "Count: variable",
+
+            "quickStat.withInd": "Mafia: {m} • City: {c} • Ind: {i}",
+            "quickStat.noInd": "Mafia: {m} • City: {c}",
+
+            "help.title": "Help",
+            "help.quick": "Quick guide",
+            "help.body": `1) Choose scenario, number of players, and mafia count.<br />
+2) Enable/disable roles (based on scenario).<br />
+3) Tap “Start game” and enter player names.<br />
+4) Tap “Deal roles”: each player picks a card and taps “Seen”.<br />
+5) In “Cast list”, the narrator can use tools (Timer/Draw/Role change/Status).`,
+
+            "tool.wake.title": "Wake order",
+            "tool.wake.scenario": "Scenario: {name}",
+            "tool.wake.none": "No wake order recorded for this scenario.",
+
+            "tool.status.title": "Status check",
+            "tool.status.alive": "Alive",
+            "tool.status.dead": "Dead",
+            "tool.status.mafiaAlive": "Mafia alive",
+            "tool.status.mafiaDead": "Mafia dead",
+            "tool.status.cityAlive": "City alive",
+            "tool.status.cityDead": "City dead",
+            "tool.status.indAlive": "Ind alive",
+            "tool.status.indDead": "Ind dead",
+            "tool.status.hint": "To change a player’s status, go to “Cast list”, tap the player, then choose “Killed/Out”.",
+            "tool.status.summary": "From your game {out} people are out. {m} Mafia, {c} Citizen and {i} independent.",
+
+            "tool.lastMove.title": "Last move card",
+            "tool.lastMove.none": "This scenario has no Last Move card.",
+            "tool.lastMove.header": "Last move cards:",
+            "tool.lastMove.draw": "Draw card",
+            "tool.lastMove.result": "Result:",
+            "tool.lastMove.allUsed": "All cards have been used.",
+
+            "tool.roleChange.title": "Change role",
+            "tool.roleChange.needDeal": "Deal roles first.",
+            "tool.roleChange.pick": "Choose a player to change their role",
+            "tool.roleChange.labelPlayer": "Change role of",
+            "tool.roleChange.labelRole": "Change to",
+            "tool.roleChange.apply": "Apply",
+            "tool.roleChange.shuffleAll": "Shuffle all roles",
+            "tool.roleChange.shuffleConfirm": "Confirm shuffle",
+            "tool.roleChange.shuffleWarn": "Warning: this shuffles everyone’s roles and cannot be undone.",
+
+            "tool.chance.title": "Draw",
+            "tool.chance.ask": "How many players are in the draw?",
+            "tool.chance.count": "Count",
+            "tool.chance.spin": "Draw",
+            "tool.chance.result": "Result:",
+
+            "tool.timer.pick.title": "Set timer",
+            "tool.timer.pick.ask": "Select duration for “{label}”",
+            "tool.timer.pick.seconds": "Time (seconds)",
+            "tool.timer.pick.apply": "Save",
+            "tool.timer.pick.back": "Back",
+            "tool.timer.title": "Timer",
+            "tool.timer.turn": "Turn",
+            "tool.timer.challenge": "Challenge",
+            "tool.timer.defense": "Defense",
+            "tool.timer.reset": "Reset",
+            "tool.timer.close": "Close",
+
+            "lifeSheet.title": "Player status",
+            "lifeSheet.role": "Role",
+            "lifeSheet.team": "Team",
+            "lifeSheet.status": "Status",
+            "lifeSheet.alive": "Alive",
+            "lifeSheet.deadShot": "Killed (shot)",
+            "lifeSheet.deadVote": "Out (vote)",
+            "lifeSheet.deadShortShot": "Shot",
+            "lifeSheet.deadShortVote": "Vote",
+            "lifeSheet.actionShot": "Killed (shot)",
+            "lifeSheet.actionVote": "Out (vote)",
+            "lifeSheet.actionRevive": "Revive (alive)",
+
+            "cast.noneMafia": "No mafia",
+            "cast.noneCity": "No city",
+            "cast.stat.withInd": "Players: {p} • Mafia: {m} • City: {c} • Ind: {i}",
+            "cast.stat.noInd": "Players: {p} • Mafia: {m} • City: {c}",
+          },
+        };
+
+        function t(key, vars) {
+          const dict = STR[appLang] || STR.fa;
+          let s = (dict && dict[key]) || (STR.fa && STR.fa[key]) || key;
+          if (vars && typeof vars === "object") {
+            for (const k of Object.keys(vars)) {
+              s = s.replaceAll("{" + k + "}", String(vars[k]));
+            }
+          }
+          return s;
+        }
+        function applyStaticI18n() {
+          try { document.title = t("doc.title"); } catch {}
+          document.querySelectorAll("[data-i18n]").forEach((el) => {
+            const key = el.getAttribute("data-i18n");
+            if (!key) return;
+            el.textContent = t(key);
+          });
+          document.querySelectorAll("[data-i18n-title]").forEach((el) => {
+            const key = el.getAttribute("data-i18n-title");
+            if (!key) return;
+            el.setAttribute("title", t(key));
+          });
+          document.querySelectorAll("[data-i18n-aria-label]").forEach((el) => {
+            const key = el.getAttribute("data-i18n-aria-label");
+            if (!key) return;
+            el.setAttribute("aria-label", t(key));
+          });
+        }
+        function applyScenarioOptionLabels() {
+          const map = {
+            classic: { fa: "کلاسیک", en: "Classic" },
+            bazras: { fa: "بازپرس", en: "Inspector" },
+            namayande: { fa: "نماینده", en: "Representative" },
+            mozaker: { fa: "مذاکره", en: "Negotiator" },
+            takavar: { fa: "تکاور", en: "Commando" },
+            kabo: { fa: "کاپو", en: "Capo" },
+            pedarkhande: { fa: "پدرخوانده", en: "Godfather" },
+            zodiac: { fa: "زودیاک", en: "Zodiac" },
+            meeting_epic: { fa: "میتینگ/اپیک", en: "Meeting/Epic" },
+            pishrafte: { fa: "پیشرفته", en: "Advanced" },
+            shab_mafia: { fa: "شب مافیا", en: "Mafia Nights" },
+          };
+          const sel = $("scenario");
+          if (!sel || !sel.options) return;
+          for (const opt of Array.from(sel.options)) {
+            const v = opt.value;
+            const rec = map[v];
+            if (!rec) continue;
+            opt.textContent = appLang === "fa" ? rec.fa : rec.en;
+          }
+        }
+        function updateLangChip() {
+          const chip = $("langChip");
+          const label = $("langLabel");
+          if (chip) chip.setAttribute("aria-label", t("top.lang.aria"));
+          if (label) label.textContent = (appLang === "fa") ? t("top.lang.toEn") : t("top.lang.toFa");
+        }
+        function setLanguage(lang) {
+          appLang = (lang === "en") ? "en" : "fa";
+          try { if (shouldPersist()) localStorage.setItem(LANG_KEY, appLang); } catch {}
+          try {
+            const root = document.documentElement;
+            root.setAttribute("lang", appLang === "fa" ? "fa" : "en");
+            root.setAttribute("dir", appLang === "fa" ? "rtl" : "ltr");
+          } catch {}
+          applyScenarioOptionLabels();
+          applyStaticI18n();
+          updateLangChip();
+          try { if (typeof renderToggles === "function") renderToggles(); } catch {}
+          try { if (typeof applyUIFromState === "function") applyUIFromState(); } catch {}
+          try { if (typeof updateQuickStat === "function") updateQuickStat(); } catch {}
+          try { if (typeof renderCards === "function" && $("cardsCard") && !$("cardsCard").classList.contains("hidden")) renderCards(); } catch {}
+          try { if (typeof renderCast === "function" && $("castCard") && !$("castCard").classList.contains("hidden")) renderCast(); } catch {}
+          try { if (typeof renderNameGrid === "function" && $("playersCard") && !$("playersCard").classList.contains("hidden")) renderNameGrid(); } catch {}
+          try { if (typeof closeToolModal === "function") closeToolModal(); } catch {}
+          try { if (typeof closeModal === "function") closeModal(); } catch {}
+        }
+        function toggleLanguage() {
+          setLanguage(appLang === "fa" ? "en" : "fa");
+        }
 
         const roles = {
           // --- base ---
@@ -1531,6 +1922,95 @@
           citizenKane: { faName: "همشهری کین", teamFa: "شهر", hintFa: "افشا", descFa: "در سناریو پدرخوانده معمولاً یک‌بار می‌تواند یک نفر را نشان کند؛ اگر آن نفر مافیا باشد، صبح ساید او توسط گرداننده اعلام می‌شود (طبق قوانین میز)." },
           nostradamus: { faName: "نوستراداموس", teamFa: "مستقل", hintFa: "شب معارفه", descFa: "در سناریو پدرخوانده (روایت رایج)، فقط شب معارفه بیدار می‌شود و ۳ نفر را نشان می‌دهد؛ گرداننده تعداد مافیاهای داخل این ۳ نفر را اعلام می‌کند و او براساس آن، ساید خود را انتخاب می‌کند." },
         };
+
+        // English role labels (UI only). If a role isn't present here, it falls back to Persian.
+        const ROLE_I18N = {
+          citizen: { name: "Citizen", hint: "No ability", desc: "No night ability. Help find mafia through discussion and voting." },
+          mafia: { name: "Mafia", hint: "No ability", desc: "No standalone ability. Coordinate at night; mislead during the day." },
+          mafiaBoss: { name: "Mafia Boss", hint: "Leader + shot", desc: "Leads the mafia; usually decides the night shot. Often shows as ‘negative’ to the Detective." },
+          godfather: { name: "Godfather", hint: "Leader + shot", desc: "Often the mafia leader who decides the night shot; typically shows as ‘negative’ to the Detective." },
+          swindler: { name: "Charlatan", hint: "Disrupts inquiry", desc: "Disrupts inquiries (varies by scenario). Applies an effect to a target each night." },
+          nato: { name: "NATO", hint: "Guess a role", desc: "Once (by scenario), guesses a player’s exact role; if correct, that player is eliminated." },
+          negotiator: { name: "Negotiator", hint: "Convert", desc: "May attempt (by scenario) to convert a citizen to mafia; usually replaces the night shot." },
+          natasha: { name: "Natasha", hint: "Night silence", desc: "Chooses a player to be silent the next day (rules vary)." },
+          doctorLecter: { name: "Dr. Lecter", hint: "Save (mafia)", desc: "Mafia doctor. Can save a target from the night shot; self-save is usually limited." },
+          jokerMafia: { name: "Mafia Joker", hint: "Flip inquiry", desc: "Limited times per game can invert a Detective inquiry result (scenario rules apply)." },
+          matador: { name: "Matador", hint: "Disable ability", desc: "Chooses a player to disable their night ability for that night (by scenario)." },
+          saulGoodman: { name: "Saul Goodman", hint: "Buy/convert", desc: "Once (by scenario) can convert a basic citizen into a mafia member." },
+
+          detective: { name: "Detective", hint: "Night inquiry", desc: "Each night can check a player’s side (scenario rules apply)." },
+          investigator: { name: "Inspector", hint: "Interrogation", desc: "Once per game (in some scenarios) can interrogate (details vary)." },
+          doctor: { name: "Doctor", hint: "Night save", desc: "Each night can save a player from the night shot. Self-save is usually limited." },
+          watson: { name: "Dr. Watson", hint: "Save", desc: "In Godfather scenario, acts as the city Doctor (table rules apply)." },
+          researcher: { name: "Researcher", hint: "Link", desc: "Can link to a player; if the Researcher is eliminated, the linked player may also be eliminated (rules vary)." },
+          invulnerable: { name: "Invulnerable", hint: "Night armor", desc: "Typically cannot be killed by the mafia’s night shot; eliminated via vote/special rules." },
+          armored: { name: "Armored", hint: "Armor + return", desc: "Typically survives night shots; if voted out, role reveals and returns (rules vary)." },
+          sniper: { name: "Sniper", hint: "Limited shot", desc: "Usually has one shot. If shoots a citizen, the Sniper is eliminated (even if saved)." },
+          professional: { name: "Professional", hint: "Shot", desc: "Can shoot at night; if shoots a citizen by mistake, is eliminated." },
+          reporter: { name: "Reporter", hint: "Negotiation inquiry", desc: "In negotiator scenario, gets inquiry about negotiated player (rules vary)." },
+          representative: { name: "Representative", hint: "Day power", desc: "Scenario-defined role; exact rules depend on the version." },
+          hardJohn: { name: "Hard John", hint: "Extra life", desc: "Usually survives the first mafia shot. Often has limited status inquiries (rules vary)." },
+          psychologist: { name: "Psychiatrist", hint: "Mute", desc: "Usually can remove a player’s ability to talk a limited number of times." },
+          mayor: { name: "Mayor", hint: "Veto/out", desc: "Once may veto a vote or directly eliminate a defendant (rules vary)." },
+          seller: { name: "Seller", hint: "Remove ability", desc: "Once can remove a player’s ability for the rest of the game (rules vary)." },
+          priest: { name: "Priest", hint: "Support talk", desc: "Chooses players to get extra talk time; may neutralize silence effects (rules vary)." },
+          judge: { name: "Judge", hint: "Change vote", desc: "Once may change/void a vote result (rules vary)." },
+          commander: { name: "Commander", hint: "Confirm shot", desc: "After the Sniper shoots, can confirm or cancel the shot (scenario rules apply)." },
+
+          danMafia: { name: "Mafia Don", hint: "Leader + antidote", desc: "Mafia leader. Often shows negative to Detective; may have an antidote and trading powers (scenario rules apply)." },
+          witch: { name: "Witch", hint: "Copy ability", desc: "Chooses a citizen; if they have an ability, it is applied to the Witch (scenario rules apply)." },
+          executioner: { name: "Executioner", hint: "Guess a role", desc: "Like NATO: if the exact role guess is correct, the target is eliminated (scenario rules apply)." },
+          informant: { name: "Informant", hint: "Spy", desc: "Mafia spy. If awakened by Kadkhoda, can wake like a citizen (scenario rules apply)." },
+          kadkhoda: { name: "Kadkhoda", hint: "City link", desc: "Can link two players to a ‘citizen link’ (rules vary by scenario)." },
+          heir: { name: "Heir", hint: "Inherit role", desc: "Selects a player; may inherit certain abilities if that player is eliminated (scenario rules apply)." },
+          herbalist: { name: "Herbalist", hint: "Poison + antidote", desc: "Has one poison and one antidote; poisoning and antidote resolution depends on scenario rules." },
+          armorsmith: { name: "Armorsmith", hint: "One-time save", desc: "Once per game can save themselves (scenario rules apply)." },
+          suspect: { name: "Suspect", hint: "Positive inquiry", desc: "Citizen, but shows as ‘mafia’ to the Detective (scenario rules apply)." },
+
+          alcapone: { name: "Al Capone", hint: "Leader", desc: "Mafia leader; typically shows negative to Detective (Zodiac scenario rules apply)." },
+          zodiac: { name: "Zodiac", hint: "Even-night shot", desc: "Independent. Often can shoot on even nights; usually cannot be killed by night shot (rules vary)." },
+          showman: { name: "Showman", hint: "Disable ability", desc: "Chooses a city player and disables their ability (rules vary)." },
+          bomber: { name: "Bomber", hint: "Bomb", desc: "Once can plant a bomb with a code; target survives only if guessing correctly (rules vary)." },
+          guard: { name: "Guard", hint: "Anti-bomb", desc: "Can sacrifice to protect a bomb target and guess the disarm code (rules vary)." },
+          ocean: { name: "Ocean", hint: "Wake citizens", desc: "Limited times can wake some citizens to consult; waking mafia/Zodiac incorrectly may eliminate Ocean (rules vary)." },
+          gunslinger: { name: "Gunslinger", hint: "Give guns", desc: "Gives guns at night; recipients may use them during the day (rules vary)." },
+
+          leon: { name: "Leon", hint: "City pro", desc: "Key city role in Godfather scenario (table rules apply)." },
+          constantine: { name: "Constantine", hint: "Revive", desc: "May revive a player (table rules apply)." },
+          citizenKane: { name: "Citizen Kane", hint: "Reveal", desc: "Once can mark a player; if mafia, their side may be announced (rules vary)." },
+          nostradamus: { name: "Nostradamus", hint: "Intro night", desc: "Only wakes on the intro night, marks 3 players; host reveals how many mafia among them (rules vary)." },
+        };
+
+        function teamKeyFromFa(teamFa) {
+          if (teamFa === "مافیا") return "mafia";
+          if (teamFa === "شهر") return "city";
+          return "independent";
+        }
+        function teamLabel(teamFa) {
+          return t("teams." + teamKeyFromFa(teamFa));
+        }
+        function roleName(roleId) {
+          const r = roles[roleId];
+          if (!r) return roleId;
+          if (appLang === "fa") return r.faName || roleId;
+          return (ROLE_I18N[roleId] && ROLE_I18N[roleId].name) ? ROLE_I18N[roleId].name : (r.faName || roleId);
+        }
+        function roleHint(roleId) {
+          const r = roles[roleId];
+          if (!r) return "";
+          if (appLang === "fa") return r.hintFa || "";
+          return (ROLE_I18N[roleId] && ROLE_I18N[roleId].hint) ? ROLE_I18N[roleId].hint : (r.hintFa || "");
+        }
+        function roleDesc(roleId, scenario) {
+          const rBase = roles[roleId];
+          const rOv = (roleScenarioOverrides[roleId] && roleScenarioOverrides[roleId][scenario]) ? roleScenarioOverrides[roleId][scenario] : null;
+          const r = rBase ? { ...rBase, ...(rOv || {}) } : null;
+          if (!r) return (appLang === "fa") ? "توضیحی برای این نقش ثبت نشده است." : "No description is available for this role.";
+          if (appLang === "fa") return r.descFa || "توضیحی برای این نقش ثبت نشده است.";
+          if (rOv && rOv.descEn) return rOv.descEn;
+          if (ROLE_I18N[roleId] && ROLE_I18N[roleId].desc) return ROLE_I18N[roleId].desc;
+          return r.descFa || "No description is available for this role.";
+        }
 
         // Per-scenario overrides for role texts (same role, different rules).
         // This is only UI/help text; actual game rules are still handled by the narrator/table.
@@ -1945,7 +2425,7 @@
         function setSaveState(enabled) {
           const el = $("saveState");
           if (!el) return;
-          el.textContent = "ذخیره: " + (enabled ? "روشن" : "خاموش");
+          el.textContent = t("saveState.label", { state: enabled ? t("common.on") : t("common.off") });
         }
 
         function readUIState() {
@@ -2036,11 +2516,11 @@
           baseCitizen.id = "base_citizen";
           baseCitizen.innerHTML = `
             <span class="meta">
-              <span class="name">${roles.citizen.faName}</span>
-              <span class="hint">تعداد: متغیر</span>
+              <span class="name">${escapeHtml(roleName("citizen"))}</span>
+              <span class="hint">${escapeHtml(t("toggles.variableCount"))}</span>
             </span>
             <span class="right">
-              <button class="miniHelp" type="button" data-rolehelp="citizen" aria-label="راهنمای نقش">؟</button>
+              <button class="miniHelp" type="button" data-rolehelp="citizen" aria-label="${escapeHtml(t("common.roleHelp"))}">?</button>
               <span class="countpill" id="cnt_citizen">× 0</span>
             </span>
           `;
@@ -2049,17 +2529,17 @@
           baseMafia.id = "base_mafia";
           baseMafia.innerHTML = `
             <span class="meta">
-              <span class="name">${roles.mafia.faName}</span>
-              <span class="hint">تعداد: متغیر</span>
+              <span class="name">${escapeHtml(roleName("mafia"))}</span>
+              <span class="hint">${escapeHtml(t("toggles.variableCount"))}</span>
             </span>
             <span class="right">
-              <button class="miniHelp" type="button" data-rolehelp="mafia" aria-label="راهنمای نقش">؟</button>
+              <button class="miniHelp" type="button" data-rolehelp="mafia" aria-label="${escapeHtml(t("common.roleHelp"))}">?</button>
               <span class="countpill" id="cnt_mafia">× 0</span>
             </span>
           `;
 
           const groupOrder = ["mafia", "city", "independent"];
-          const groupLabel = { mafia: "تیم مافیا", city: "تیم شهر", independent: "مستقل" };
+          const groupLabel = { mafia: t("teams.mafiaTeam"), city: t("teams.cityTeam"), independent: t("teams.independent") };
           const defsByGroup = { mafia: [], city: [], independent: [] };
           for (const def of toggleDefs) {
             if (def.group === "mafia") defsByGroup.mafia.push(def);
@@ -2087,11 +2567,11 @@
             el.setAttribute("aria-pressed", "false");
             el.innerHTML = `
               <span class="meta">
-                <span class="name">${r.faName}</span>
-                <span class="hint">${r.hintFa}</span>
+                <span class="name">${escapeHtml(roleName(def.roleId))}</span>
+                <span class="hint">${escapeHtml(roleHint(def.roleId))}</span>
               </span>
               <span class="right">
-                <button class="miniHelp" type="button" data-rolehelp="${escapeHtml(def.roleId)}" aria-label="راهنمای نقش">؟</button>
+                <button class="miniHelp" type="button" data-rolehelp="${escapeHtml(def.roleId)}" aria-label="${escapeHtml(t("common.roleHelp"))}">?</button>
               </span>
             `;
             host.appendChild(el);
@@ -2128,10 +2608,10 @@
           const s = readUIState();
           const res = buildRolePool(s.nPlayers, s.mafiaCount, s.toggles);
           if (!res.ok) {
-            const msg = res.error || "خطا در تنظیمات بازی.";
+            const msg = res.error || t("error.config");
             const qs = $("quickStat");
             if (qs) {
-              qs.textContent = "خطا در تنظیمات";
+              qs.textContent = t("error.quick");
               qs.title = msg;
             }
             // Also show the full error in the setup page error box.
@@ -2154,8 +2634,8 @@
           }
           const sum = summarizePool(res.pool);
           $("quickStat").textContent = sum.independentTotal
-            ? `مافیا: ${sum.mafiaTotal} • شهر: ${sum.cityTotal} • مستقل: ${sum.independentTotal}`
-            : `مافیا: ${sum.mafiaTotal} • شهر: ${sum.cityTotal}`;
+            ? t("quickStat.withInd", { m: sum.mafiaTotal, c: sum.cityTotal, i: sum.independentTotal })
+            : t("quickStat.noInd", { m: sum.mafiaTotal, c: sum.cityTotal });
 
           // update base role counters
           const cCitizen = $("cnt_citizen");
@@ -2266,8 +2746,8 @@
 
           $("cardsStat").textContent = `${Math.min(cur, n)} / ${n}`;
           $("cardsWho").textContent = done
-            ? "تمام شد"
-            : `نوبت: ${((appState.ui.playerNames && appState.ui.playerNames[cur]) ? appState.ui.playerNames[cur] : `بازیکن ${cur + 1}`)}`;
+            ? t("common.done")
+            : `${t("common.turn")}: ${((appState.ui.playerNames && appState.ui.playerNames[cur]) ? appState.ui.playerNames[cur] : t("common.playerN", { n: cur + 1 }))}`;
 
           const nextBtn = $("cardsNextBtn");
           nextBtn.disabled = !done;
@@ -2279,7 +2759,7 @@
             const b = document.createElement("button");
             b.type = "button";
             b.className = "cardBtn" + (used ? " used" : "");
-            b.textContent = used ? "برداشته شد" : `کارت ${i + 1}`;
+            b.textContent = used ? t("common.taken") : t("common.cardN", { n: i + 1 });
             b.disabled = used || done;
             b.addEventListener("click", () => onPickCard(i));
             host.appendChild(b);
@@ -2383,7 +2863,7 @@
           return Array.from(ids);
         }
 
-        const scenarioWakeOrder = {
+        const scenarioWakeOrderFa = {
           classic: ["تیم مافیا", "پزشک", "کارآگاه"],
           bazras: ["محقق", "شیاد", "تیم مافیا", "پزشک", "تک‌تیرانداز", "کارآگاه", "بازپرس"],
           namayande: ["تیم مافیا", "پزشک", "کارآگاه", "نماینده"],
@@ -2396,51 +2876,118 @@
           pishrafte: ["تیم مافیا", "پزشک", "کارآگاه", "تک‌تیرانداز"],
           shab_mafia: ["تیم مافیا", "جوکر مافیا", "کارآگاه", "حرفه‌ای", "پزشک", "جان‌سخت", "روانپزشک", "شهردار", "فروشنده"],
         };
+        const scenarioWakeOrderEn = {
+          classic: ["Mafia team", "Doctor", "Detective"],
+          bazras: ["Researcher", "Charlatan", "Mafia team", "Doctor", "Sniper", "Detective", "Inspector"],
+          namayande: ["Mafia team", "Doctor", "Detective", "Representative"],
+          mozaker: ["Mafia team", "Doctor", "Detective", "Negotiator", "Reporter"],
+          takavar: ["Mafia team", "Doctor", "Detective", "Sniper"],
+          kabo: ["Heir", "Herbalist", "Detective", "Armorsmith", "Mafia team (Witch/Don/Executioner)"],
+          pedarkhande: ["Nostradamus (intro night only)", "Mafia team (Godfather/Matador/Saul)", "Dr. Watson", "Leon", "Citizen Kane", "Constantine"],
+          zodiac: ["Mafia team", "Zodiac", "Professional", "Doctor", "Detective", "Gunslinger", "Ocean"],
+          meeting_epic: ["Mafia team", "Doctor", "Detective", "Sniper"],
+          pishrafte: ["Mafia team", "Doctor", "Detective", "Sniper"],
+          shab_mafia: ["Mafia team", "Mafia Joker", "Detective", "Professional", "Doctor", "Hard John", "Psychiatrist", "Mayor", "Seller"],
+        };
 
         function showWakeTool() {
           const scenario = getScenario();
-          const title = "ترتیب بیداری";
-          const list = scenarioWakeOrder[scenario] || [];
+          const title = t("tool.wake.title");
+          const list = (appLang === "en" ? (scenarioWakeOrderEn[scenario] || scenarioWakeOrderFa[scenario] || []) : (scenarioWakeOrderFa[scenario] || []));
           const scenarioName = (($("scenario") && $("scenario").selectedOptions && $("scenario").selectedOptions[0]) ? $("scenario").selectedOptions[0].textContent : scenario);
           const itemsHtml = list.length
-            ? `<div class="toolBox"><div style="font-weight:1100;margin-bottom:6px">سناریو: ${escapeHtml(scenarioName)}</div>${list.map((x, i) => `<div style="padding:6px 0;font-weight:950">${i + 1}. ${escapeHtml(x)}</div>`).join("")}</div>`
-            : `<div class="toolBox">برای این سناریو ترتیب بیداری ثبت نشده است.</div>`;
+            ? `<div class="toolBox"><div style="font-weight:1100;margin-bottom:6px">${escapeHtml(t("tool.wake.scenario", { name: scenarioName }))}</div>${list.map((x, i) => `<div style="padding:6px 0;font-weight:950">${i + 1}. ${escapeHtml(x)}</div>`).join("")}</div>`
+            : `<div class="toolBox">${escapeHtml(t("tool.wake.none"))}</div>`;
           openToolModal(title, itemsHtml);
         }
 
         function showStatusTool() {
           syncGodStatusFromPlayers();
           const s = appState.god.status;
-          openToolModal("استعلام وضعیت", `
-            <div class="toolGrid">
-              <div class="toolBox">
-                <div class="kv"><div class="k">افراد زنده</div><div class="v">${s.alive}</div></div>
-              </div>
-              <div class="toolBox">
-                <div class="kv"><div class="k">افراد مرده</div><div class="v">${s.dead}</div></div>
-              </div>
-              <div class="toolBox" style="border-color: rgba(53,208,127,.22)">
-                <div class="kv"><div class="k">مافیا زنده</div><div class="v">${s.mafiaAlive}</div></div>
-              </div>
-              <div class="toolBox" style="border-color: rgba(255,92,116,.22)">
-                <div class="kv"><div class="k">مافیا مرده</div><div class="v">${s.mafiaDead}</div></div>
-              </div>
-              <div class="toolBox" style="border-color: rgba(110,168,255,.22)">
-                <div class="kv"><div class="k">شهر زنده</div><div class="v">${s.cityAlive}</div></div>
-              </div>
-              <div class="toolBox" style="border-color: rgba(255,92,116,.22)">
-                <div class="kv"><div class="k">شهر مرده</div><div class="v">${s.cityDead}</div></div>
-              </div>
-            </div>
-            <div style="height:10px"></div>
-            <div class="toolBox">
-              <div class="kv"><div class="k">مستقل زنده</div><div class="v">${s.indAlive}</div></div>
-              <div style="height:10px"></div>
-              <div class="kv"><div class="k">مستقل مرده</div><div class="v">${s.indDead}</div></div>
-              <div style="height:10px"></div>
-              <div style="color: var(--muted); font-weight:900; font-size:12px; line-height:1.6">
-                برای تغییر وضعیت هر بازیکن، در صفحه «فهرست شخصیت‌ها» روی نام بازیکن بزنید و «کشته شد/خارج شد» را انتخاب کنید.
-              </div>
+          const out = (s && typeof s.dead === "number") ? s.dead : 0;
+          const m = (s && typeof s.mafiaDead === "number") ? s.mafiaDead : 0;
+          const c = (s && typeof s.cityDead === "number") ? s.cityDead : 0;
+          const i = (s && typeof s.indDead === "number") ? s.indDead : 0;
+
+          const fmtNum = (n) => {
+            try {
+              const loc = (appLang === "fa") ? "fa-IR" : "en-US";
+              return Number(n || 0).toLocaleString(loc);
+            } catch {
+              return String(n || 0);
+            }
+          };
+          const joinList = (parts) => {
+            const xs = (parts || []).filter(Boolean);
+            if (xs.length <= 1) return xs[0] || "";
+            if (appLang === "fa") {
+              if (xs.length === 2) return `${xs[0]} و ${xs[1]}`;
+              return xs.slice(0, -1).join("، ") + " و " + xs[xs.length - 1];
+            }
+            if (xs.length === 2) return `${xs[0]} and ${xs[1]}`;
+            return xs.slice(0, -1).join(", ") + " and " + xs[xs.length - 1];
+          };
+          const teamParts = () => {
+            if (appLang === "fa") {
+              return [
+                m ? `${fmtNum(m)} مافیا` : "",
+                c ? `${fmtNum(c)} شهروند` : "",
+                i ? `${fmtNum(i)} مستقل` : "",
+              ].filter(Boolean);
+            }
+            const citizenLabel = (n) => n === 1 ? "Citizen" : "Citizens";
+            const indepLabel = (n) => n === 1 ? "Independent" : "Independents";
+            return [
+              m ? `${fmtNum(m)} Mafia` : "",
+              c ? `${fmtNum(c)} ${citizenLabel(c)}` : "",
+              i ? `${fmtNum(i)} ${indepLabel(i)}` : "",
+            ].filter(Boolean);
+          };
+          const summaryText = (() => {
+            const total = out || 0;
+            const parts = teamParts();
+            if (total <= 0) {
+              return (appLang === "fa")
+                ? "از بازی شما هنوز کسی خارج نشده است."
+                : "From your game no one is out yet.";
+            }
+            if (parts.length === 1) {
+              // only one team has any out
+              if (appLang === "fa") {
+                // parts[0] is like "3 مافیا" -> strip leading number
+                const teamOnly = parts[0].replace(/^\S+\s*/, "");
+                if (total === 1) return `از بازی شما ${fmtNum(total)} نفر خارج شده است؛ او ${teamOnly} بوده است.`;
+                return `از بازی شما ${fmtNum(total)} نفر خارج شده‌اند؛ همهٔ آن‌ها ${teamOnly} بوده‌اند.`;
+              }
+              // English
+              const isOne = total === 1;
+              const head = isOne ? `From your game ${fmtNum(total)} person is out` : `From your game ${fmtNum(total)} people are out`;
+              // Convert "3 Citizens" -> "Citizens", "2 Mafia" -> "Mafia"
+              const teamOnly = parts[0].replace(/^\S+\s*/, "");
+              if (isOne) {
+                // add article for Citizen/Independent
+                const lower = teamOnly.toLowerCase();
+                const withArticle =
+                  (lower === "citizen") ? "a Citizen" :
+                  (lower === "independent") ? "an Independent" :
+                  teamOnly;
+                return `${head}, they were ${withArticle}.`;
+              }
+              return `${head}, all of them were ${teamOnly}.`;
+            }
+            // multiple teams
+            if (appLang === "fa") {
+              return `از بازی شما ${fmtNum(total)} نفر خارج شده‌اند؛ ${joinList(parts)}.`;
+            }
+            const head = (total === 1)
+              ? `From your game ${fmtNum(total)} person is out`
+              : `From your game ${fmtNum(total)} people are out`;
+            return `${head}. ${joinList(parts)}.`;
+          })();
+
+          openToolModal(t("tool.status.title"), `
+            <div class="toolBox" style="font-weight:950; line-height:1.9">
+              ${escapeHtml(summaryText)}
             </div>
           `);
         }
@@ -2449,59 +2996,111 @@
           const scenario = getScenario();
           const supports = scenario === "shab_mafia";
           if (!supports) {
-            openToolModal("کارت حرکت آخر", `<div class="toolBox">این سناریو کارت حرکت آخر ندارد!</div>`);
+            openToolModal(t("tool.lastMove.title"), `<div class="toolBox">${escapeHtml(t("tool.lastMove.none"))}</div>`);
             return;
           }
-          const cards = ["بی‌خوابی", "شلیک نهایی", "ذهن زیبا", "دروغ سیزده", "مسیر سبز", "فرش قرمز"];
-          const last = appState.god.lastMove && appState.god.lastMove.last ? appState.god.lastMove.last : null;
-          openToolModal("کارت حرکت آخر", `
+          const lastMoveCards = [
+            { id: "insomnia", fa: "بی‌خوابی", en: "Insomnia" },
+            { id: "final_shot", fa: "شلیک نهایی", en: "Final Shot" },
+            { id: "beautiful_mind", fa: "ذهن زیبا", en: "Beautiful Mind" },
+            { id: "thirteen_lies", fa: "دروغ سیزده", en: "Thirteen Lies" },
+            { id: "green_mile", fa: "مسیر سبز", en: "Green Mile" },
+            { id: "red_carpet", fa: "فرش قرمز", en: "Red Carpet" },
+          ];
+          const labelFor = (id) => {
+            const c = lastMoveCards.find((x) => x.id === id);
+            if (!c) return String(id || "");
+            return appLang === "fa" ? c.fa : c.en;
+          };
+          if (!appState.god.lastMove || typeof appState.god.lastMove !== "object") {
+            appState.god.lastMove = { last: null, at: null, used: [] };
+          } else {
+            if (!Array.isArray(appState.god.lastMove.used)) appState.god.lastMove.used = [];
+          }
+          const used = new Set(appState.god.lastMove.used || []);
+          const remaining = lastMoveCards.filter((c) => !used.has(c.id));
+          const lastId = appState.god.lastMove && appState.god.lastMove.last ? appState.god.lastMove.last : null;
+          const last = lastId ? labelFor(lastId) : null;
+
+          const listHtml = lastMoveCards.map((c) => {
+            const isUsed = used.has(c.id);
+            const txt = labelFor(c.id);
+            const st = isUsed
+              ? 'opacity:.45; filter:saturate(.2); text-decoration:line-through;'
+              : '';
+            return `<div style="padding:6px 0;font-weight:950;${st}">${escapeHtml(txt)}</div>`;
+          }).join("");
+          openToolModal(t("tool.lastMove.title"), `
             <div class="toolBox">
-              <div style="font-weight:1100;margin-bottom:8px">کارت‌های حرکت آخر:</div>
-              ${cards.map((c) => `<div style="padding:6px 0;font-weight:950">${escapeHtml(c)}</div>`).join("")}
+              <div style="font-weight:1100;margin-bottom:8px">${escapeHtml(t("tool.lastMove.header"))}</div>
+              ${listHtml}
               <div style="height:10px"></div>
-              <button class="btn primary" id="lm_draw" type="button">قرعه کارت</button>
+              <button class="btn primary" id="lm_draw" type="button">${escapeHtml(t("tool.lastMove.draw"))}</button>
+              <div class="note" id="lm_note" style="display:none; margin-top:10px"></div>
               <div style="height:10px"></div>
-              <div style="font-weight:1100">نتیجه: <span id="lm_res">${last ? escapeHtml(last) : "—"}</span></div>
+              <div style="font-weight:1100">${escapeHtml(t("tool.lastMove.result"))} <span id="lm_res">${last ? escapeHtml(last) : "—"}</span></div>
             </div>
           `);
           $("lm_draw").onclick = () => {
-            const c = cards[Math.floor(Math.random() * cards.length)];
-            appState.god.lastMove = { last: c, at: Date.now() };
-            $("lm_res").textContent = c;
+            const note = $("lm_note");
+            if (!remaining.length) {
+              if (note) {
+                note.style.display = "block";
+                note.textContent = t("tool.lastMove.allUsed");
+              }
+              return;
+            }
+            const picked = remaining[Math.floor(Math.random() * remaining.length)];
+            appState.god.lastMove.last = picked.id;
+            appState.god.lastMove.at = Date.now();
+            if (!Array.isArray(appState.god.lastMove.used)) appState.god.lastMove.used = [];
+            appState.god.lastMove.used.push(picked.id);
             saveState(appState);
+            // re-render to grey out used + update remaining list
+            showLastMoveTool();
           };
+          // disable button if no remaining
+          if (!remaining.length) {
+            const btn = $("lm_draw");
+            if (btn) btn.disabled = true;
+            const note = $("lm_note");
+            if (note) {
+              note.style.display = "block";
+              note.textContent = t("tool.lastMove.allUsed");
+            }
+          }
         }
 
         function showRoleChangeTool() {
           const draw = appState.draw;
           if (!draw || !draw.players) {
-            openToolModal("تغییر نقش", `<div class="toolBox">ابتدا نقش‌ها را تقسیم کنید.</div>`);
+            openToolModal(t("tool.roleChange.title"), `<div class="toolBox">${escapeHtml(t("tool.roleChange.needDeal"))}</div>`);
             return;
           }
           const roleIds = getAllowedRoleIdsForScenario();
           const playerOpts = draw.players.map((p, i) => {
-            const name = (appState.ui.playerNames && appState.ui.playerNames[i]) ? appState.ui.playerNames[i] : `بازیکن ${i + 1}`;
+            const name = (appState.ui.playerNames && appState.ui.playerNames[i]) ? appState.ui.playerNames[i] : t("common.playerN", { n: i + 1 });
             return `<option value="${i}">${escapeHtml(name)}</option>`;
           }).join("");
-          const roleOpts = roleIds.map((rid) => `<option value="${rid}">${escapeHtml(roles[rid].faName)}</option>`).join("");
+          const roleOpts = roleIds.map((rid) => `<option value="${rid}">${escapeHtml(roleName(rid))}</option>`).join("");
 
-          openToolModal("تغییر نقش", `
+          openToolModal(t("tool.roleChange.title"), `
             <div class="toolBox">
-              <div style="font-weight:1100;margin-bottom:10px">یک نفر را انتخاب کن تا نقشِش را تغییر بدهی</div>
+              <div style="font-weight:1100;margin-bottom:10px">${escapeHtml(t("tool.roleChange.pick"))}</div>
               <div class="row one">
-                <label>نقش ایشون رو
+                <label>${escapeHtml(t("tool.roleChange.labelPlayer"))}
                   <select id="rc_player">${playerOpts}</select>
                 </label>
-                <label>تغییر بده به
+                <label>${escapeHtml(t("tool.roleChange.labelRole"))}
                   <select id="rc_role">${roleOpts}</select>
                 </label>
               </div>
               <div style="height:10px"></div>
-              <button class="btn primary" id="rc_apply" type="button">اعمال تغییر نقش</button>
+              <button class="btn primary" id="rc_apply" type="button">${escapeHtml(t("tool.roleChange.apply"))}</button>
               <div style="height:10px"></div>
-              <button class="btn" id="rc_shuffle_all" type="button">بر زدن نقش‌ها (همه)</button>
+              <button class="btn" id="rc_shuffle_all" type="button">${escapeHtml(t("tool.roleChange.shuffleAll"))}</button>
               <div class="note" id="rc_shuffle_note" style="display:none">
-                هشدار: این کار نقش‌های همهٔ بازیکن‌ها را جابه‌جا می‌کند و قابل برگشت نیست.
+                ${escapeHtml(t("tool.roleChange.shuffleWarn"))}
               </div>
             </div>
           `);
@@ -2527,7 +3126,7 @@
             shuffleArmTimer = null;
             if (shuffleBtn) {
               shuffleBtn.classList.remove("danger");
-              shuffleBtn.textContent = "بر زدن نقش‌ها (همه)";
+              shuffleBtn.textContent = t("tool.roleChange.shuffleAll");
             }
             if (shuffleNote) shuffleNote.style.display = "none";
           };
@@ -2537,7 +3136,7 @@
                 shuffleArmed = true;
                 if (shuffleBtn) {
                   shuffleBtn.classList.add("danger");
-                  shuffleBtn.textContent = "تأیید بر زدن نقش‌ها";
+                  shuffleBtn.textContent = t("tool.roleChange.shuffleConfirm");
                 }
                 if (shuffleNote) shuffleNote.style.display = "block";
                 if (shuffleArmTimer) { try { clearTimeout(shuffleArmTimer); } catch {} }
@@ -2561,15 +3160,15 @@
         function showChanceTool() {
           const draw = appState.draw;
           if (!draw || !draw.players) {
-            openToolModal("قرعه", `<div class="toolBox">ابتدا نقش‌ها را تقسیم کنید.</div>`);
+            openToolModal(t("tool.chance.title"), `<div class="toolBox">${escapeHtml(t("tool.roleChange.needDeal"))}</div>`);
             return;
           }
           const n = draw.players.length;
-          openToolModal("قرعه", `
+          openToolModal(t("tool.chance.title"), `
             <div class="toolBox">
-              <div style="font-weight:1100;margin-bottom:10px">چند نفر وارد قرعه می‌شوند؟</div>
+              <div style="font-weight:1100;margin-bottom:10px">${escapeHtml(t("tool.chance.ask"))}</div>
               <label>
-                تعداد
+                ${escapeHtml(t("tool.chance.count"))}
                 <select id="ch_n">
                   ${Array.from({ length: Math.min(10, n) }, (_, i) => i + 2)
                     .filter((k) => k <= n)
@@ -2578,9 +3177,9 @@
                 </select>
               </label>
               <div style="height:10px"></div>
-              <button class="btn primary" id="ch_spin" type="button">قرعه</button>
+              <button class="btn primary" id="ch_spin" type="button">${escapeHtml(t("tool.chance.spin"))}</button>
               <div style="height:10px"></div>
-              <div style="font-weight:1100">نتیجه:</div>
+              <div style="font-weight:1100">${escapeHtml(t("tool.chance.result"))}</div>
               <div id="ch_res" style="padding-top:6px; font-weight:950; line-height:1.9">—</div>
             </div>
           `);
@@ -2588,7 +3187,7 @@
             const k = parseInt($("ch_n").value, 10);
             const kk = Math.max(1, Math.min(n, Number.isFinite(k) ? k : 1));
             const picked = 1 + Math.floor(Math.random() * kk);
-            const res = `بازیکن ${picked}`;
+            const res = t("common.playerN", { n: picked });
             $("ch_res").textContent = res;
             appState.god.chance = { last: picked, at: Date.now() };
             saveState(appState);
@@ -2597,6 +3196,7 @@
 
         let timerInterval = null;
         let audioCtx = null;
+        let audioUnlocked = false;
         function ensureTimers() {
           if (appState.god.timers) return;
           appState.god.timers = {
@@ -2613,17 +3213,47 @@
           timerInterval = null;
         }
 
+        function unlockAudio() {
+          try {
+            const AC = window.AudioContext || window.webkitAudioContext;
+            if (!AC) return false;
+            if (!audioCtx) audioCtx = new AC();
+            // On iOS Safari, resume must happen during a user gesture.
+            if (audioCtx.state === "suspended") {
+              try { audioCtx.resume(); } catch {}
+            }
+            // Play an almost-silent blip to "unlock" audio output.
+            const now = audioCtx.currentTime;
+            const g = audioCtx.createGain();
+            g.gain.setValueAtTime(0.00001, now);
+            g.connect(audioCtx.destination);
+            const o = audioCtx.createOscillator();
+            o.type = "sine";
+            o.frequency.setValueAtTime(440, now);
+            o.connect(g);
+            o.start(now);
+            o.stop(now + 0.01);
+            audioUnlocked = true;
+            return true;
+          } catch {
+            return false;
+          }
+        }
+
         function playBeep() {
           try {
             const AC = window.AudioContext || window.webkitAudioContext;
             if (!AC) return;
             if (!audioCtx) audioCtx = new AC();
-            if (audioCtx.state === "suspended") audioCtx.resume();
+            if (audioCtx.state === "suspended") {
+              // If we didn't unlock earlier via a user tap, iOS may block this resume.
+              try { audioCtx.resume(); } catch {}
+            }
 
             const now = audioCtx.currentTime;
             const gain = audioCtx.createGain();
             gain.gain.setValueAtTime(0.0001, now);
-            gain.gain.linearRampToValueAtTime(0.18, now + 0.01);
+            gain.gain.linearRampToValueAtTime(0.22, now + 0.01);
             gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.35);
             gain.connect(audioCtx.destination);
 
@@ -2637,7 +3267,7 @@
             // small second beep
             const gain2 = audioCtx.createGain();
             gain2.gain.setValueAtTime(0.0001, now + 0.45);
-            gain2.gain.linearRampToValueAtTime(0.16, now + 0.46);
+            gain2.gain.linearRampToValueAtTime(0.20, now + 0.46);
             gain2.gain.exponentialRampToValueAtTime(0.0001, now + 0.72);
             gain2.connect(audioCtx.destination);
 
@@ -2696,24 +3326,24 @@
 
         function showTimerPicker(key) {
           ensureTimers();
-          const t = appState.god.timers;
-          const labels = { talk: "ترن", challenge: "چالش", defense: "دفاعیه" };
+          const tmr = appState.god.timers;
+          const labels = { talk: t("tool.timer.turn"), challenge: t("tool.timer.challenge"), defense: t("tool.timer.defense") };
           const presets = [
             10, 15, 20, 30, 40, 45, 50, 55, 60, 75, 90, 120, 150, 180,
           ];
-          openToolModal("تنظیم تایمر", `
+          openToolModal(t("tool.timer.pick.title"), `
             <div class="toolBox">
-              <div style="font-weight:1100;margin-bottom:10px">مدت زمان «${escapeHtml(labels[key] || key)}» را انتخاب کنید</div>
+              <div style="font-weight:1100;margin-bottom:10px">${escapeHtml(t("tool.timer.pick.ask", { label: labels[key] || key }))}</div>
               <label>
-                زمان (ثانیه)
+                ${escapeHtml(t("tool.timer.pick.seconds"))}
                 <select id="tp_val">
-                  ${presets.map((s) => `<option value="${s}" ${t[key] === s ? "selected" : ""}>${s} ثانیه</option>`).join("")}
+                  ${presets.map((s) => `<option value="${s}" ${tmr[key] === s ? "selected" : ""}>${s}</option>`).join("")}
                 </select>
               </label>
               <div style="height:12px"></div>
-              <button class="btn primary" id="tp_apply" type="button">ثبت</button>
+              <button class="btn primary" id="tp_apply" type="button">${escapeHtml(t("tool.timer.pick.apply"))}</button>
               <div style="height:10px"></div>
-              <button class="btn" id="tp_cancel" type="button">بازگشت</button>
+              <button class="btn" id="tp_cancel" type="button">${escapeHtml(t("tool.timer.pick.back"))}</button>
             </div>
           `, { hideBottom: true });
 
@@ -2721,14 +3351,14 @@
             const v = parseInt($("tp_val").value, 10);
             if (!Number.isFinite(v) || v <= 0) return;
             // stop if currently running this timer
-            if (t.running === key) {
-              t.running = null;
-              t.startedAt = null;
+            if (tmr.running === key) {
+              tmr.running = null;
+              tmr.startedAt = null;
               stopTimerInterval();
             }
-            t[key] = v;
-            t.remaining[key] = v;
-            delete t.remaining[key + "_base"];
+            tmr[key] = v;
+            tmr.remaining[key] = v;
+            delete tmr.remaining[key + "_base"];
             saveState(appState);
             showTimerTool();
           };
@@ -2737,6 +3367,8 @@
         function startOrPauseTimer(key) {
           ensureTimers();
           const t = appState.god.timers;
+          // iOS Safari: unlock audio during a user gesture (button click).
+          if (!audioUnlocked) unlockAudio();
           if (t.running === key) {
             // pause
             t.running = null;
@@ -2767,28 +3399,30 @@
         }
         function showTimerTool() {
           ensureTimers();
-          const t = appState.god.timers;
-          openToolModal("تایمر", `
+          const tmr = appState.god.timers;
+          // iOS Safari: opening timer tool is a user gesture; unlock audio here.
+          if (!audioUnlocked) unlockAudio();
+          openToolModal(t("tool.timer.title"), `
             <div class="timerRow">
               <div class="timerCard">
-                <div class="tname">ترن</div>
-                <div class="tval clickable" id="tm_talk">${formatMMSS(t.remaining.talk)}</div>
+                <div class="tname">${escapeHtml(t("tool.timer.turn"))}</div>
+                <div class="tval clickable" id="tm_talk">${formatMMSS(tmr.remaining.talk)}</div>
                 <button class="tbtn" id="tm_btn_talk" type="button">▶</button>
               </div>
               <div class="timerCard">
-                <div class="tname">چالش</div>
-                <div class="tval clickable" id="tm_challenge">${formatMMSS(t.remaining.challenge)}</div>
+                <div class="tname">${escapeHtml(t("tool.timer.challenge"))}</div>
+                <div class="tval clickable" id="tm_challenge">${formatMMSS(tmr.remaining.challenge)}</div>
                 <button class="tbtn" id="tm_btn_challenge" type="button">▶</button>
               </div>
               <div class="timerCard" style="grid-column: 1 / -1;">
-                <div class="tname">دفاعیه</div>
-                <div class="tval clickable" id="tm_defense">${formatMMSS(t.remaining.defense)}</div>
+                <div class="tname">${escapeHtml(t("tool.timer.defense"))}</div>
+                <div class="tval clickable" id="tm_defense">${formatMMSS(tmr.remaining.defense)}</div>
                 <button class="tbtn" id="tm_btn_defense" type="button">▶</button>
               </div>
             </div>
             <div class="timerActions">
-              <button class="reset" id="tm_reset" type="button">ریست</button>
-              <button class="close" id="tm_close" type="button">بستن</button>
+              <button class="reset" id="tm_reset" type="button">${escapeHtml(t("tool.timer.reset"))}</button>
+              <button class="close" id="tm_close" type="button">${escapeHtml(t("tool.timer.close"))}</button>
             </div>
           `, { hideBottom: true });
 
@@ -2842,7 +3476,7 @@
             row.className = "nameRow";
             row.innerHTML = `
               <div class="num">${i + 1}</div>
-              <input id="nm_${i}" type="text" inputmode="text" placeholder="بازیکن ${i + 1}" value="${escapeHtml(appState.ui.playerNames[i] || "")}" />
+              <input id="nm_${i}" type="text" inputmode="text" placeholder="${escapeHtml(t("common.playerN", { n: i + 1 }))}" value="${escapeHtml(appState.ui.playerNames[i] || "")}" />
             `;
             host.appendChild(row);
           }
@@ -2860,7 +3494,7 @@
           return String(name || "")
             .trim()
             .replace(/\s+/g, " ")
-            .toLocaleLowerCase("fa");
+            .toLocaleLowerCase(appLang === "fa" ? "fa" : "en");
         }
 
         function readNamesFromInputs() {
@@ -2901,7 +3535,7 @@
           const names = readNamesFromInputs();
           const repeated = getFirstRepeatedName(names);
           if (repeated) {
-            setError(`نام «${repeated}» تکراری است.`);
+            setError(t("error.duplicateName", { name: repeated }));
             return false;
           }
           // don't clear other errors if set elsewhere; only clear if this was the reason
@@ -2930,17 +3564,17 @@
           const teamCls =
             teamFa === "مافیا" ? "team-mafia" :
             teamFa === "شهر" ? "team-city" : "team-ind";
-          const roleName = r ? r.faName : rid;
-          const roleDesc = (r && r.descFa) ? r.descFa : "توضیحی برای این نقش ثبت نشده است.";
+          const rName = roleName(rid);
+          const rDesc = roleDesc(rid, scenario);
 
           // Make "Role help" look like the role reveal card UI.
-          openToolModal("راهنمای نقش", `
+          openToolModal(t("common.roleHelp"), `
             <div class="roleCard roleReveal ${teamCls}">
               <div class="ricon" aria-hidden="true">${roleIconSvg(rid, teamFa)}</div>
-              <div class="rname">${escapeHtml(roleName)}</div>
-              <div class="rteam">${escapeHtml(`تیم: ${teamFa}`)}</div>
+              <div class="rname">${escapeHtml(rName)}</div>
+              <div class="rteam">${escapeHtml(`${t("lifeSheet.team")}: ${teamLabel(teamFa)}`)}</div>
             </div>
-            <div class="note roleRevealNote ${teamCls}">${escapeHtml(roleDesc)}</div>
+            <div class="note roleRevealNote ${teamCls}">${escapeHtml(rDesc)}</div>
           `, { hideBottom: true });
         }
 
@@ -2961,7 +3595,9 @@
 
           renderNameGrid();
           setNamesMode(appState.ui.namesMode || "default");
-          $("playersStat").textContent = `بازیکن: ${appState.ui.nPlayers}`;
+          $("playersStat").textContent = (appLang === "fa")
+            ? `بازیکن: ${appState.ui.nPlayers}`
+            : `Players: ${appState.ui.nPlayers}`;
         }
 
         function syncUIToState() {
@@ -3458,8 +4094,8 @@
             teamFa === "مافیا" ? "team-mafia" :
             teamFa === "شهر" ? "team-city" : "team-ind";
           $("modalWho").textContent = who;
-          $("roleName").textContent = r ? r.faName : roleId;
-          $("roleTeam").textContent = r ? `تیم: ${teamFa}` : "—";
+          $("roleName").textContent = roleName(roleId);
+          $("roleTeam").textContent = r ? `${t("lifeSheet.team")}: ${teamLabel(teamFa)}` : "—";
 
           // apply team tint classes
           const rc = $("roleCard");
@@ -3474,7 +4110,7 @@
           if (iconEl) iconEl.innerHTML = roleIconSvg(roleId, teamFa);
 
           // show role description in the note area (per request)
-          noteEl.textContent = r && r.descFa ? r.descFa : "توضیحی برای این نقش ثبت نشده است.";
+          noteEl.textContent = roleDesc(roleId, scenario);
           noteEl.classList.remove("collapsed");
 
           // keep the help button; it toggles showing/hiding the description
@@ -3506,7 +4142,7 @@
           const names = readNamesFromInputs();
           const repeated = getFirstRepeatedName(names);
           if (repeated) {
-            setError(`نام «${repeated}» تکراری است.`);
+            setError(t("error.duplicateName", { name: repeated }));
             return false;
           }
           appState.ui.playerNames = names;
@@ -3606,7 +4242,7 @@
           const draw = appState.draw;
           if (!draw || !draw.players || !draw.players[idx]) return;
           const p = draw.players[idx];
-          const name = (appState.ui.playerNames && appState.ui.playerNames[idx]) ? appState.ui.playerNames[idx] : `بازیکن ${idx + 1}`;
+          const name = (appState.ui.playerNames && appState.ui.playerNames[idx]) ? appState.ui.playerNames[idx] : t("common.playerN", { n: idx + 1 });
           const rid = p.roleId || "citizen";
           const scenario = (appState.draw && appState.draw.uiAtDraw && appState.draw.uiAtDraw.scenario)
             ? appState.draw.uiAtDraw.scenario
@@ -3618,30 +4254,32 @@
           const alive = p.alive !== false;
           const reason = p.deathReason || null;
 
-          const statusText = alive ? "زنده" : (reason === "shot" ? "کشته شد (شات)" : "خارج شد (رای)");
+          const statusText = alive
+            ? t("lifeSheet.alive")
+            : (reason === "shot" ? t("lifeSheet.deadShot") : t("lifeSheet.deadVote"));
           const teamCls =
             teamFa === "مافیا" ? "team-mafia" :
             teamFa === "شهر" ? "team-city" : "team-ind";
-          const roleDesc = (r && r.descFa) ? r.descFa : "توضیحی برای این نقش ثبت نشده است.";
+          const desc = roleDesc(rid, scenario);
 
-          openToolModal("وضعیت بازیکن", `
+          openToolModal(t("lifeSheet.title"), `
             <div class="toolBox lifeSheet ${teamCls}">
               <div class="lifeIcon" aria-hidden="true">${roleIconSvg(rid, teamFa)}</div>
               <div class="lifeName">${escapeHtml(name)}</div>
               <div class="lifeMeta">
-                <span class="k">نقش:</span> ${escapeHtml(r ? r.faName : rid)}
+                <span class="k">${escapeHtml(t("lifeSheet.role"))}:</span> ${escapeHtml(roleName(rid))}
                 &nbsp;•&nbsp;
-                <span class="k">تیم:</span> ${escapeHtml(teamFa)}
+                <span class="k">${escapeHtml(t("lifeSheet.team"))}:</span> ${escapeHtml(teamLabel(teamFa))}
                 &nbsp;•&nbsp;
-                <span class="k">وضعیت:</span> <b>${escapeHtml(statusText)}</b>
+                <span class="k">${escapeHtml(t("lifeSheet.status"))}:</span> <b>${escapeHtml(statusText)}</b>
               </div>
               <div style="height:10px"></div>
-              <div class="note roleRevealNote ${teamCls}">${escapeHtml(roleDesc)}</div>
+              <div class="note roleRevealNote ${teamCls}">${escapeHtml(desc)}</div>
               <div style="height:10px"></div>
               <div class="lifeActions">
-                <button class="btn lifeActionBtn is-danger" id="life_shot" type="button">کشته شد (شات)</button>
-                <button class="btn lifeActionBtn is-warn" id="life_vote" type="button">خارج شد (رای)</button>
-                <button class="btn lifeActionBtn is-ok" id="life_revive" type="button">برگرداندن به بازی (زنده)</button>
+                <button class="btn lifeActionBtn is-danger" id="life_shot" type="button">${escapeHtml(t("lifeSheet.actionShot"))}</button>
+                <button class="btn lifeActionBtn is-warn" id="life_vote" type="button">${escapeHtml(t("lifeSheet.actionVote"))}</button>
+                <button class="btn lifeActionBtn is-ok" id="life_revive" type="button">${escapeHtml(t("lifeSheet.actionRevive"))}</button>
               </div>
             </div>
           `, { hideBottom: true });
@@ -3664,10 +4302,10 @@
           const entries = draw.players.map((p, idx) => {
             const rid = p.roleId || "citizen";
             const r = roles[rid];
-            const name = (appState.ui.playerNames && appState.ui.playerNames[idx]) ? appState.ui.playerNames[idx] : `بازیکن ${idx + 1}`;
+            const name = (appState.ui.playerNames && appState.ui.playerNames[idx]) ? appState.ui.playerNames[idx] : t("common.playerN", { n: idx + 1 });
             const alive = p.alive !== false;
             const deathReason = p.deathReason || null;
-            return { idx, name, roleId: rid, role: r ? r.faName : rid, team: r ? r.teamFa : "شهر", alive, deathReason };
+            return { idx, name, roleId: rid, team: r ? r.teamFa : "شهر", alive, deathReason };
           });
           const mafia = entries.filter((e) => e.team === "مافیا");
           const city = entries.filter((e) => e.team === "شهر");
@@ -3682,7 +4320,9 @@
 
 
           function rowHtml(e) {
-            const stText = e.alive ? "زنده" : (e.deathReason === "shot" ? "شات" : "رای");
+            const stText = e.alive
+              ? t("lifeSheet.alive")
+              : (e.deathReason === "shot" ? t("lifeSheet.deadShortShot") : t("lifeSheet.deadShortVote"));
             const stCls = e.alive ? "alive" : "dead";
             const teamCls =
               e.team === "مافیا" ? "team-mafia" :
@@ -3695,16 +4335,16 @@
                 </div>
                 <div class="who">
                   <div class="avatar">${roleIconSvg(e.roleId, e.team)}</div>
-                  <div class="role">${escapeHtml(e.role)}</div>
+                  <div class="role">${escapeHtml(roleName(e.roleId))}</div>
                 </div>
               </div>
             `;
           }
 
-          if (!mafia.length) mafiaHost.innerHTML = `<div class="castRow team-mafia"><div>—</div><div class="who"><div class="avatar">${roleIconSvg("none_mafia", "مافیا")}</div><div class="role">بدون مافیا</div></div></div>`;
+          if (!mafia.length) mafiaHost.innerHTML = `<div class="castRow team-mafia"><div>—</div><div class="who"><div class="avatar">${roleIconSvg("none_mafia", "مافیا")}</div><div class="role">${escapeHtml(t("cast.noneMafia"))}</div></div></div>`;
           else mafiaHost.innerHTML = mafia.map(rowHtml).join("");
 
-          if (!city.length) cityHost.innerHTML = `<div class="castRow team-city"><div>—</div><div class="who"><div class="avatar">${roleIconSvg("none_city", "شهر")}</div><div class="role">بدون شهر</div></div></div>`;
+          if (!city.length) cityHost.innerHTML = `<div class="castRow team-city"><div>—</div><div class="who"><div class="avatar">${roleIconSvg("none_city", "شهر")}</div><div class="role">${escapeHtml(t("cast.noneCity"))}</div></div></div>`;
           else cityHost.innerHTML = city.map(rowHtml).join("");
 
           if (indHost) {
@@ -3713,8 +4353,8 @@
           }
 
           $("castStat").textContent = indep.length
-            ? `بازیکن: ${entries.length} • مافیا: ${mafia.length} • شهر: ${city.length} • مستقل: ${indep.length}`
-            : `بازیکن: ${entries.length} • مافیا: ${mafia.length} • شهر: ${city.length}`;
+            ? t("cast.stat.withInd", { p: entries.length, m: mafia.length, c: city.length, i: indep.length })
+            : t("cast.stat.noInd", { p: entries.length, m: mafia.length, c: city.length });
 
           // click-to-set life status
           document.querySelectorAll("#castCard .castRow[data-idx]").forEach((el) => {
@@ -3764,16 +4404,10 @@
         }
 
         function showHelp() {
-          openToolModal("راهنما", `
+          openToolModal(t("help.title"), `
             <div class="toolBox">
-              <div style="font-weight:1100; margin-bottom:10px">راهنمای سریع</div>
-              <div style="font-weight:900; font-size:12px; line-height:1.9; color: var(--muted)">
-                1) سناریو، تعداد بازیکن‌ها و تعداد مافیا را تنظیم کنید.<br />
-                2) نقش‌های فعال را (طبق سناریو) روشن/خاموش کنید.<br />
-                3) «شروع بازی» را بزنید و اسامی را وارد کنید.<br />
-                4) «تقسیم نقش» را بزنید؛ هر بازیکن یک کارت انتخاب می‌کند و «دیدم» را می‌زند.<br />
-                5) در «فهرست شخصیت‌ها»، راوی می‌تواند ابزارها (تایمر/قرعه/تغییر نقش/وضعیت) را استفاده کند.
-              </div>
+              <div style="font-weight:1100; margin-bottom:10px">${escapeHtml(t("help.quick"))}</div>
+              <div style="font-weight:900; font-size:12px; line-height:1.9; color: var(--muted)">${t("help.body")}</div>
             </div>
           `);
         }
@@ -3850,19 +4484,32 @@
           setSaveState(false);
         }
 
+        // language init (persisted)
+        try {
+          const savedLang = (shouldPersist() ? (localStorage.getItem(LANG_KEY) || "fa") : "fa");
+          setLanguage(savedLang === "en" ? "en" : "fa");
+        } catch {
+          try { setLanguage("fa"); } catch {}
+        }
+
         // initial UI
         applyUIFromState();
         updateQuickStat();
         showSetup();
         updateResumeUI();
 
+        $("langChip").addEventListener("click", toggleLanguage);
+        $("langChip").addEventListener("keydown", (e) => {
+          if (e.key === "Enter" || e.key === " ") toggleLanguage();
+        });
+        $("langBtn").addEventListener("click", (e) => {
+          e.stopPropagation();
+          toggleLanguage();
+        });
+
         $("helpChip").addEventListener("click", showHelp);
         $("helpChip").addEventListener("keydown", (e) => {
           if (e.key === "Enter" || e.key === " ") showHelp();
-        });
-        $("helpBtn").addEventListener("click", (e) => {
-          e.stopPropagation();
-          showHelp();
         });
         $("scenarioDefaultsBtn").addEventListener("click", () => {
           const scenario = $("scenario").value;
@@ -3876,7 +4523,7 @@
           const s = readUIState();
           const res = buildRolePool(s.nPlayers, s.mafiaCount, s.toggles);
           if (!res.ok) {
-            setError(res.error || "خطا در تنظیمات بازی.");
+            setError(res.error || t("error.config"));
             showSetup();
             return;
           }
@@ -3886,7 +4533,9 @@
           ensureNamesLength(appState.ui.nPlayers);
           // if user has namesMode=last, load them now
           if (appState.ui.namesMode === "last") setNamesMode("last");
-          $("playersStat").textContent = `بازیکن: ${appState.ui.nPlayers}`;
+          $("playersStat").textContent = (appLang === "fa")
+            ? `بازیکن: ${appState.ui.nPlayers}`
+            : `Players: ${appState.ui.nPlayers}`;
           showPlayers();
         });
 
