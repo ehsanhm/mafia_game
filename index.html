@@ -5,1260 +5,15 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <meta name="theme-color" content="#0b0f14" />
     <title>اپلیکیشن بازی مافیا</title>
-    <style>
-      :root{
-        --bg0:#121a29;
-        --bg1:#2a394b;
-        --card:#111824;
-        --card2:#6489be;
-        --text:#eaf0ff;
-        --muted:#9fb0cf;
-        --line:rgba(255,255,255,.08);
-        --shadow: 0 14px 40px rgba(0,0,0,.45);
-        --accent:#6ea8ff;
-        --accent2:#8b5cff;
-        --good:#35d07f;
-        --warn:#ffcc66;
-        --bad:#ff5c74;
-        --radius:18px;
-      }
-
-      *{ box-sizing:border-box; }
-      html, body{ min-height:100%; }
-      html{
-        background:
-          radial-gradient(1200px 700px at 80% -10%, rgba(139,92,255,.20), transparent 55%),
-          radial-gradient(1000px 600px at 10% 0%, rgba(110,168,255,.18), transparent 60%),
-          linear-gradient(180deg, var(--bg0), var(--bg1));
-        background-repeat: no-repeat;
-        background-color: var(--bg1);
-      }
-      body{
-        margin:0;
-        font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Arial, "Noto Sans Arabic", "Noto Naskh Arabic", sans-serif;
-        background: transparent;
-        color:var(--text);
-        -webkit-tap-highlight-color: transparent;
-      }
-
-      .app{
-        max-width: 520px;
-        margin: 0 auto;
-        min-height: 100%;
-        display:flex;
-        flex-direction:column;
-        padding:
-          calc(env(safe-area-inset-top) + 16px)
-          14px
-          calc(env(safe-area-inset-bottom) + 16px);
-        gap:12px;
-      }
-
-      .topbar{
-        display:flex;
-        align-items:center;
-        justify-content:space-between;
-        gap:10px;
-      }
-      .topActions{
-        display:flex;
-        align-items:center;
-        gap:10px;
-      }
-      .title{
-        font-weight:800;
-        letter-spacing:-.2px;
-        font-size: 18px;
-      }
-
-      .pill{
-        width:100%;
-        display:flex;
-        gap:10px;
-        padding: 10px;
-        border-radius: 18px;
-        border:1px solid var(--line);
-        background: rgba(17,24,36,.35);
-      }
-      .pill button{
-        flex:1;
-        border:1px solid transparent;
-        background: rgba(255,255,255,.04);
-        color: var(--muted);
-        font-weight:950;
-        font-size:12px;
-        padding: 10px 10px;
-        border-radius: 14px;
-        cursor:pointer;
-      }
-      .pill button.active{
-        color: var(--text);
-        background: rgba(110,168,255,.12);
-        border-color: rgba(110,168,255,.25);
-      }
-      .chip{
-        display:inline-flex;
-        align-items:center;
-        gap:8px;
-        border:1px solid var(--line);
-        background:rgba(255,255,255,.04);
-        padding:10px 12px;
-        border-radius:999px;
-        color:var(--muted);
-        font-weight:700;
-        font-size:13px;
-      }
-      .chip.clickable{
-        cursor:pointer;
-        user-select:none;
-      }
-      .chip.clickable .label{
-        pointer-events:none;
-      }
-      .chip button{
-        border:none;
-        background:transparent;
-        color:var(--text);
-        font-weight:800;
-        padding:0;
-        cursor:pointer;
-      }
-
-      .card{
-        background: linear-gradient(180deg, rgba(255,255,255,.05), rgba(255,255,255,.02));
-        border:1px solid var(--line);
-        border-radius: var(--radius);
-        box-shadow: var(--shadow);
-        overflow:hidden;
-      }
-      .card .hd{
-        display:flex;
-        align-items:center;
-        justify-content:space-between;
-        gap:10px;
-        padding: 14px 14px 10px;
-        border-bottom:1px solid var(--line);
-        background: rgba(0,0,0,.14);
-      }
-      .card .hd h2{
-        margin:0;
-        font-size:14px;
-        font-weight:900;
-        color: var(--text);
-      }
-      .card .bd{ padding: 12px 14px 14px; }
-
-      .row{
-        display:grid;
-        grid-template-columns: 1fr 1fr;
-        gap:10px;
-        margin-bottom:10px;
-      }
-      .row.one{ grid-template-columns: 1fr; }
-
-      label{
-        display:flex;
-        flex-direction:column;
-        gap:6px;
-        color: var(--muted);
-        font-weight:800;
-        font-size:12px;
-      }
-
-      select, input[type="number"]{
-        width:100%;
-        padding: 12px 12px;
-        border-radius: 14px;
-        border:1px solid var(--line);
-        background: rgba(17,24,36,.65);
-        color: var(--text);
-        outline:none;
-        font-weight:800;
-        font-size:14px;
-      }
-      select:focus, input[type="number"]:focus{
-        border-color: rgba(110,168,255,.55);
-        box-shadow: 0 0 0 3px rgba(110,168,255,.14);
-      }
-
-      .toggles{
-        display:grid;
-        grid-template-columns: 1fr 1fr;
-        gap:10px;
-        margin-top: 4px;
-      }
-      .teamHdr{
-        grid-column: 1 / -1;
-        display:flex;
-        align-items:center;
-        gap:10px;
-        margin-top: 6px;
-        color: var(--muted);
-        font-weight:1000;
-        font-size:12px;
-        letter-spacing:-.2px;
-        user-select:none;
-        -webkit-user-select:none;
-      }
-      .teamHdr:first-child{ margin-top: 0; }
-      .teamHdr::after{
-        content:"";
-        flex:1;
-        height:1px;
-        background: rgba(255,255,255,.10);
-      }
-      .teamHdr.team-mafia{ color: rgba(255,92,116,.95); }
-      .teamHdr.team-city{ color: rgba(53,208,127,.95); }
-      .teamHdr.team-ind{ color: rgba(255,189,46,.95); }
-      .teamHdr.team-mafia::after{ background: rgba(255,92,116,.22); }
-      .teamHdr.team-city::after{ background: rgba(53,208,127,.22); }
-      .teamHdr.team-ind::after{ background: rgba(255,189,46,.22); }
-      .toggle{
-        display:flex;
-        align-items:center;
-        justify-content:space-between;
-        gap:10px;
-        padding: 12px 12px;
-        border-radius: 16px;
-        border:1px solid var(--line);
-        background: rgba(17,24,36,.45);
-        cursor:pointer;
-        user-select:none;
-        -webkit-user-select:none;
-      }
-      .toggle:active{ transform: translateY(1px); }
-      .toggle:focus-visible{
-        outline: 3px solid rgba(110,168,255,.22);
-        outline-offset: 2px;
-      }
-      .toggle.on{
-        border-color: rgba(110,168,255,.55);
-        background: rgba(110,168,255,.10);
-      }
-      .toggle.team-mafia.on{
-        border-color: rgba(255,92,116,.55);
-        background: rgba(255,92,116,.10);
-      }
-      .toggle.team-city.on{
-        border-color: rgba(53,208,127,.55);
-        background: rgba(53,208,127,.10);
-      }
-      .toggle.team-ind.on{
-        border-color: rgba(255,189,46,.55);
-        background: rgba(255,189,46,.10);
-      }
-      .toggle.disabled{
-        opacity:.55;
-        cursor:not-allowed;
-      }
-      .toggle .meta{
-        display:flex;
-        flex-direction:column;
-        gap:3px;
-        min-width:0;
-      }
-      .toggle .name{
-        font-weight:950;
-        font-size:13px;
-        color: var(--text);
-        white-space:nowrap;
-        overflow:hidden;
-        text-overflow:ellipsis;
-      }
-      .toggle .hint{
-        font-size:11px;
-        font-weight:800;
-        color: var(--muted);
-        white-space:nowrap;
-        overflow:hidden;
-        text-overflow:ellipsis;
-      }
-      .toggle .right{
-        display:flex;
-        align-items:center;
-        gap:8px;
-        flex: 0 0 auto;
-      }
-      .toggle .countpill{
-        padding: 7px 10px;
-        border-radius: 999px;
-        border:1px solid var(--line);
-        background: rgba(255,255,255,.04);
-        color: var(--muted);
-        font-weight:950;
-        font-size:12px;
-        flex: 0 0 auto;
-      }
-      .toggle.base{
-        background: rgba(17,24,36,.30);
-        cursor: default;
-      }
-      .toggle.base:active{ transform: none; }
-      .toggle.base.on{
-        border-color: rgba(110,168,255,.55);
-        background: rgba(110,168,255,.10);
-      }
-      .toggle.base.team-mafia.on{
-        border-color: rgba(255,92,116,.55);
-        background: rgba(255,92,116,.10);
-      }
-      .toggle.base.team-city.on{
-        border-color: rgba(53,208,127,.55);
-        background: rgba(53,208,127,.10);
-      }
-
-      .cardsGrid{
-        margin-top: 12px;
-        display:grid;
-        grid-template-columns: repeat(3, 1fr);
-        gap:10px;
-      }
-      .cardBtn{
-        width:100%;
-        aspect-ratio: 3 / 4;
-        border-radius: 18px;
-        border:1px solid var(--line);
-        background:
-          radial-gradient(220px 180px at 30% 20%, rgba(110,168,255,.18), transparent 60%),
-          radial-gradient(220px 180px at 80% 80%, rgba(139,92,255,.14), transparent 60%),
-          rgba(17,24,36,.42);
-        color: var(--text);
-        font-weight:1000;
-        cursor:pointer;
-        display:flex;
-        align-items:center;
-        justify-content:center;
-        text-align:center;
-        padding: 10px;
-      }
-      .cardBtn.used{
-        opacity:.45;
-        cursor:not-allowed;
-        background: rgba(17,24,36,.22);
-      }
-      .cardBtn:active{ transform: translateY(1px); }
-      @media (max-width: 380px){
-        .cardsGrid{ grid-template-columns: repeat(2, 1fr); }
-      }
-
-      /* Vertically center the cards area on tall screens */
-      #cardsCard{
-        flex: 1;
-        display:flex;
-        flex-direction:column;
-        min-height: 0;
-      }
-      #cardsCard .bd{
-        display:flex;
-        flex-direction:column;
-        gap:12px;
-        flex: 1;
-        min-height: 0;
-      }
-      #cardsCard .cardsCenter{
-        flex: 1;
-        display:flex;
-        flex-direction:column;
-        justify-content:center;
-        gap:12px;
-      }
-      #cardsCard .actions{
-        margin-top: 6px;
-      }
-
-      .actions{
-        display:flex;
-        gap:10px;
-        margin-top: 12px;
-      }
-      .actions.wrap{
-        flex-wrap: wrap;
-      }
-      .btn{
-        border:none;
-        cursor:pointer;
-        font-weight:950;
-        font-size:14px;
-        padding: 13px 14px;
-        border-radius: 16px;
-        color: var(--text);
-        background: rgba(255,255,255,.06);
-        border:1px solid var(--line);
-        flex: 1;
-      }
-      .btn.primary{
-        background: linear-gradient(135deg, rgba(110,168,255,.95), rgba(139,92,255,.92));
-        border: 0;
-        box-shadow: 0 10px 28px rgba(110,168,255,.14);
-      }
-      .btn.danger{
-        background: rgba(255,92,116,.10);
-        border-color: rgba(255,92,116,.35);
-        color: #ffd7dd;
-      }
-      /* (Reset button removed from main UI) */
-      .btn:active{ transform: translateY(1px); }
-
-      .note{
-        margin-top:10px;
-        font-size:12px;
-        line-height:1.6;
-        color: var(--muted);
-        font-weight:750;
-      }
-      .note b{ color: var(--text); }
-      .defaultsBar{
-        display:flex;
-        align-items:center;
-        justify-content:space-between;
-        gap:10px;
-        padding: 10px 12px;
-        border-radius: 16px;
-        border:1px solid var(--line);
-        background: rgba(17,24,36,.35);
-        color: var(--muted);
-        font-weight:900;
-        font-size:12px;
-        line-height:1.5;
-      }
-      .defaultsBar .txt{ min-width:0; }
-      .defaultsBar .actions{ display:flex; gap:8px; flex: 0 0 auto; }
-      .defaultsBar.savedGame{
-        border-color: rgba(110,168,255,.22);
-        background: rgba(110,168,255,.10);
-        color: var(--text);
-        font-weight:850;
-      }
-      .error{
-        margin-top:10px;
-        padding: 10px 12px;
-        border-radius: 14px;
-        border:1px solid rgba(255,92,116,.35);
-        background: rgba(255,92,116,.10);
-        color: #ffd7dd;
-        font-weight:850;
-        font-size:12px;
-        line-height:1.5;
-        display:none;
-      }
-
-      .players{
-        display:grid;
-        grid-template-columns: 1fr;
-        gap:10px;
-      }
-
-      .nameGrid{
-        display:grid;
-        grid-template-columns: 1fr;
-        gap:10px;
-        margin-top: 10px;
-      }
-      .nameRow{
-        display:flex;
-        align-items:center;
-        gap:10px;
-      }
-      .nameRow .num{
-        width:34px;
-        height:34px;
-        border-radius: 14px;
-        display:grid;
-        place-items:center;
-        font-weight:950;
-        background: rgba(255,255,255,.06);
-        border:1px solid var(--line);
-        color: var(--text);
-        flex: 0 0 auto;
-      }
-      .nameRow input{
-        width:100%;
-        padding: 12px 12px;
-        border-radius: 14px;
-        border:1px solid var(--line);
-        background: rgba(255,255,255,.90);
-        color: #111;
-        outline:none;
-        font-weight:900;
-        font-size:14px;
-      }
-      .nameRow input::placeholder{
-        color: rgba(0,0,0,.55);
-        font-weight:900;
-      }
-
-      .bigbtn{
-        border:none;
-        cursor:pointer;
-        width:100%;
-        padding: 14px 14px;
-        border-radius: 18px;
-        color: #f5f8ff;
-        font-weight:1000;
-        font-size:14px;
-      }
-      .bigbtn.blue{
-        background: linear-gradient(135deg, rgba(60,118,255,.95), rgba(110,168,255,.88));
-        box-shadow: 0 10px 28px rgba(60,118,255,.16);
-      }
-      .bigbtn.purple{
-        background: linear-gradient(135deg, rgba(139,92,255,.92), rgba(190,98,255,.85));
-        box-shadow: 0 10px 28px rgba(139,92,255,.16);
-      }
-      .bigbtn.primary{
-        background: linear-gradient(135deg, rgba(110,168,255,.95), rgba(139,92,255,.92));
-        box-shadow: 0 10px 28px rgba(110,168,255,.14);
-      }
-      .bigbtn.redbar{
-        background: rgba(140,35,35,.55);
-        border:1px solid rgba(255,255,255,.10);
-      }
-      .bigbtn:active{ transform: translateY(1px); }
-
-      .banner{
-        display:flex;
-        align-items:center;
-        justify-content:center;
-        gap:10px;
-        padding: 14px 12px;
-        border-radius: 18px;
-        border:1px solid var(--line);
-        background: rgba(255,255,255,.92);
-        color: #14161a;
-        font-weight:1000;
-        font-size: 18px;
-        text-align:center;
-      }
-      .castBox{
-        border-radius: 18px;
-        border:2px solid rgba(255,255,255,.15);
-        background: rgba(255,255,255,.95);
-        overflow:hidden;
-      }
-      .castBox.mafia{ border-color: rgba(255,92,116,.55); }
-      .castBox.city{ border-color: rgba(110,168,255,.55); }
-      .castRow{
-        display:grid;
-        grid-template-columns: 1fr 1.2fr;
-        gap:10px;
-        padding: 10px 10px;
-        border-top: 1px solid rgba(0,0,0,.08);
-        align-items:center;
-        color:#111;
-        font-weight:950;
-        font-size:13px;
-      }
-      .castRow[data-idx]{
-        cursor:pointer;
-      }
-      .castRow.dead{
-        opacity:.55;
-        filter: grayscale(.25);
-      }
-      .castRow .leftMeta{
-        display:flex;
-        align-items:center;
-        justify-content:space-between;
-        gap:10px;
-        min-width:0;
-      }
-      .castRow .statusPill{
-        padding: 6px 9px;
-        border-radius: 999px;
-        border:1px solid rgba(0,0,0,.10);
-        background: rgba(0,0,0,.06);
-        font-weight:1000;
-        font-size:11px;
-        white-space:nowrap;
-      }
-      .castRow .statusPill.dead{
-        background: rgba(255,92,116,.12);
-        border-color: rgba(255,92,116,.25);
-      }
-      .castRow .statusPill.alive{
-        background: rgba(53,208,127,.14);
-        border-color: rgba(53,208,127,.25);
-      }
-      .castRow:first-child{ border-top:none; }
-      .castRow .p{
-        background: rgba(0,0,0,.08);
-        border-radius: 12px;
-        height: 12px;
-        width: 100%;
-        max-width: 140px;
-        opacity: .55;
-      }
-      .castRow .who{
-        display:flex;
-        align-items:center;
-        justify-content:flex-start;
-        gap:10px;
-        min-width:0;
-      }
-      .castRow .who .avatar{
-        width: 34px;
-        height: 34px;
-        border-radius: 12px;
-        background: rgba(0,0,0,.10);
-        border:1px solid rgba(0,0,0,.10);
-        display:grid;
-        place-items:center;
-        font-weight:1000;
-        color:#111;
-        flex: 0 0 auto;
-        overflow:hidden;
-      }
-      .castRow .who .avatar svg{
-        width: 22px;
-        height: 22px;
-        display:block;
-      }
-      .castRow.team-mafia .who .avatar{
-        background: rgba(255,92,116,.16);
-        border-color: rgba(255,92,116,.26);
-        color: rgba(155,25,55,1);
-      }
-      .castRow.team-city .who .avatar{
-        background: rgba(53,208,127,.16);
-        border-color: rgba(53,208,127,.26);
-        color: rgba(16,110,60,1);
-      }
-      .castRow.team-ind .who .avatar{
-        background: rgba(255,189,46,.16);
-        border-color: rgba(255,189,46,.26);
-        color: rgba(122,78,10,1);
-      }
-      .castRow .who .role{
-        white-space:nowrap;
-        overflow:hidden;
-        text-overflow:ellipsis;
-      }
-      .player{
-        display:flex;
-        align-items:center;
-        justify-content:space-between;
-        gap:10px;
-        padding: 12px 12px;
-        border-radius: 18px;
-        border:1px solid var(--line);
-        background: rgba(17,24,36,.40);
-      }
-      .player .left{
-        display:flex;
-        align-items:center;
-        gap:10px;
-        min-width:0;
-      }
-      .badge{
-        width:34px;
-        height:34px;
-        border-radius: 14px;
-        display:grid;
-        place-items:center;
-        font-weight:950;
-        background: rgba(255,255,255,.06);
-        border:1px solid var(--line);
-        color: var(--text);
-        flex: 0 0 auto;
-      }
-      .player .txt{
-        display:flex;
-        flex-direction:column;
-        gap:3px;
-        min-width:0;
-      }
-      .player .pname{
-        font-weight:950;
-        font-size:13px;
-        white-space:nowrap;
-        overflow:hidden;
-        text-overflow:ellipsis;
-      }
-      .player .pstate{
-        font-size:11px;
-        font-weight:850;
-        color: var(--muted);
-      }
-      .player .pstate.ok{ color: rgba(53,208,127,.95); }
-
-      .smallbtn{
-        border:none;
-        cursor:pointer;
-        font-weight:950;
-        font-size:12px;
-        padding: 10px 12px;
-        border-radius: 14px;
-        color: var(--text);
-        background: rgba(255,255,255,.06);
-        border:1px solid var(--line);
-        flex: 0 0 auto;
-      }
-      .smallbtn.primary{
-        background: rgba(110,168,255,.12);
-        border-color: rgba(110,168,255,.28);
-      }
-
-      .roleBtn{
-        display:flex;
-        align-items:center;
-        justify-content:space-between;
-        gap:10px;
-        padding: 12px 12px;
-        border-radius: 18px;
-        border:1px solid var(--line);
-        background: rgba(17,24,36,.40);
-        cursor:pointer;
-        width:100%;
-      }
-      .roleBtn .left{
-        display:flex;
-        align-items:center;
-        gap:10px;
-        min-width:0;
-      }
-      .roleBtn .ravatar{
-        width:34px;
-        height:34px;
-        border-radius: 14px;
-        display:grid;
-        place-items:center;
-        font-weight:1000;
-        background: rgba(255,255,255,.06);
-        border:1px solid var(--line);
-        color: var(--text);
-        flex: 0 0 auto;
-      }
-      .roleBtn .rmeta{
-        display:flex;
-        flex-direction:column;
-        gap:3px;
-        min-width:0;
-      }
-      .roleBtn .rname{
-        font-weight:1000;
-        font-size:13px;
-        color: var(--text);
-        white-space:nowrap;
-        overflow:hidden;
-        text-overflow:ellipsis;
-      }
-      .roleBtn .rteam{
-        font-size:11px;
-        font-weight:850;
-        color: var(--muted);
-      }
-      .roleBtn .right{
-        display:flex;
-        align-items:center;
-        gap:8px;
-        flex: 0 0 auto;
-      }
-      .roleBtn .count{
-        padding: 7px 10px;
-        border-radius: 999px;
-        border:1px solid var(--line);
-        background: rgba(255,255,255,.04);
-        color: var(--muted);
-        font-weight:950;
-        font-size:12px;
-      }
-      .roleBtn:active{ transform: translateY(1px); }
-
-      .modal{
-        position: fixed;
-        inset: 0;
-        background: rgba(0,0,0,.78);
-        backdrop-filter: blur(3px);
-        display:none;
-        align-items:flex-end;
-        justify-content:center;
-        padding:
-          16px
-          14px
-          calc(env(safe-area-inset-bottom) + 16px);
-      }
-      /* Center the role reveal modal (card description) */
-      #modal{
-        align-items:center;
-        padding: 16px 14px 16px;
-      }
-      /* Tool modal (status/timer/etc.) looks better centered */
-      #toolModal{
-        align-items:center;
-        padding:
-          16px
-          14px
-          16px;
-      }
-      .sheet{
-        width:min(520px, 100%);
-        border-radius: 22px;
-        border:1px solid var(--line);
-        background: linear-gradient(180deg, rgba(17,24,36,.98), rgba(15,23,34,.98));
-        box-shadow: var(--shadow);
-        overflow:hidden;
-      }
-      .sheet .top{
-        padding: 12px 14px;
-        display:flex;
-        align-items:center;
-        justify-content:space-between;
-        gap:10px;
-        border-bottom:1px solid var(--line);
-        background: rgba(0,0,0,.32);
-      }
-      .sheet .top .who{
-        font-weight:950;
-        font-size:13px;
-      }
-      .sheet .top .close{
-        border:none;
-        background: rgba(255,255,255,.06);
-        border:1px solid var(--line);
-        color: var(--text);
-        font-weight:950;
-        border-radius: 14px;
-        padding: 9px 12px;
-        cursor:pointer;
-      }
-      .sheet .content{
-        padding: 14px 14px 12px;
-        display:flex;
-        flex-direction:column;
-        gap:10px;
-      }
-      .roleCard{
-        border-radius: 20px;
-        border:1px solid var(--line);
-        padding: 14px 14px;
-        background: rgba(17,24,36,.55);
-        position: relative;
-        display:flex;
-        flex-direction:column;
-        gap:6px;
-      }
-      .roleHelpBtn{
-        position:absolute;
-        inset-inline-end: 10px;
-        top: 10px;
-        width: 34px;
-        height: 34px;
-        border-radius: 14px;
-        border:1px solid var(--line);
-        background: rgba(255,255,255,.06);
-        color: var(--text);
-        font-weight:1000;
-        cursor:pointer;
-      }
-      .roleHelpBtn:active{ transform: translateY(1px); }
-      .roleCard .rdesc.collapsed{ display:none; }
-      .note.collapsed{ display:none; }
-      .miniHelp{
-        border:1px solid rgba(0,0,0,.10);
-        background: rgba(255,255,255,.92);
-        color:#111;
-        width: 28px;
-        height: 28px;
-        border-radius: 12px;
-        display:grid;
-        place-items:center;
-        font-weight:1100;
-        cursor:pointer;
-        flex: 0 0 auto;
-      }
-      .miniHelp:active{ transform: translateY(1px); }
-      .roleCard .rname{
-        font-weight:1000;
-        font-size:18px;
-        letter-spacing:-.2px;
-      }
-      .roleCard .rteam{
-        display:inline-flex;
-        align-self:flex-start;
-        padding: 7px 10px;
-        border-radius: 999px;
-        font-weight:950;
-        font-size:12px;
-        border:1px solid var(--line);
-        background: rgba(255,255,255,.04);
-        color: var(--muted);
-      }
-      .roleCard .rdesc{
-        margin-top:6px;
-        font-size:13px;
-        line-height:1.75;
-        color: var(--text);
-        font-weight:750;
-      }
-
-      /* Role reveal card (shown after picking a card) */
-      .roleCard.roleReveal{
-        text-align:center;
-        align-items:center;
-        gap:10px;
-        padding: 18px 16px;
-      }
-      .roleCard.roleReveal .ricon{
-        width: 64px;
-        height: 64px;
-        border-radius: 22px;
-        display:grid;
-        place-items:center;
-        border:1px solid rgba(255,255,255,.10);
-        background: rgba(255,255,255,.06);
-        color: var(--text);
-      }
-      .roleCard.roleReveal .ricon svg{
-        width: 34px;
-        height: 34px;
-        display:block;
-      }
-      .roleCard.roleReveal .rname{
-        font-size:26px;
-        font-weight:1150;
-        line-height:1.25;
-      }
-      .roleCard.roleReveal .rteam{
-        align-self:center;
-        font-size:14px;
-        padding: 8px 12px;
-      }
-      .note.roleRevealNote{
-        margin-top: 0;
-        padding: 14px 14px;
-        border-radius: 18px;
-        border:1px solid rgba(255,255,255,.10);
-        background: rgba(255,255,255,.06);
-        font-size:16px;
-        line-height:1.85;
-        font-weight:850;
-        color: var(--text);
-        text-align:center;
-      }
-      /* Team tint for role reveal */
-      .roleCard.roleReveal.team-mafia .rname,
-      .note.roleRevealNote.team-mafia{ color: rgba(255,92,116,1); }
-      .roleCard.roleReveal.team-city .rname,
-      .note.roleRevealNote.team-city{ color: rgba(53,208,127,1); }
-      .roleCard.roleReveal.team-ind .rname,
-      .note.roleRevealNote.team-ind{ color: rgba(255,189,46,1); }
-      .roleCard.roleReveal.team-mafia .ricon{
-        border-color: rgba(255,92,116,.30);
-        background: rgba(255,92,116,.10);
-        color: rgba(255,92,116,1);
-      }
-      .roleCard.roleReveal.team-city .ricon{
-        border-color: rgba(53,208,127,.30);
-        background: rgba(53,208,127,.10);
-        color: rgba(53,208,127,1);
-      }
-      .roleCard.roleReveal.team-ind .ricon{
-        border-color: rgba(255,189,46,.30);
-        background: rgba(255,189,46,.10);
-        color: rgba(255,189,46,1);
-      }
-      .roleCard.roleReveal.team-mafia .rteam{
-        border-color: rgba(255,92,116,.30);
-        background: rgba(255,92,116,.10);
-        color: rgba(255,92,116,1);
-      }
-      .roleCard.roleReveal.team-city .rteam{
-        border-color: rgba(53,208,127,.30);
-        background: rgba(53,208,127,.10);
-        color: rgba(53,208,127,1);
-      }
-      .roleCard.roleReveal.team-ind .rteam{
-        border-color: rgba(255,189,46,.30);
-        background: rgba(255,189,46,.10);
-        color: rgba(255,189,46,1);
-      }
-      .sheet .bottom{
-        padding: 12px 14px 14px;
-        display:flex;
-        gap:10px;
-        border-top:1px solid var(--line);
-      }
-
-      .hidden{ display:none !important; }
-
-      .toolBar{
-        display:grid;
-        grid-template-columns: repeat(6, 1fr);
-        gap:10px;
-        margin-bottom: 10px;
-      }
-      .toolBtn{
-        border:1px solid var(--line);
-        background: rgba(255,255,255,.85);
-        color:#111;
-        border-radius: 14px;
-        padding: 10px 8px;
-        cursor:pointer;
-        display:flex;
-        flex-direction:column;
-        align-items:center;
-        justify-content:center;
-        gap:6px;
-        min-height: 64px;
-        font-weight:1000;
-      }
-      .toolBtn .ico{
-        width: 30px;
-        height: 30px;
-        border-radius: 12px;
-        display:grid;
-        place-items:center;
-        background: rgba(0,0,0,.08);
-        border:1px solid rgba(0,0,0,.10);
-        font-weight:1000;
-      }
-      .toolBtn .lbl{
-        font-size:12px;
-        font-weight:1000;
-        color:#111;
-        white-space:nowrap;
-      }
-      @media (max-width: 420px){
-        .toolBar{ grid-template-columns: repeat(3, 1fr); }
-      }
-
-      .toolGrid{
-        display:grid;
-        grid-template-columns: 1fr 1fr;
-        gap:10px;
-      }
-      .toolBox{
-        border:1px solid rgba(255,255,255,.10);
-        background: rgba(255,255,255,.08);
-        border-radius: 16px;
-        padding: 12px;
-        color: var(--text);
-      }
-      .helpBox{
-        border:1px solid var(--line);
-        background: rgba(255,255,255,.04);
-        border-radius: 18px;
-        padding: 12px;
-      }
-      .helpBox .helpTitle{
-        font-weight:1100;
-        font-size:13px;
-        margin-bottom: 8px;
-      }
-      .helpBox .helpText{
-        font-weight:850;
-        font-size:12px;
-        line-height:1.8;
-        color: var(--muted);
-      }
-      .helpBox .helpActions{
-        margin-top: 10px;
-        display:flex;
-        justify-content:flex-start;
-      }
-      .toolBox.light{
-        background: rgba(255,255,255,.92);
-        color:#111;
-        border-color: rgba(0,0,0,.08);
-      }
-      /* Player status sheet tweaks */
-      .toolBox.lifeSheet{
-        text-align:center;
-      }
-      .toolBox.lifeSheet .actions{
-        justify-content:center;
-      }
-      .toolBox.lifeSheet .lifeActions{
-        margin-top: 6px;
-        display:flex;
-        flex-direction:column;
-        gap:10px;
-      }
-      .toolBox.lifeSheet .lifeActions .btn{
-        width:100%;
-        flex: 0 0 auto;
-      }
-      .toolBox.lifeSheet .lifeIcon{
-        width: 64px;
-        height: 64px;
-        margin: 2px auto 0;
-        border-radius: 22px;
-        display:grid;
-        place-items:center;
-        border:1px solid rgba(255,255,255,.10);
-        background: rgba(255,255,255,.06);
-        color: var(--text);
-      }
-      .toolBox.lifeSheet .lifeIcon svg{
-        width: 34px;
-        height: 34px;
-        display:block;
-      }
-      /* unify action button styling in life sheet */
-      .toolBox.lifeSheet .lifeActionBtn{
-        font-size:15px;
-        font-weight:1100;
-        padding: 14px 14px;
-        border-radius: 18px;
-        border: 0;
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        color: #fff;
-        box-shadow: 0 8px 22px rgba(102, 126, 234, 0.30);
-        transition:
-          transform .12s ease,
-          filter .12s ease,
-          box-shadow .12s ease;
-      }
-      .toolBox.lifeSheet .lifeActionBtn:hover{
-        filter: brightness(1.05) saturate(1.05);
-        transform: translateY(-1px);
-        box-shadow: 0 10px 28px rgba(102, 126, 234, 0.36);
-      }
-      .toolBox.lifeSheet .lifeActionBtn:active{
-        transform: scale(0.98);
-        filter: brightness(.98) saturate(1.02);
-        box-shadow: 0 6px 16px rgba(102, 126, 234, 0.28);
-      }
-      .toolBox.lifeSheet .lifeActionBtn.is-danger{
-        /* from spy_game */
-        background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-        box-shadow: 0 8px 22px rgba(245, 87, 108, 0.30);
-      }
-      .toolBox.lifeSheet .lifeActionBtn.is-warn{
-        /* from spy_game (primary) */
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        box-shadow: 0 8px 22px rgba(102, 126, 234, 0.30);
-      }
-      .toolBox.lifeSheet .lifeActionBtn.is-ok{
-        /* from spy_game */
-        background: linear-gradient(135deg, #3b95e4 0%, #43dbe3 100%);
-        box-shadow: 0 8px 22px rgba(79, 172, 254, 0.30);
-      }
-      .toolBox.lifeSheet .lifeName{
-        font-weight:1150;
-        font-size:26px;
-        line-height:1.3;
-      }
-      .toolBox.lifeSheet .lifeMeta{
-        margin-top: 12px;
-        font-weight:1000;
-        font-size:19px;
-        line-height:1.75;
-      }
-      .toolBox.lifeSheet .lifeMeta .k{
-        opacity:.75;
-        font-weight:950;
-      }
-      .toolBox.lifeSheet.team-mafia .lifeMeta{ color: rgba(255,92,116,1); }
-      .toolBox.lifeSheet.team-city .lifeMeta{ color: rgba(53,208,127,1); }
-      .toolBox.lifeSheet.team-ind .lifeMeta{ color: rgba(255,189,46,1); }
-      .toolBox.lifeSheet.team-mafia .lifeIcon{
-        border-color: rgba(255,92,116,.30);
-        background: rgba(255,92,116,.10);
-        color: rgba(255,92,116,1);
-      }
-      .toolBox.lifeSheet.team-city .lifeIcon{
-        border-color: rgba(53,208,127,.30);
-        background: rgba(53,208,127,.10);
-        color: rgba(53,208,127,1);
-      }
-      .toolBox.lifeSheet.team-ind .lifeIcon{
-        border-color: rgba(255,189,46,.30);
-        background: rgba(255,189,46,.10);
-        color: rgba(255,189,46,1);
-      }
-      .kv{
-        display:flex;
-        align-items:center;
-        justify-content:space-between;
-        gap:10px;
-      }
-      .kv .k{ font-weight:950; font-size:12px; opacity:.9; }
-      .kv .v{ font-weight:1100; font-size:22px; letter-spacing:.3px; }
-      .stepper{
-        display:flex;
-        align-items:center;
-        gap:8px;
-      }
-      .stepper button{
-        border:1px solid rgba(0,0,0,.12);
-        background: rgba(255,255,255,.92);
-        color:#111;
-        font-weight:1100;
-        width: 34px;
-        height: 34px;
-        border-radius: 14px;
-        cursor:pointer;
-      }
-      .stepper .num{
-        min-width: 36px;
-        text-align:center;
-        font-weight:1100;
-        font-size:16px;
-      }
-
-      .timerRow{
-        display:grid;
-        grid-template-columns: 1fr 1fr;
-        gap:10px;
-      }
-      .timerCard{
-        border-radius: 18px;
-        border:1px solid rgba(255,255,255,.10);
-        background: rgba(255,255,255,.92);
-        color:#111;
-        padding: 12px;
-        display:flex;
-        flex-direction:column;
-        gap:8px;
-        align-items:center;
-      }
-      .timerCard .tname{ font-weight:1000; font-size:13px; }
-      .timerCard .tval{ font-weight:1200; font-size:34px; letter-spacing:1px; }
-      .timerCard .tval.clickable{
-        cursor:pointer;
-        user-select:none;
-      }
-      .timerCard .tbtn{
-        border:none;
-        cursor:pointer;
-        width: 52px;
-        height: 52px;
-        border-radius: 999px;
-        background: rgba(0,0,0,.10);
-        color:#111;
-        font-weight:1200;
-        font-size:16px;
-      }
-      .timerActions{
-        display:flex;
-        gap:10px;
-        margin-top: 10px;
-      }
-      .timerActions button{
-        flex:1;
-        border:none;
-        cursor:pointer;
-        padding: 12px 12px;
-        border-radius: 16px;
-        font-weight:1100;
-      }
-      .timerActions .reset{
-        background: rgba(255,255,255,.88);
-        color:#111;
-        border:1px solid rgba(0,0,0,.10);
-      }
-      .timerActions .close{
-        background: rgba(110,168,255,.18);
-        color: var(--text);
-        border:1px solid rgba(110,168,255,.30);
-      }
-    </style>
+    <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;500;700;900&display=swap" rel="stylesheet">
   </head>
   <body>
     <div class="app">
       <div class="topbar">
-        <div class="title" data-i18n="app.title">اپلیکیشن بازی مافیا</div>
+        <div class="title" id="appTitle">اپلیکیشن بازی مافیا</div>
         <div class="topActions">
           <div class="chip clickable" id="langChip" role="button" tabindex="0" aria-label="تغییر زبان">
             <span class="label" id="langLabel">English</span>
@@ -1271,10 +26,6 @@
       </div>
 
       <div class="card" id="setupCard">
-        <div class="hd">
-          <h2 data-i18n="setup.title">تنظیمات بازی</h2>
-          <span class="chip" id="quickStat">—</span>
-        </div>
         <div class="bd">
           <button class="bigbtn redbar" id="backBarBtn" type="button" style="display:none" data-i18n="setup.backToSetup">بازگشت به تنظیمات بازی</button>
 
@@ -1386,38 +137,13 @@
       </div>
 
       <div class="card hidden" id="castCard">
-        <div class="hd">
-          <h2 data-i18n="cast.title">فهرست شخصیت‌ها</h2>
-          <span class="chip" id="castStat">—</span>
-        </div>
         <div class="bd">
-          <div class="toolBar" id="godTools">
-            <button class="toolBtn" id="toolWake" type="button">
-              <div class="ico">🌙</div>
-              <div class="lbl" data-i18n="tools.wake">بیداری</div>
-            </button>
-            <button class="toolBtn" id="toolStatus" type="button">
-              <div class="ico">🔎</div>
-              <div class="lbl" data-i18n="tools.status">استعلام</div>
-            </button>
-            <button class="toolBtn" id="toolLastMove" type="button">
-              <div class="ico">🃏</div>
-              <div class="lbl" data-i18n="tools.lastMove">حرکت آخر</div>
-            </button>
-            <button class="toolBtn" id="toolRoleChange" type="button">
-              <div class="ico">🎭</div>
-              <div class="lbl" data-i18n="tools.roleChange">تغییر نقش</div>
-            </button>
-            <button class="toolBtn" id="toolChance" type="button">
-              <div class="ico">🎲</div>
-              <div class="lbl" data-i18n="tools.chance">قرعه</div>
-            </button>
-            <button class="toolBtn" id="toolTimer" type="button">
-              <div class="ico">⏱</div>
-              <div class="lbl" data-i18n="tools.timer">تایم</div>
+          <div style="display:flex; justify-content:flex-end; margin-bottom:8px">
+            <button class="btn secondary" id="castPrivacyBtn" type="button" style="padding:6px 10px; min-width:0; gap:5px">
+              <svg id="castPrivacyIcon" width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/></svg>
+              <span id="castPrivacyLabel" data-i18n="cast.hide">پنهان‌کردن نقش‌ها</span>
             </button>
           </div>
-
           <div class="castBox mafia" id="castMafia"></div>
           <div style="height:12px"></div>
           <div class="castBox city" id="castCity"></div>
@@ -1425,8 +151,13 @@
           <div class="castBox" id="castInd" style="display:none"></div>
 
           <div class="actions">
-            <button class="btn" id="castBackBtn" type="button" data-i18n="cast.back">بازگشت به تنظیمات بازی</button>
-            <button class="btn primary" id="castNewBtn" type="button" data-i18n="cast.new">قرعه‌کشی جدید</button>
+            <button class="btn primary" id="castFlowBtn" type="button"><svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" style="vertical-align:-2px;margin-inline-end:4px" aria-hidden="true"><path d="M5.5 5.5 Q5.5 3 7.5 4.3 L18 10.7 Q20 12 18 13.3 L7.5 19.7 Q5.5 21 5.5 18.5Z"/></svg><span data-i18n="tools.flow">جریان</span></button>
+            <button class="btn secondary" id="toolTimer" type="button"><svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" style="vertical-align:-2px;margin-inline-end:4px" aria-hidden="true"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67V7z"/></svg><span data-i18n="tools.timer">تایم</span></button>
+            <button class="btn secondary" id="toolStatus" type="button"><svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" style="vertical-align:-2px;margin-inline-end:4px" aria-hidden="true"><path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg><span data-i18n="tools.status">استعلام</span></button>
+          </div>
+          <div class="actions" style="margin-top:8px">
+            <button class="btn" id="castBackBtn" type="button"><svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" style="vertical-align:-2px;margin-inline-end:4px" aria-hidden="true"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg><span data-i18n="cast.back">بازگشت به تنظیمات بازی</span></button>
+            <button class="btn" id="toolRoleChange" type="button"><svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" style="vertical-align:-2px;margin-inline-end:4px" aria-hidden="true"><path d="M6.99 11L3 15l3.99 4v-3H14v-2H6.99v-3zM21 9l-3.99-4v3H10v2h7.01v3L21 9z"/></svg><span data-i18n="tools.roleChange">تغییر نقش</span></button>
           </div>
         </div>
       </div>
@@ -1470,8 +201,14 @@
       </div>
     </div>
 
+    <script src="strings.js"></script>
+    <script src="roles.js"></script>
+    <script src="scenarios.js"></script>
+    <script src="guides.js"></script>
+    <script src="i18n.js"></script>
+    <script src="flow-engine.js"></script>
+    <script src="flow-ui.js"></script>
     <script>
-      (function () {
         const $ = (id) => document.getElementById(id);
 
         const STORAGE_KEY = "mafia_v2_simple_web_state_v1";
@@ -1480,506 +217,8 @@
         const LANG_KEY = "mafia_v2_simple_web_lang_v1";
         let appLang = "fa"; // "fa" | "en"
 
-        const STR = {
-          fa: {
-            "doc.title": "اپلیکیشن بازی مافیا",
-            "app.title": "اپلیکیشن بازی مافیا",
-            "top.help": "راهنما",
-            "top.lang.aria": "تغییر زبان",
-            "top.lang.toFa": "فارسی",
-            "top.lang.toEn": "English",
 
-            "setup.title": "تنظیمات بازی",
-            "setup.backToSetup": "بازگشت به تنظیمات بازی",
-            "setup.scenario": "سناریو",
-            "setup.playersCount": "تعداد بازیکن‌ها",
-            "setup.mafiaCount": "تعداد مافیا",
-            "setup.defaults": "پیش‌فرض سناریو",
-            "setup.start": "شروع بازی",
-            "setup.savedGame": "یک بازی ذخیره شده است.",
-            "setup.resume": "ادامه بازی",
-            "setup.delete": "حذف",
 
-            "players.title": "بازیکنان",
-            "players.namesModeAria": "حالت نام‌ها",
-            "players.namesDefault": "اسامی پیش‌فرض",
-            "players.namesLast": "اسامی بازی قبل",
-            "players.note": "اسامی بازیکنان را وارد کنید. اگر «اسامی بازی قبل» را انتخاب کنید، از ذخیره‌ی مرورگر استفاده می‌شود.",
-            "players.deal": "تقسیم نقش",
-            "players.back": "بازگشت به تنظیمات",
-
-            "cards.title": "تقسیم نقش",
-            "cards.hint": "بازیکن یک کارت را انتخاب می‌کند و نقش خودش را می‌بیند.",
-            "cards.back": "بازگشت",
-            "cards.autoAssign": "اختصاص اتومات نقش‌ها",
-            "cards.next": "برو مرحله بعد!",
-
-            "cast.title": "فهرست شخصیت‌ها",
-            "cast.back": "بازگشت به تنظیمات بازی",
-            "cast.new": "قرعه‌کشی جدید",
-
-            "tools.wake": "بیداری",
-            "tools.status": "استعلام",
-            "tools.lastMove": "حرکت آخر",
-            "tools.roleChange": "تغییر نقش",
-            "tools.chance": "قرعه",
-            "tools.timer": "تایم",
-
-            "common.close": "بستن",
-            "common.seen": "دیدم",
-            "common.roleHelp": "راهنمای نقش",
-            "common.on": "روشن",
-            "common.off": "خاموش",
-            "common.done": "تمام شد",
-            "common.turn": "نوبت",
-            "common.playerN": "بازیکن {n}",
-            "common.cardN": "کارت {n}",
-            "common.taken": "برداشته شد",
-
-            "saveState.label": "ذخیره: {state}",
-            "error.config": "خطا در تنظیمات بازی.",
-            "error.quick": "خطا در تنظیمات",
-            "error.duplicateName": "نام «{name}» تکراری است.",
-
-            "teams.mafia": "مافیا",
-            "teams.city": "شهر",
-            "teams.independent": "مستقل",
-            "teams.mafiaTeam": "تیم مافیا",
-            "teams.cityTeam": "تیم شهر",
-
-            "toggles.variableCount": "تعداد: متغیر",
-
-            "quickStat.withInd": "مافیا: {m} • شهر: {c} • مستقل: {i}",
-            "quickStat.noInd": "مافیا: {m} • شهر: {c}",
-
-            "help.title": "راهنما",
-            "help.quick": "راهنمای سریع",
-            "help.body": `1) سناریو، تعداد بازیکن‌ها و تعداد مافیا را تنظیم کنید.<br />
-2) نقش‌های فعال را (طبق سناریو) روشن/خاموش کنید.<br />
-3) «شروع بازی» را بزنید و اسامی را وارد کنید.<br />
-4) «تقسیم نقش» را بزنید؛ هر بازیکن یک کارت انتخاب می‌کند و «دیدم» را می‌زند.<br />
-5) در «فهرست شخصیت‌ها»، راوی می‌تواند ابزارها (تایمر/قرعه/تغییر نقش/وضعیت) را استفاده کند.`,
-
-            "tool.wake.title": "ترتیب بیداری",
-            "tool.wake.scenario": "سناریو: {name}",
-            "tool.wake.none": "برای این سناریو ترتیب بیداری ثبت نشده است.",
-
-            "tool.status.title": "استعلام وضعیت",
-            "tool.status.alive": "افراد زنده",
-            "tool.status.dead": "افراد مرده",
-            "tool.status.mafiaAlive": "مافیا زنده",
-            "tool.status.mafiaDead": "مافیا مرده",
-            "tool.status.cityAlive": "شهر زنده",
-            "tool.status.cityDead": "شهر مرده",
-            "tool.status.indAlive": "مستقل زنده",
-            "tool.status.indDead": "مستقل مرده",
-            "tool.status.hint": "برای تغییر وضعیت هر بازیکن، در صفحه «فهرست شخصیت‌ها» روی نام بازیکن بزنید و «کشته شد/خارج شد» را انتخاب کنید.",
-            "tool.status.summary": "از بازی شما {out} نفر خارج شده‌اند. {m} مافیا، {c} شهروند و {i} مستقل.",
-
-            "tool.lastMove.title": "کارت حرکت آخر",
-            "tool.lastMove.none": "این سناریو کارت حرکت آخر ندارد!",
-            "tool.lastMove.header": "کارت‌های حرکت آخر:",
-            "tool.lastMove.draw": "قرعه کارت",
-            "tool.lastMove.result": "نتیجه:",
-            "tool.lastMove.allUsed": "همهٔ کارت‌ها استفاده شده‌اند.",
-
-            "tool.roleChange.title": "تغییر نقش",
-            "tool.roleChange.needDeal": "ابتدا نقش‌ها را تقسیم کنید.",
-            "tool.roleChange.pick": "یک نفر را انتخاب کن تا نقشِش را تغییر بدهی",
-            "tool.roleChange.labelPlayer": "نقش ایشون رو",
-            "tool.roleChange.labelRole": "تغییر بده به",
-            "tool.roleChange.apply": "اعمال تغییر نقش",
-            "tool.roleChange.shuffleAll": "بر زدن نقش‌ها (همه)",
-            "tool.roleChange.shuffleConfirm": "تأیید بر زدن نقش‌ها",
-            "tool.roleChange.shuffleWarn": "هشدار: این کار نقش‌های همهٔ بازیکن‌ها را جابه‌جا می‌کند و قابل برگشت نیست.",
-
-            "tool.chance.title": "قرعه",
-            "tool.chance.ask": "چند نفر وارد قرعه می‌شوند؟",
-            "tool.chance.count": "تعداد",
-            "tool.chance.spin": "قرعه",
-            "tool.chance.result": "نتیجه:",
-
-            "tool.timer.pick.title": "تنظیم تایمر",
-            "tool.timer.pick.ask": "مدت زمان «{label}» را انتخاب کنید",
-            "tool.timer.pick.seconds": "زمان (ثانیه)",
-            "tool.timer.pick.apply": "ثبت",
-            "tool.timer.pick.back": "بازگشت",
-            "tool.timer.title": "تایمر",
-            "tool.timer.turn": "ترن",
-            "tool.timer.challenge": "چالش",
-            "tool.timer.defense": "دفاعیه",
-            "tool.timer.reset": "ریست",
-            "tool.timer.close": "بستن",
-
-            "lifeSheet.title": "وضعیت بازیکن",
-            "lifeSheet.role": "نقش",
-            "lifeSheet.team": "تیم",
-            "lifeSheet.status": "وضعیت",
-            "lifeSheet.alive": "زنده",
-            "lifeSheet.deadShot": "کشته شد (شات)",
-            "lifeSheet.deadVote": "خارج شد (رای)",
-            "lifeSheet.deadShortShot": "شات",
-            "lifeSheet.deadShortVote": "رای",
-            "lifeSheet.actionShot": "کشته شد (شات)",
-            "lifeSheet.actionVote": "خارج شد (رای)",
-            "lifeSheet.actionRevive": "برگرداندن به بازی (زنده)",
-
-            "cast.noneMafia": "بدون مافیا",
-            "cast.noneCity": "بدون شهر",
-            "cast.stat.withInd": "بازیکن: {p} • مافیا: {m} • شهر: {c} • مستقل: {i}",
-            "cast.stat.noInd": "بازیکن: {p} • مافیا: {m} • شهر: {c}",
-          },
-          en: {
-            "doc.title": "Mafia Game Assistant",
-            "app.title": "Mafia Game Assistant",
-            "top.help": "Help",
-            "top.lang.aria": "Change language",
-            "top.lang.toFa": "فارسی",
-            "top.lang.toEn": "English",
-
-            "setup.title": "Game setup",
-            "setup.backToSetup": "Back to setup",
-            "setup.scenario": "Scenario",
-            "setup.playersCount": "Players",
-            "setup.mafiaCount": "Mafia",
-            "setup.defaults": "Scenario defaults",
-            "setup.start": "Start game",
-            "setup.savedGame": "A saved game is available.",
-            "setup.resume": "Resume",
-            "setup.delete": "Delete",
-
-            "players.title": "Players",
-            "players.namesModeAria": "Names mode",
-            "players.namesDefault": "Default names",
-            "players.namesLast": "Last game names",
-            "players.note": "Enter player names. If you choose “Last game names”, the app will use your browser’s saved list.",
-            "players.deal": "Deal roles",
-            "players.back": "Back to setup",
-
-            "cards.title": "Deal",
-            "cards.hint": "Each player picks a card and sees their role.",
-            "cards.back": "Back",
-            "cards.autoAssign": "Auto-assign roles",
-            "cards.next": "Next step",
-
-            "cast.title": "Cast list",
-            "cast.back": "Back to setup",
-            "cast.new": "New draw",
-
-            "tools.wake": "Wake",
-            "tools.status": "Status",
-            "tools.lastMove": "Last move",
-            "tools.roleChange": "Change role",
-            "tools.chance": "Draw",
-            "tools.timer": "Timer",
-
-            "common.close": "Close",
-            "common.seen": "Seen",
-            "common.roleHelp": "Role help",
-            "common.on": "On",
-            "common.off": "Off",
-            "common.done": "Done",
-            "common.turn": "Turn",
-            "common.playerN": "Player {n}",
-            "common.cardN": "Card {n}",
-            "common.taken": "Taken",
-
-            "saveState.label": "Save: {state}",
-            "error.config": "Invalid game setup.",
-            "error.quick": "Setup error",
-            "error.duplicateName": "Name “{name}” is duplicated.",
-
-            "teams.mafia": "Mafia",
-            "teams.city": "City",
-            "teams.independent": "Independent",
-            "teams.mafiaTeam": "Mafia team",
-            "teams.cityTeam": "City team",
-
-            "toggles.variableCount": "Count: variable",
-
-            "quickStat.withInd": "Mafia: {m} • City: {c} • Ind: {i}",
-            "quickStat.noInd": "Mafia: {m} • City: {c}",
-
-            "help.title": "Help",
-            "help.quick": "Quick guide",
-            "help.body": `1) Choose scenario, number of players, and mafia count.<br />
-2) Enable/disable roles (based on scenario).<br />
-3) Tap “Start game” and enter player names.<br />
-4) Tap “Deal roles”: each player picks a card and taps “Seen”.<br />
-5) In “Cast list”, the narrator can use tools (Timer/Draw/Role change/Status).`,
-
-            "tool.wake.title": "Wake order",
-            "tool.wake.scenario": "Scenario: {name}",
-            "tool.wake.none": "No wake order recorded for this scenario.",
-
-            "tool.status.title": "Status check",
-            "tool.status.alive": "Alive",
-            "tool.status.dead": "Dead",
-            "tool.status.mafiaAlive": "Mafia alive",
-            "tool.status.mafiaDead": "Mafia dead",
-            "tool.status.cityAlive": "City alive",
-            "tool.status.cityDead": "City dead",
-            "tool.status.indAlive": "Ind alive",
-            "tool.status.indDead": "Ind dead",
-            "tool.status.hint": "To change a player’s status, go to “Cast list”, tap the player, then choose “Killed/Out”.",
-            "tool.status.summary": "From your game {out} people are out. {m} Mafia, {c} Citizen and {i} independent.",
-
-            "tool.lastMove.title": "Last move card",
-            "tool.lastMove.none": "This scenario has no Last Move card.",
-            "tool.lastMove.header": "Last move cards:",
-            "tool.lastMove.draw": "Draw card",
-            "tool.lastMove.result": "Result:",
-            "tool.lastMove.allUsed": "All cards have been used.",
-
-            "tool.roleChange.title": "Change role",
-            "tool.roleChange.needDeal": "Deal roles first.",
-            "tool.roleChange.pick": "Choose a player to change their role",
-            "tool.roleChange.labelPlayer": "Change role of",
-            "tool.roleChange.labelRole": "Change to",
-            "tool.roleChange.apply": "Apply",
-            "tool.roleChange.shuffleAll": "Shuffle all roles",
-            "tool.roleChange.shuffleConfirm": "Confirm shuffle",
-            "tool.roleChange.shuffleWarn": "Warning: this shuffles everyone’s roles and cannot be undone.",
-
-            "tool.chance.title": "Draw",
-            "tool.chance.ask": "How many players are in the draw?",
-            "tool.chance.count": "Count",
-            "tool.chance.spin": "Draw",
-            "tool.chance.result": "Result:",
-
-            "tool.timer.pick.title": "Set timer",
-            "tool.timer.pick.ask": "Select duration for “{label}”",
-            "tool.timer.pick.seconds": "Time (seconds)",
-            "tool.timer.pick.apply": "Save",
-            "tool.timer.pick.back": "Back",
-            "tool.timer.title": "Timer",
-            "tool.timer.turn": "Turn",
-            "tool.timer.challenge": "Challenge",
-            "tool.timer.defense": "Defense",
-            "tool.timer.reset": "Reset",
-            "tool.timer.close": "Close",
-
-            "lifeSheet.title": "Player status",
-            "lifeSheet.role": "Role",
-            "lifeSheet.team": "Team",
-            "lifeSheet.status": "Status",
-            "lifeSheet.alive": "Alive",
-            "lifeSheet.deadShot": "Killed (shot)",
-            "lifeSheet.deadVote": "Out (vote)",
-            "lifeSheet.deadShortShot": "Shot",
-            "lifeSheet.deadShortVote": "Vote",
-            "lifeSheet.actionShot": "Killed (shot)",
-            "lifeSheet.actionVote": "Out (vote)",
-            "lifeSheet.actionRevive": "Revive (alive)",
-
-            "cast.noneMafia": "No mafia",
-            "cast.noneCity": "No city",
-            "cast.stat.withInd": "Players: {p} • Mafia: {m} • City: {c} • Ind: {i}",
-            "cast.stat.noInd": "Players: {p} • Mafia: {m} • City: {c}",
-          },
-        };
-
-        function t(key, vars) {
-          const dict = STR[appLang] || STR.fa;
-          let s = (dict && dict[key]) || (STR.fa && STR.fa[key]) || key;
-          if (vars && typeof vars === "object") {
-            for (const k of Object.keys(vars)) {
-              s = s.replaceAll("{" + k + "}", String(vars[k]));
-            }
-          }
-          return s;
-        }
-        function applyStaticI18n() {
-          try { document.title = t("doc.title"); } catch {}
-          document.querySelectorAll("[data-i18n]").forEach((el) => {
-            const key = el.getAttribute("data-i18n");
-            if (!key) return;
-            el.textContent = t(key);
-          });
-          document.querySelectorAll("[data-i18n-title]").forEach((el) => {
-            const key = el.getAttribute("data-i18n-title");
-            if (!key) return;
-            el.setAttribute("title", t(key));
-          });
-          document.querySelectorAll("[data-i18n-aria-label]").forEach((el) => {
-            const key = el.getAttribute("data-i18n-aria-label");
-            if (!key) return;
-            el.setAttribute("aria-label", t(key));
-          });
-        }
-        function applyScenarioOptionLabels() {
-          const map = {
-            classic: { fa: "کلاسیک", en: "Classic" },
-            bazras: { fa: "بازپرس", en: "Inspector" },
-            namayande: { fa: "نماینده", en: "Representative" },
-            mozaker: { fa: "مذاکره", en: "Negotiator" },
-            takavar: { fa: "تکاور", en: "Commando" },
-            kabo: { fa: "کاپو", en: "Capo" },
-            pedarkhande: { fa: "پدرخوانده", en: "Godfather" },
-            zodiac: { fa: "زودیاک", en: "Zodiac" },
-            meeting_epic: { fa: "میتینگ/اپیک", en: "Meeting/Epic" },
-            pishrafte: { fa: "پیشرفته", en: "Advanced" },
-            shab_mafia: { fa: "شب مافیا", en: "Mafia Nights" },
-          };
-          const sel = $("scenario");
-          if (!sel || !sel.options) return;
-          for (const opt of Array.from(sel.options)) {
-            const v = opt.value;
-            const rec = map[v];
-            if (!rec) continue;
-            opt.textContent = appLang === "fa" ? rec.fa : rec.en;
-          }
-        }
-        function updateLangChip() {
-          const chip = $("langChip");
-          const label = $("langLabel");
-          if (chip) chip.setAttribute("aria-label", t("top.lang.aria"));
-          if (label) label.textContent = (appLang === "fa") ? t("top.lang.toEn") : t("top.lang.toFa");
-        }
-        function setLanguage(lang) {
-          appLang = (lang === "en") ? "en" : "fa";
-          try { if (shouldPersist()) localStorage.setItem(LANG_KEY, appLang); } catch {}
-          try {
-            const root = document.documentElement;
-            root.setAttribute("lang", appLang === "fa" ? "fa" : "en");
-            root.setAttribute("dir", appLang === "fa" ? "rtl" : "ltr");
-          } catch {}
-          applyScenarioOptionLabels();
-          applyStaticI18n();
-          updateLangChip();
-          try { if (typeof renderToggles === "function") renderToggles(); } catch {}
-          try { if (typeof applyUIFromState === "function") applyUIFromState(); } catch {}
-          try { if (typeof updateQuickStat === "function") updateQuickStat(); } catch {}
-          try { if (typeof renderCards === "function" && $("cardsCard") && !$("cardsCard").classList.contains("hidden")) renderCards(); } catch {}
-          try { if (typeof renderCast === "function" && $("castCard") && !$("castCard").classList.contains("hidden")) renderCast(); } catch {}
-          try { if (typeof renderNameGrid === "function" && $("playersCard") && !$("playersCard").classList.contains("hidden")) renderNameGrid(); } catch {}
-          try { if (typeof closeToolModal === "function") closeToolModal(); } catch {}
-          try { if (typeof closeModal === "function") closeModal(); } catch {}
-        }
-        function toggleLanguage() {
-          setLanguage(appLang === "fa" ? "en" : "fa");
-        }
-
-        const roles = {
-          // --- base ---
-          citizen: { faName: "شهروند ساده", teamFa: "شهر", hintFa: "بدون قابلیت", descFa: "قابلیت شب ندارید. روزها با صحبت، استدلال و رأی درست به پیدا شدن مافیا کمک کنید." },
-          mafia: { faName: "مافیا ساده", teamFa: "مافیا", hintFa: "بدون قابلیت", descFa: "قابلیت مستقل ندارید. شب‌ها با مافیا مشورت می‌کنید و روزها تلاش می‌کنید شهر را گمراه کنید." },
-
-          // --- classic / general ---
-          mafiaBoss: { faName: "رئیس مافیا", teamFa: "مافیا", hintFa: "رهبر + شلیک", descFa: "رهبر تیم مافیاست؛ تصمیم نهاییِ شلیک شب با اوست و معمولاً استعلام او برای کارآگاه «منفی» است." },
-          godfather: { faName: "پدرخوانده", teamFa: "مافیا", hintFa: "رهبر + شلیک", descFa: "در بسیاری از سناریوها همان رهبر مافیاست و شلیک شب را تعیین می‌کند. در نسخهٔ رایج، استعلام او برای کارآگاه «منفی» است." },
-          swindler: { faName: "شیاد", teamFa: "مافیا", hintFa: "برهم‌زنِ استعلام", descFa: "نقش مافیاییِ برهم‌زن استعلام (در بعضی سناریوها). هر شب روی یک نفر اثر می‌گذارد؛ توضیح دقیق به سناریو بستگی دارد." },
-          nato: { faName: "ناتو", teamFa: "مافیا", hintFa: "حدسِ نقش", descFa: "یک شب (طبق سناریو) نقش دقیقِ یک بازیکن را حدس می‌زند؛ در صورت حدس درست، آن بازیکن از بازی خارج می‌شود." },
-          negotiator: { faName: "مذاکره‌کننده", teamFa: "مافیا", hintFa: "مذاکره/تبدیل", descFa: "می‌تواند (طبق سناریو) در شب مذاکره تلاش کند یک شهروند را به تیم مافیا اضافه کند؛ در شب مذاکره معمولاً شلیک انجام نمی‌شود." },
-          natasha: { faName: "ناتاشا", teamFa: "مافیا", hintFa: "سایلنتِ شب", descFa: "نقش مافیاییِ سایلنت‌کننده است: شب‌ها یک نفر را انتخاب می‌کند تا روز بعد نتواند صحبت کند (معمولاً تکراری پشت‌سرهم نیست)." },
-          doctorLecter: { faName: "دکتر لکتر", teamFa: "مافیا", hintFa: "سیوِ مافیا", descFa: "پزشکِ تیم مافیاست. معمولاً هر شب می‌تواند یک نفر را از شلیک نجات دهد و فقط یک‌بار می‌تواند خودش را نجات دهد." },
-          jokerMafia: { faName: "جوکر مافیا", teamFa: "مافیا", hintFa: "برعکس‌کردن استعلام", descFa: "در نسخهٔ رایجِ «شب‌های مافیا»، فقط ۲ بار در کل بازی می‌تواند یک نفر را انتخاب کند تا استعلام او همان شب برای کارآگاه برعکس شود (معمولاً انتخاب تکراری پشت‌سرهم ممنوع است)." },
-          matador: { faName: "ماتادور", teamFa: "مافیا", hintFa: "گرفتنِ قابلیت", descFa: "شب‌ها می‌تواند یک نفر را انتخاب کند تا تواناییِ شبِ او همان شب غیرفعال شود (طبق سناریو)." },
-          saulGoodman: { faName: "ساول گودمن", teamFa: "مافیا", hintFa: "خرید/سوداگری", descFa: "طبق سناریو (مثلاً پدرخوانده) یک‌بار می‌تواند یک شهروند ساده را به مافیا تبدیل کند." },
-
-          detective: { faName: "کارآگاه", teamFa: "شهر", hintFa: "استعلامِ شب", descFa: "هر شب می‌تواند یک نفر را استعلام کند تا مافیایی/شهروندی بودن او را بفهمد (طبق سناریو)." },
-          investigator: { faName: "بازپرس", teamFa: "شهر", hintFa: "بازپرسی", descFa: "در برخی سناریوها یک‌بار در طول بازی می‌تواند بازپرسی انجام دهد (جزئیات بسته به سناریو است)." },
-          doctor: { faName: "پزشک", teamFa: "شهر", hintFa: "سیوِ شب", descFa: "هر شب می‌تواند جان یک نفر را از شلیک نجات دهد. در نسخهٔ رایج، وقتی بازیکنان زیاد باشند ۲ انتخاب دارد و نجاتِ خودش محدود است." },
-          watson: { faName: "دکتر واتسون", teamFa: "شهر", hintFa: "نجات", descFa: "در سناریو پدرخوانده نقش پزشک شهر است (طبق قوانین میز)." },
-          researcher: { faName: "محقق", teamFa: "شهر", hintFa: "گره/پیوند", descFa: "در نسخهٔ رایجِ «شهروند و مافیا»، (به‌جز شب معارفه) می‌تواند خودش را به یک نفر گره بزند؛ اگر محقق با شات شب یا رأی از بازی خارج شود، آن نفر هم با او خارج می‌شود (با استثناهایی مثل رئیس مافیا)." },
-          invulnerable: { faName: "رویین‌تن", teamFa: "شهر", hintFa: "زرهِ شب", descFa: "در نسخهٔ رایج، شب‌ها با شلیک مافیا کشته نمی‌شود و فقط با رأی/شرایط خاص از بازی خارج می‌شود." },
-          armored: { faName: "زره‌پوش", teamFa: "شهر", hintFa: "زره + بازگشت", descFa: "در نسخهٔ رایج، شب با تیر مافیا کشته نمی‌شود. اگر روز با رأی از بازی خارج شود، نقشش افشا می‌شود و به بازی برمی‌گردد (و از آن به بعد قابل مذاکره نیست)." },
-          sniper: { faName: "تک‌تیرانداز", teamFa: "شهر", hintFa: "شلیکِ محدود", descFa: "معمولاً فقط یک‌بار اجازه شلیک دارد. اگر به اشتباه به شهروند شلیک کند، خودش از بازی خارج می‌شود (حتی اگر پزشک او را نجات دهد)." },
-          professional: { faName: "حرفه‌ای", teamFa: "شهر", hintFa: "شلیک", descFa: "شب‌ها می‌تواند به کسی که مافیایی می‌داند شلیک کند؛ اگر اشتباه به شهروند شلیک کند، خودش از بازی خارج می‌شود." },
-          reporter: { faName: "خبرنگار", teamFa: "شهر", hintFa: "استعلامِ مذاکره", descFa: "در سناریو مذاکره‌کننده، از شبی که مذاکره انجام می‌شود بیدار می‌شود و استعلامِ فردِ مذاکره‌شده را می‌گیرد؛ اگر درست تشخیص دهد، گرداننده تأیید می‌کند." },
-          representative: { faName: "نماینده", teamFa: "شهر", hintFa: "قدرتِ روز", descFa: "در این نسخه فقط به‌عنوان نقش سناریو «نماینده» تعریف شده است (قوانین دقیقش بسته به نسخهٔ سناریو متفاوت است)." },
-          hardJohn: { faName: "جان‌سخت", teamFa: "شهر", hintFa: "جان اضافه + استعلام", descFa: "با شلیک اولِ مافیا از بازی خارج نمی‌شود (معمولاً خودش متوجه نمی‌شود). همچنین معمولاً دوبار می‌تواند وضعیت/سایدِ نفراتِ خارج‌شده را از گرداننده استعلام بگیرد." },
-          psychologist: { faName: "روانپزشک", teamFa: "شهر", hintFa: "قطع مکالمه", descFa: "معمولاً دو بار در طول بازی می‌تواند توانایی صحبت/مکالمهٔ یک بازیکن را بگیرد." },
-          mayor: { faName: "شهردار", teamFa: "شهر", hintFa: "وتو/خروج", descFa: "معمولاً فقط یک‌بار (وقتی حداقل ۲ نفر در دفاعیه باشند و خودش در دفاعیه نباشد) می‌تواند رأی‌گیریِ دور دوم را لغو کند یا حکمِ خروج مستقیم یکی از افرادِ دفاعیه را بدهد." },
-          seller: { faName: "فروشنده", teamFa: "شهر", hintFa: "گرفتن قابلیت", descFa: "یک‌بار در طول بازی می‌تواند تواناییِ یک نفر را برای کل بازی از او بگیرد؛ معمولاً فردای همان روز، انتخابِ فروشنده توسط راوی اعلام می‌شود." },
-          priest: { faName: "کشیش", teamFa: "شهر", hintFa: "حمایتِ گفت‌وگو", descFa: "طبق نسخهٔ رایج، شب‌ها چند نفر را انتخاب می‌کند تا روز بعد حق صحبت اضافه داشته باشند؛ همچنین می‌تواند برخی اثرهای سکوت را خنثی کند (طبق سناریو)." },
-          judge: { faName: "قاضی", teamFa: "شهر", hintFa: "تغییر رأی", descFa: "یک‌بار می‌تواند نتیجهٔ رأی‌گیریِ روز را تغییر دهد/ملغی کند (طبق سناریو؛ معمولاً در شب اعمال می‌شود)." },
-          commander: { faName: "فرمانده", teamFa: "شهر", hintFa: "تأیید شلیک", descFa: "بعد از شلیکِ اسنایپر بیدار می‌شود و می‌تواند شلیک را تأیید یا رد کند؛ اگر رد کند، تیر اصابت نمی‌کند (طبق سناریو)." },
-
-          // --- Capo (کاپو/دن) ---
-          danMafia: { faName: "دن مافیا", teamFa: "مافیا", hintFa: "رئیس + پادزهر", descFa: "رئیس تیم مافیاست و استعلام او برای کارآگاه «منفی» است. یک پادزهر دارد (مثلاً در صورت زهرِ عطار). همچنین قابلیت سوداگری/خریدِ برخی نقش‌های شهر را دارد (طبق سناریو کاپو)." },
-          witch: { faName: "جادوگر", teamFa: "مافیا", hintFa: "کپیِ قابلیت", descFa: "هر شب یک شهروند را انتخاب می‌کند؛ اگر آن شهروند ابلیتی‌دار باشد، ابلیتیِ او روی خودِ جادوگر اجرا می‌شود (مثلاً از زره‌ساز زره می‌گیرد، از کارآگاه استعلام می‌گیرد، از عطار برای خودش زهر می‌ریزد) (طبق سناریو کاپو)." },
-          executioner: { faName: "جلاد", teamFa: "مافیا", hintFa: "حدسِ نقش", descFa: "مشابه «ناتو»: اگر نقشِ یک نفر را درست حدس بزند، آن نفر تحت هر شرایطی از بازی خارج می‌شود (طبق سناریو کاپو)." },
-          informant: { faName: "خبرچین", teamFa: "مافیا", hintFa: "جاسوس", descFa: "جاسوس تیم مافیاست. اگر کدخدا او را بیدار کند، مثل شهروند بیدار می‌شود (طبق سناریو کاپو)." },
-          kadkhoda: { faName: "کدخدا", teamFa: "شهر", hintFa: "لینکِ شهر", descFa: "در طول بازی می‌تواند ۲ نفر را به «لینک شهروندی» وصل کند. در شبِ لینک‌کردن، اگر شهروند/خبرچین باشند با او بیدار می‌شوند (بدون گفتن نقش). اگر کدخدا اشتباه یک مافیا (جز خبرچین) را بیدار کند، مرگ کدخدا اتفاق می‌افتد (طبق سناریو کاپو)." },
-          heir: { faName: "وارث", teamFa: "شهر", hintFa: "ارثِ نقش", descFa: "شب معارفه یک نفر را انتخاب می‌کند. اگر آن نفر از بازی خارج شود، وارث (فقط در برخی نقش‌ها مثل کارآگاه/زره‌ساز/عطار) تواناییِ او را به ارث می‌برد. تا قبل از گرفتنِ نقش، نامیراست (طبق سناریو کاپو)." },
-          herbalist: { faName: "عطار", teamFa: "شهر", hintFa: "زهر + پادزهر", descFa: "یک پادزهر دارد و یک زهر: هر شب می‌تواند زهر بدهد؛ صبح اعلام می‌شود زهر وارد بازی شده و اگر تا پایان روز فردِ مسموم خارج نشود، با رأی‌گیریِ شب مشخص می‌شود پادزهر داده شود یا نه (طبق سناریو کاپو)." },
-          armorsmith: { faName: "زره‌ساز", teamFa: "شهر", hintFa: "نجاتِ یک‌باره", descFa: "یک‌بار در کل بازی می‌تواند خودش را نجات دهد (طبق سناریو کاپو)." },
-          suspect: { faName: "مظنون", teamFa: "شهر", hintFa: "استعلامِ مثبت", descFa: "شهروند است اما استعلام او برای کارآگاه «مثبت» است (طبق سناریو کاپو)." },
-
-          // --- Zodiac ---
-          alcapone: { faName: "آلکاپن", teamFa: "مافیا", hintFa: "رئیس", descFa: "رئیس مافیاست و استعلام او برای کارآگاه منفی است (طبق سناریو زودیاک)." },
-          zodiac: { faName: "زودیاک", teamFa: "مستقل", hintFa: "شلیکِ شب‌های زوج", descFa: "تیم مستقل است. معمولاً در شب‌های زوج می‌تواند به شهروند یا مافیا شلیک کند و یک نفر را از بازی خارج کند. با شلیک شب کشته نمی‌شود و معمولاً فقط با رأی‌گیری یا بمب‌گذاری (و در برخی قوانین با شلیکِ تفنگ در روز) از بازی خارج می‌شود. اگر به «محافظ» شلیک کند، خودش کشته می‌شود." },
-          showman: { faName: "شعبده‌باز", teamFa: "مافیا", hintFa: "گرفتن قابلیت", descFa: "هر شب (با هماهنگی تیم مافیا) یک نفر از شهر را انتخاب می‌کند و تواناییِ او را می‌گیرد/غیرفعال می‌کند." },
-          bomber: { faName: "بمب‌گذار", teamFa: "مافیا", hintFa: "بمب‌گذاری", descFa: "یک‌بار در طول بازی می‌تواند بمب‌گذاری کند: یک «کد ۱ تا ۴» به گرداننده می‌دهد و بازیکنِ هدف فقط اگر کد را درست حدس بزند در بازی می‌ماند." },
-          guard: { faName: "محافظ", teamFa: "شهر", hintFa: "ضد بمب/زودیاک", descFa: "در زمان بمب‌گذاری می‌تواند خودش را فدای نفرِ هدف کند. سپس کدِ خنثی‌سازی را حدس می‌زند و فقط در صورت حدسِ درست در بازی می‌ماند. همچنین اگر زودیاک به محافظ شلیک کند، زودیاک کشته می‌شود." },
-          ocean: { faName: "اوشن", teamFa: "شهر", hintFa: "بیداری شهر", descFa: "معمولاً دو بار در طول بازی می‌تواند شب چند شهروند را بیدار کند تا با چشم باز با هم مشورت کنند. اگر اشتباه یکی از اعضای مافیا یا زودیاک را بیدار کند، از بازی خارج می‌شود." },
-          gunslinger: { faName: "تفنگدار", teamFa: "شهر", hintFa: "دادن تفنگ", descFa: "سه تفنگ دارد (۲ تیر مشقی و ۱ تیر جنگی). خودش شلیک نمی‌کند؛ شب می‌تواند تفنگ را به بازیکنان بدهد و بازیکنی که تفنگ گرفته، روز بعد می‌تواند استفاده کند." },
-
-          // --- Godfather (game) ---
-          leon: { faName: "لئون", teamFa: "شهر", hintFa: "حرفه‌ای شهر", descFa: "نقش کلیدی شهر در سناریو پدرخوانده (طبق قوانین میز)." },
-          constantine: { faName: "کنستانتین", teamFa: "شهر", hintFa: "بازگردانی", descFa: "می‌تواند طبق قوانین میز یک نفر را به بازی برگرداند (طبق سناریو پدرخوانده)." },
-          citizenKane: { faName: "همشهری کین", teamFa: "شهر", hintFa: "افشا", descFa: "در سناریو پدرخوانده معمولاً یک‌بار می‌تواند یک نفر را نشان کند؛ اگر آن نفر مافیا باشد، صبح ساید او توسط گرداننده اعلام می‌شود (طبق قوانین میز)." },
-          nostradamus: { faName: "نوستراداموس", teamFa: "مستقل", hintFa: "شب معارفه", descFa: "در سناریو پدرخوانده (روایت رایج)، فقط شب معارفه بیدار می‌شود و ۳ نفر را نشان می‌دهد؛ گرداننده تعداد مافیاهای داخل این ۳ نفر را اعلام می‌کند و او براساس آن، ساید خود را انتخاب می‌کند." },
-        };
-
-        // English role labels (UI only). If a role isn't present here, it falls back to Persian.
-        const ROLE_I18N = {
-          citizen: { name: "Citizen", hint: "No ability", desc: "No night ability. Help find mafia through discussion and voting." },
-          mafia: { name: "Mafia", hint: "No ability", desc: "No standalone ability. Coordinate at night; mislead during the day." },
-          mafiaBoss: { name: "Mafia Boss", hint: "Leader + shot", desc: "Leads the mafia; usually decides the night shot. Often shows as ‘negative’ to the Detective." },
-          godfather: { name: "Godfather", hint: "Leader + shot", desc: "Often the mafia leader who decides the night shot; typically shows as ‘negative’ to the Detective." },
-          swindler: { name: "Charlatan", hint: "Disrupts inquiry", desc: "Disrupts inquiries (varies by scenario). Applies an effect to a target each night." },
-          nato: { name: "NATO", hint: "Guess a role", desc: "Once (by scenario), guesses a player’s exact role; if correct, that player is eliminated." },
-          negotiator: { name: "Negotiator", hint: "Convert", desc: "May attempt (by scenario) to convert a citizen to mafia; usually replaces the night shot." },
-          natasha: { name: "Natasha", hint: "Night silence", desc: "Chooses a player to be silent the next day (rules vary)." },
-          doctorLecter: { name: "Dr. Lecter", hint: "Save (mafia)", desc: "Mafia doctor. Can save a target from the night shot; self-save is usually limited." },
-          jokerMafia: { name: "Mafia Joker", hint: "Flip inquiry", desc: "Limited times per game can invert a Detective inquiry result (scenario rules apply)." },
-          matador: { name: "Matador", hint: "Disable ability", desc: "Chooses a player to disable their night ability for that night (by scenario)." },
-          saulGoodman: { name: "Saul Goodman", hint: "Buy/convert", desc: "Once (by scenario) can convert a basic citizen into a mafia member." },
-
-          detective: { name: "Detective", hint: "Night inquiry", desc: "Each night can check a player’s side (scenario rules apply)." },
-          investigator: { name: "Inspector", hint: "Interrogation", desc: "Once per game (in some scenarios) can interrogate (details vary)." },
-          doctor: { name: "Doctor", hint: "Night save", desc: "Each night can save a player from the night shot. Self-save is usually limited." },
-          watson: { name: "Dr. Watson", hint: "Save", desc: "In Godfather scenario, acts as the city Doctor (table rules apply)." },
-          researcher: { name: "Researcher", hint: "Link", desc: "Can link to a player; if the Researcher is eliminated, the linked player may also be eliminated (rules vary)." },
-          invulnerable: { name: "Invulnerable", hint: "Night armor", desc: "Typically cannot be killed by the mafia’s night shot; eliminated via vote/special rules." },
-          armored: { name: "Armored", hint: "Armor + return", desc: "Typically survives night shots; if voted out, role reveals and returns (rules vary)." },
-          sniper: { name: "Sniper", hint: "Limited shot", desc: "Usually has one shot. If shoots a citizen, the Sniper is eliminated (even if saved)." },
-          professional: { name: "Professional", hint: "Shot", desc: "Can shoot at night; if shoots a citizen by mistake, is eliminated." },
-          reporter: { name: "Reporter", hint: "Negotiation inquiry", desc: "In negotiator scenario, gets inquiry about negotiated player (rules vary)." },
-          representative: { name: "Representative", hint: "Day power", desc: "Scenario-defined role; exact rules depend on the version." },
-          hardJohn: { name: "Hard John", hint: "Extra life", desc: "Usually survives the first mafia shot. Often has limited status inquiries (rules vary)." },
-          psychologist: { name: "Psychiatrist", hint: "Mute", desc: "Usually can remove a player’s ability to talk a limited number of times." },
-          mayor: { name: "Mayor", hint: "Veto/out", desc: "Once may veto a vote or directly eliminate a defendant (rules vary)." },
-          seller: { name: "Seller", hint: "Remove ability", desc: "Once can remove a player’s ability for the rest of the game (rules vary)." },
-          priest: { name: "Priest", hint: "Support talk", desc: "Chooses players to get extra talk time; may neutralize silence effects (rules vary)." },
-          judge: { name: "Judge", hint: "Change vote", desc: "Once may change/void a vote result (rules vary)." },
-          commander: { name: "Commander", hint: "Confirm shot", desc: "After the Sniper shoots, can confirm or cancel the shot (scenario rules apply)." },
-
-          danMafia: { name: "Mafia Don", hint: "Leader + antidote", desc: "Mafia leader. Often shows negative to Detective; may have an antidote and trading powers (scenario rules apply)." },
-          witch: { name: "Witch", hint: "Copy ability", desc: "Chooses a citizen; if they have an ability, it is applied to the Witch (scenario rules apply)." },
-          executioner: { name: "Executioner", hint: "Guess a role", desc: "Like NATO: if the exact role guess is correct, the target is eliminated (scenario rules apply)." },
-          informant: { name: "Informant", hint: "Spy", desc: "Mafia spy. If awakened by Kadkhoda, can wake like a citizen (scenario rules apply)." },
-          kadkhoda: { name: "Kadkhoda", hint: "City link", desc: "Can link two players to a ‘citizen link’ (rules vary by scenario)." },
-          heir: { name: "Heir", hint: "Inherit role", desc: "Selects a player; may inherit certain abilities if that player is eliminated (scenario rules apply)." },
-          herbalist: { name: "Herbalist", hint: "Poison + antidote", desc: "Has one poison and one antidote; poisoning and antidote resolution depends on scenario rules." },
-          armorsmith: { name: "Armorsmith", hint: "One-time save", desc: "Once per game can save themselves (scenario rules apply)." },
-          suspect: { name: "Suspect", hint: "Positive inquiry", desc: "Citizen, but shows as ‘mafia’ to the Detective (scenario rules apply)." },
-
-          alcapone: { name: "Al Capone", hint: "Leader", desc: "Mafia leader; typically shows negative to Detective (Zodiac scenario rules apply)." },
-          zodiac: { name: "Zodiac", hint: "Even-night shot", desc: "Independent. Often can shoot on even nights; usually cannot be killed by night shot (rules vary)." },
-          showman: { name: "Showman", hint: "Disable ability", desc: "Chooses a city player and disables their ability (rules vary)." },
-          bomber: { name: "Bomber", hint: "Bomb", desc: "Once can plant a bomb with a code; target survives only if guessing correctly (rules vary)." },
-          guard: { name: "Guard", hint: "Anti-bomb", desc: "Can sacrifice to protect a bomb target and guess the disarm code (rules vary)." },
-          ocean: { name: "Ocean", hint: "Wake citizens", desc: "Limited times can wake some citizens to consult; waking mafia/Zodiac incorrectly may eliminate Ocean (rules vary)." },
-          gunslinger: { name: "Gunslinger", hint: "Give guns", desc: "Gives guns at night; recipients may use them during the day (rules vary)." },
-
-          leon: { name: "Leon", hint: "City pro", desc: "Key city role in Godfather scenario (table rules apply)." },
-          constantine: { name: "Constantine", hint: "Revive", desc: "May revive a player (table rules apply)." },
-          citizenKane: { name: "Citizen Kane", hint: "Reveal", desc: "Once can mark a player; if mafia, their side may be announced (rules vary)." },
-          nostradamus: { name: "Nostradamus", hint: "Intro night", desc: "Only wakes on the intro night, marks 3 players; host reveals how many mafia among them (rules vary)." },
-        };
 
         function teamKeyFromFa(teamFa) {
           if (teamFa === "مافیا") return "mafia";
@@ -2003,7 +242,7 @@
         }
         function roleDesc(roleId, scenario) {
           const rBase = roles[roleId];
-          const rOv = (roleScenarioOverrides[roleId] && roleScenarioOverrides[roleId][scenario]) ? roleScenarioOverrides[roleId][scenario] : null;
+          const rOv = getScenarioConfig(scenario).roleOverrides?.[roleId] ?? null;
           const r = rBase ? { ...rBase, ...(rOv || {}) } : null;
           if (!r) return (appLang === "fa") ? "توضیحی برای این نقش ثبت نشده است." : "No description is available for this role.";
           if (appLang === "fa") return r.descFa || "توضیحی برای این نقش ثبت نشده است.";
@@ -2012,88 +251,7 @@
           return r.descFa || "No description is available for this role.";
         }
 
-        // Per-scenario overrides for role texts (same role, different rules).
-        // This is only UI/help text; actual game rules are still handled by the narrator/table.
-        const roleScenarioOverrides = {
-          godfather: {
-            pedarkhande: {
-              descFa: "در سناریو پدرخوانده یک جلیقه دارد و «حس ششم» دارد. تیم مافیا هر شب معمولاً یکی را انتخاب می‌کند: یا شلیک، یا استفاده از حس ششم، یا خرید توسط ساول (طبق قوانین سناریو).",
-            },
-            shab_mafia: {
-              descFa: "در «شب‌های مافیا»، پدرخوانده/آل‌کاپون شلیکِ شب را تعیین می‌کند و استعلام او برای کارآگاه «شهروند» نمایش داده می‌شود.",
-            },
-          },
-          matador: {
-            pedarkhande: {
-              descFa: "شب‌ها با تیم مافیا بیدار می‌شود. هر شب می‌تواند یک نفر را نشان کند تا توانایی شبِ او همان شب غیرفعال شود؛ اگر آن فرد بیدار شود با علامت ضربدر گرداننده مواجه می‌شود (طبق سناریو پدرخوانده).",
-            },
-          },
-          saulGoodman: {
-            pedarkhande: {
-              descFa: "معمولاً فقط یک‌بار می‌تواند یک «شهروند ساده» را بخرد و به «مافیا ساده» تبدیل کند؛ در شبی که خرید انجام می‌شود، گرداننده اعلام می‌کند خریداری انجام خواهد شد (طبق سناریو پدرخوانده).",
-            },
-          },
-          watson: {
-            pedarkhande: {
-              descFa: "مثل پزشک عمل می‌کند: هر شب می‌تواند جان یک نفر را نجات دهد و جان خودش را فقط یک‌بار در کل بازی می‌تواند نجات دهد (طبق سناریو پدرخوانده).",
-            },
-          },
-          leon: {
-            pedarkhande: {
-              descFa: "می‌تواند (طبق قوانین سناریو) محدود شلیک کند؛ اگر به شهروند شلیک کند، خودش کشته می‌شود و معمولاً دکتر نمی‌تواند او را نجات دهد. یک جلیقه هم دارد (طبق سناریو پدرخوانده).",
-            },
-          },
-          citizenKane: {
-            pedarkhande: {
-              descFa: "معمولاً یک‌بار یک نفر را به گرداننده نشان می‌دهد؛ اگر مافیا باشد، صبح ساید/مافیا بودن او اعلام می‌شود (بدون خروج فوری). در بعضی قوانین اگر استعلامش درست باشد، شب بعد خودِ کین از بازی خارج می‌شود (طبق قوانین سناریو).",
-            },
-          },
-          constantine: {
-            pedarkhande: {
-              descFa: "یک‌بار می‌تواند یکی از بازیکنان اخراجی (در صورتی که نقش او افشا نشده باشد) را به بازی برگرداند (طبق سناریو پدرخوانده).",
-            },
-          },
-          nostradamus: {
-            pedarkhande: {
-              descFa: "فقط شب معارفه بیدار می‌شود. ۳ نفر را نشان می‌دهد و گرداننده تعداد مافیاهای داخل این ۳ نفر را اعلام می‌کند. سپس نوستراداموس ساید خود را انتخاب می‌کند؛ اگر بین ۳ نفر، ۲ مافیا باشد معمولاً مجبور است در ساید مافیا بازی کند (طبق سناریو پدرخوانده).",
-            },
-          },
-          swindler: {
-            // "شهروند و مافیا" / TV-style: Shayad (Charlatan)
-            bazras: {
-              descFa: "هر شب یک نفر را «می‌زند». اگر به کارآگاه بزند، استعلامِ کارآگاه برای همه (تا پایان اثر/طبق قوانین میز) «منفی» می‌شود. شیاد با تیم مافیا آشناست و شب‌ها بعد از بیداری مافیا، معمولاً به تنهایی بیدار می‌شود و کارش را انجام می‌دهد.",
-            },
-            namayande: {
-              descFa: "هر شب یک نفر را «می‌زند». اگر به کارآگاه بزند، استعلامِ کارآگاه برای همه (تا پایان اثر/طبق قوانین میز) «منفی» می‌شود. شیاد با تیم مافیا آشناست و شب‌ها بعد از بیداری مافیا، معمولاً به تنهایی بیدار می‌شود و کارش را انجام می‌دهد.",
-            },
-            mozaker: {
-              descFa: "هر شب یک نفر را «می‌زند». اگر به کارآگاه بزند، استعلامِ کارآگاه برای همه (تا پایان اثر/طبق قوانین میز) «منفی» می‌شود. شیاد با تیم مافیا آشناست و شب‌ها بعد از بیداری مافیا، معمولاً به تنهایی بیدار می‌شود و کارش را انجام می‌دهد.",
-            },
-            takavar: {
-              descFa: "هر شب یک نفر را «می‌زند». اگر به کارآگاه بزند، استعلامِ کارآگاه برای همه (تا پایان اثر/طبق قوانین میز) «منفی» می‌شود. شیاد با تیم مافیا آشناست و شب‌ها بعد از بیداری مافیا، معمولاً به تنهایی بیدار می‌شود و کارش را انجام می‌دهد.",
-            },
-          },
-          nato: {
-            takavar: {
-              descFa: "ناتو در طول بازی فقط یک شب (با تأیید رئیس مافیا) می‌تواند نقش دقیقِ یکی از شهروندها را حدس بزند. اگر درست حدس بزند آن نقش در هر صورت از بازی خارج می‌شود و اگر اشتباه حدس بزند، کسی خارج نمی‌شود. در شب ناتو معمولاً شلیک انجام نمی‌شود و برخی نقش‌ها بیدار نمی‌شوند (طبق سناریو).",
-            },
-          },
-          negotiator: {
-            mozaker: {
-              descFa: "اگر یک یا دو نفر از اعضای مافیا از بازی خارج شده باشند، مذاکره‌کننده می‌تواند در شب مذاکره انجام دهد و یک شهروند ساده یا زره‌پوشِ زره‌دار را به مافیای ساده تبدیل کند. اگر نقش دیگری را انتخاب کند مذاکره شکست می‌خورد. در شب مذاکره، مافیا حق شلیک ندارد.",
-            },
-          },
-          investigator: {
-            bazras: {
-              descFa: "بازپرس معمولاً یک‌بار در طول بازی می‌تواند دو نفر را به دفاعیه بیاورد (بازپرسی). آن دو نفر مدت کوتاهی صحبت می‌کنند و سپس (طبق قوانین میز) مشخص می‌شود رأی‌گیری میان آن‌ها انجام شود یا نه.",
-            },
-          },
-          researcher: {
-            bazras: {
-              descFa: "محقق (هانتر): به‌جز شب معارفه می‌تواند هر شب خودش را به یک نفر «گره» بزند. اگر با شات شب یا روزِ رأی‌گیری از بازی خارج شود، آن نفر هم با او از بازی خارج می‌شود؛ معمولاً اگر رئیس مافیا را انتخاب کرده باشد، رئیس مافیا بیرون نمی‌رود.",
-            },
-          },
-        };
+
 
         const toggleDefs = [
           // mafia
@@ -2112,8 +270,11 @@
           { key: "witch", roleId: "witch", group: "mafia" },
           { key: "executioner", roleId: "executioner", group: "mafia" },
           { key: "informant", roleId: "informant", group: "mafia" },
-          { key: "showman", roleId: "showman", group: "mafia" },
+          { key: "magician", roleId: "magician", group: "mafia" },
           { key: "bomber", roleId: "bomber", group: "mafia" },
+          { key: "don", roleId: "don", group: "mafia" },
+          { key: "rebel", roleId: "rebel", group: "mafia" },
+          { key: "hacker", roleId: "hacker", group: "mafia" },
 
           // city
           { key: "detective", roleId: "detective", group: "city" },
@@ -2145,7 +306,11 @@
           { key: "leon", roleId: "leon", group: "city" },
           { key: "constantine", roleId: "constantine", group: "city" },
           { key: "citizenKane", roleId: "citizenKane", group: "city" },
-          
+          { key: "guide", roleId: "guide", group: "city" },
+          { key: "minemaker", roleId: "minemaker", group: "city" },
+          { key: "lawyer", roleId: "lawyer", group: "city" },
+          { key: "bodyguard", roleId: "bodyguard", group: "city" },
+
           // independent
           { key: "zodiac", roleId: "zodiac", group: "independent" },
           { key: "nostradamus", roleId: "nostradamus", group: "independent" },
@@ -2165,13 +330,16 @@
           matador: 8,
           swindler: 9,
           bomber: 10,
-          showman: 11,
+          magician: 11,
           nato: 12,
           jokerMafia: 13,
           saulGoodman: 14,
           informant: 15,
           witch: 16,
           executioner: 17,
+          don: 18,
+          rebel: 19,
+          hacker: 20,
           mafia: 999,
 
           // --- city ---
@@ -2204,6 +372,10 @@
           ocean: 27,
           gunslinger: 28,
           researcher: 29,
+          guide: 30,
+          bodyguard: 31,
+          minemaker: 32,
+          lawyer: 33,
           citizen: 999,
 
           // --- independent ---
@@ -2215,47 +387,6 @@
           return (ROLE_RANK[rid] != null) ? ROLE_RANK[rid] : 500;
         }
 
-        // Which special roles are even available per scenario.
-        // If a key isn't present, we assume "all roles allowed" (so the UI won't unexpectedly hide roles).
-        const scenarioRoleAllowList = {
-          // Sources used:
-          // - Classic: gorgine.com/scenarios/classic/
-          // - Shab Mafia: gorgine.com/scenarios/mafia-nights/
-          // - Zodiac: whitesho.com/ZodiacScenario/...
-          // - Capo/Den: whitesho.com/MafiaCapo/...
-          // - Bazras (Inspector): common "بازپرس/New TV" role set (multiple Persian sources)
-
-          classic: ["mafiaBoss", "detective", "doctor"],
-
-          // بازپرس (New TV / Inspector)
-          bazras: ["mafiaBoss", "nato", "swindler", "detective", "doctor", "investigator", "researcher", "sniper"],
-
-          // نماینده (limited info online; keep a light pack)
-          namayande: ["mafiaBoss", "detective", "doctor", "representative"],
-
-          // مذاکره (Negotiation)
-          mozaker: ["mafiaBoss", "negotiator", "detective", "doctor", "armored", "reporter", "sniper"],
-          "mozakerه": ["mafiaBoss", "negotiator", "detective", "doctor", "armored", "reporter", "sniper"],
-
-          // تکاور (sniper-heavy classic)
-          takavar: ["mafiaBoss", "detective", "doctor", "sniper"],
-
-          // کاپو (Capo/Den)
-          kabo: ["danMafia", "witch", "executioner", "informant", "detective", "kadkhoda", "heir", "herbalist", "armorsmith", "suspect"],
-
-          // پدرخوانده (game)
-          pedarkhande: ["godfather", "matador", "saulGoodman", "watson", "leon", "citizenKane", "constantine", "nostradamus"],
-
-          // زودیاک
-          zodiac: ["alcapone", "zodiac", "showman", "bomber", "detective", "doctor", "professional", "guard", "ocean", "gunslinger"],
-
-          // میتینگ/اپیک و پیشرفته (approx. "advanced classic" subset)
-          meeting_epic: ["mafiaBoss", "nato", "natasha", "doctorLecter", "detective", "doctor", "sniper", "armored", "judge", "commander", "priest"],
-          pishrafte: ["mafiaBoss", "godfather", "doctorLecter", "jokerMafia", "nato", "natasha", "swindler", "detective", "doctor", "sniper", "professional", "armored", "invulnerable", "judge", "commander", "priest", "researcher", "investigator"],
-
-          // شب مافیا (فیلیمو)
-          shab_mafia: ["godfather", "doctorLecter", "jokerMafia", "detective", "doctor", "professional", "hardJohn", "psychologist", "mayor", "seller"],
-        };
 
         function clamp(n, min, max) { return Math.max(min, Math.min(max, n)); }
         function shuffle(arr) {
@@ -2279,42 +410,11 @@
         }
 
         function defaultTogglesForScenario(scenario) {
-          // defaults reflect the typical role-set; users can still toggle roles on/off (within scenario allow list)
+          const cfg = getScenarioConfig(scenario);
           const baseOff = Object.fromEntries(toggleDefs.map((d) => [d.key, false]));
-          const on = (...keys) => {
-            const out = { ...baseOff };
-            for (const k of keys) out[k] = true;
-            return out;
-          };
-
-          switch (scenario) {
-            case "classic":
-              return on("mafiaBoss", "detective", "doctor");
-            case "bazras":
-              return on("mafiaBoss", "nato", "swindler", "detective", "doctor", "investigator", "researcher");
-            case "namayande":
-              return on("mafiaBoss", "detective", "doctor", "representative");
-            case "mozaker":
-            case "mozakerه":
-              return on("mafiaBoss", "negotiator", "detective", "doctor", "armored", "reporter");
-            case "takavar":
-              return on("mafiaBoss", "detective", "doctor", "sniper");
-            case "kabo":
-              return on("danMafia", "witch", "executioner", "detective", "heir", "herbalist", "armorsmith", "suspect");
-            case "pedarkhande":
-              return on("godfather", "matador", "saulGoodman", "watson", "leon", "citizenKane", "constantine", "nostradamus");
-            case "zodiac":
-              return on("alcapone", "zodiac", "showman", "bomber", "detective", "doctor", "professional", "guard", "ocean", "gunslinger");
-            case "shab_mafia":
-              // Common Shab-haye Mafia lineup (12 players). See: fa.wikipedia.org/wiki/شب‌های_مافیا
-              return on("godfather", "doctorLecter", "jokerMafia", "detective", "doctor", "professional", "hardJohn", "psychologist", "mayor", "seller");
-            case "meeting_epic":
-              return on("mafiaBoss", "nato", "natasha", "doctorLecter", "detective", "doctor", "sniper", "armored");
-            case "pishrafte":
-              return on("mafiaBoss", "doctorLecter", "jokerMafia", "nato", "natasha", "detective", "doctor", "sniper", "armored", "professional", "researcher");
-            default:
-              return on("mafiaBoss", "detective", "doctor");
-          }
+          const out = { ...baseOff };
+          for (const k of (cfg.defaultToggles || [])) out[k] = true;
+          return out;
         }
 
         function sanitizeScenarioValue(v) {
@@ -2326,9 +426,9 @@
         }
 
         function getAllowedToggleKeysForScenario(scenario) {
-          const allow = scenarioRoleAllowList[scenario];
-          if (!allow) return null; // null means "all allowed"
-          return new Set(allow);
+          const allowed = getScenarioConfig(scenario).allowedRoles;
+          if (!allowed) return null; // null means "all allowed"
+          return new Set(allowed);
         }
 
         function normalizeTogglesForScenario(toggles, scenario) {
@@ -2609,11 +709,6 @@
           const res = buildRolePool(s.nPlayers, s.mafiaCount, s.toggles);
           if (!res.ok) {
             const msg = res.error || t("error.config");
-            const qs = $("quickStat");
-            if (qs) {
-              qs.textContent = t("error.quick");
-              qs.title = msg;
-            }
             // Also show the full error in the setup page error box.
             const box = $("errorBox");
             if (box) {
@@ -2623,8 +718,6 @@
             }
             return;
           }
-          const qs = $("quickStat");
-          if (qs) qs.title = "";
           // Clear setup error box only if it was set by config validation.
           const box = $("errorBox");
           if (box && box.dataset && box.dataset.src === "config") {
@@ -2633,9 +726,6 @@
             delete box.dataset.src;
           }
           const sum = summarizePool(res.pool);
-          $("quickStat").textContent = sum.independentTotal
-            ? t("quickStat.withInd", { m: sum.mafiaTotal, c: sum.cityTotal, i: sum.independentTotal })
-            : t("quickStat.noInd", { m: sum.mafiaTotal, c: sum.cityTotal });
 
           // update base role counters
           const cCitizen = $("cnt_citizen");
@@ -2701,6 +791,7 @@
           $("cardsCard").classList.add("hidden");
           $("castCard").classList.add("hidden");
           updateResumeUI();
+          updateDocTitle();
           window.scrollTo({ top: 0, behavior: "instant" });
         }
         function showPlayers() {
@@ -2708,6 +799,7 @@
           $("playersCard").classList.remove("hidden");
           $("cardsCard").classList.add("hidden");
           $("castCard").classList.add("hidden");
+          updateDocTitle();
           window.scrollTo({ top: 0, behavior: "instant" });
         }
         function showCards() {
@@ -2715,6 +807,7 @@
           $("playersCard").classList.add("hidden");
           $("cardsCard").classList.remove("hidden");
           $("castCard").classList.add("hidden");
+          updateDocTitle();
           window.scrollTo({ top: 0, behavior: "instant" });
         }
         function showCast() {
@@ -2722,7 +815,24 @@
           $("playersCard").classList.add("hidden");
           $("cardsCard").classList.add("hidden");
           $("castCard").classList.remove("hidden");
+          $("castCard").classList.remove("cast-blurred");
+          updateCastPrivacyBtn();
+          updateDocTitle();
           window.scrollTo({ top: 0, behavior: "instant" });
+        }
+        function updateCastPrivacyBtn() {
+          const blurred = $("castCard").classList.contains("cast-blurred");
+          const icon = $("castPrivacyIcon");
+          const label = $("castPrivacyLabel");
+          if (icon) icon.innerHTML = blurred
+            ? '<path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/>'
+            : '<path d="M12 7c2.76 0 5 2.24 5 5 0 .65-.13 1.26-.36 1.83l2.92 2.92c1.51-1.26 2.7-2.89 3.43-4.75-1.73-4.39-6-7.5-11-7.5-1.4 0-2.74.25-3.98.7l2.16 2.16C10.74 7.13 11.35 7 12 7zM2 4.27l2.28 2.28.46.46A11.804 11.804 0 0 0 1 12c1.73 4.39 6 7.5 11 7.5 1.55 0 3.03-.3 4.38-.84l.42.42L19.73 22 21 20.73 3.27 3 2 4.27zM7.53 9.8l1.55 1.55c-.05.21-.08.43-.08.65 0 1.66 1.34 3 3 3 .22 0 .44-.03.65-.08l1.55 1.55c-.67.33-1.41.53-2.2.53-2.76 0-5-2.24-5-5 0-.79.2-1.53.53-2.2zm4.31-.78l3.15 3.15.02-.16c0-1.66-1.34-3-3-3l-.17.01z"/>';
+          if (label) {
+            label.setAttribute("data-i18n", blurred ? "cast.reveal" : "cast.hide");
+            label.textContent = blurred
+              ? (appLang === "fa" ? "نمایش نقش‌ها" : "Reveal Roles")
+              : (appLang === "fa" ? "پنهان‌کردن نقش‌ها" : "Hide Roles");
+          }
         }
 
         function openModal() {
@@ -2790,17 +900,34 @@
         };
 
         function openToolModal(title, bodyHtml, { hideBottom } = {}) {
-          $("toolTitle").textContent = title;
-          $("toolBody").innerHTML = bodyHtml;
-          $("toolBottom").style.display = hideBottom ? "none" : "flex";
+          const tb = $("toolBody");
           const m = $("toolModal");
+          // Preserve scroll position when refreshing an already-open modal (e.g. gun give, undo shot).
+          const prevScroll = (m.style.display === "flex") ? tb.scrollTop : 0;
+          $("toolTitle").textContent = title;
+          tb.innerHTML = bodyHtml;
+          $("toolBottom").style.display = hideBottom ? "none" : "flex";
           m.style.display = "flex";
           m.setAttribute("aria-hidden", "false");
+          if (prevScroll > 0) tb.scrollTop = prevScroll;
         }
         function closeToolModal() {
           const m = $("toolModal");
+          // If Flow modal is open, auto-save current selections before closing.
+          // (This makes closing behave like "Next" in terms of saving.)
+          try {
+            if (typeof window !== "undefined" && window.__flowOnClose && typeof window.__flowOnClose === "function") {
+              window.__flowOnClose();
+            }
+          } catch {}
           m.style.display = "none";
           m.setAttribute("aria-hidden", "true");
+          // After closing any tool (especially Flow), refresh visible UI that depends on flow/player state.
+          try { if (typeof renderCast === "function" && $("castCard") && !$("castCard").classList.contains("hidden")) renderCast(); } catch {}
+          try { if (typeof renderCast === "function" && $("castCard") && $("castCard").classList.contains("hidden")) renderCast(); } catch {}
+          try { if (typeof renderNameGrid === "function" && $("playersCard") && !$("playersCard").classList.contains("hidden")) renderNameGrid(); } catch {}
+          try { if (typeof updateQuickStat === "function") updateQuickStat(); } catch {}
+          try { if (typeof updateResumeUI === "function") updateResumeUI(); } catch {}
         }
 
         function getScenario() {
@@ -2847,12 +974,14 @@
         }
 
         function syncGodStatusFromPlayers() {
+          // `appState.god` can be cleared when starting a new game; ensure it's present before syncing.
+          if (!appState.god || typeof appState.god !== "object") appState.god = {};
           appState.god.status = countTeamsFromDraw();
         }
 
         function getAllowedRoleIdsForScenario() {
           const scenario = getScenario();
-          const allowedKeys = scenarioRoleAllowList[scenario] || [];
+          const allowedKeys = getScenarioConfig(scenario).allowedRoles || [];
           const keyToRole = {};
           for (const d of toggleDefs) keyToRole[d.key] = d.roleId;
           const ids = new Set(["citizen", "mafia"]);
@@ -2863,37 +992,11 @@
           return Array.from(ids);
         }
 
-        const scenarioWakeOrderFa = {
-          classic: ["تیم مافیا", "پزشک", "کارآگاه"],
-          bazras: ["محقق", "شیاد", "تیم مافیا", "پزشک", "تک‌تیرانداز", "کارآگاه", "بازپرس"],
-          namayande: ["تیم مافیا", "پزشک", "کارآگاه", "نماینده"],
-          mozaker: ["تیم مافیا", "پزشک", "کارآگاه", "مذاکره‌کننده", "خبرنگار"],
-          takavar: ["تیم مافیا", "پزشک", "کارآگاه", "تک‌تیرانداز"],
-          kabo: ["وارث", "عطار", "کارآگاه", "زره‌ساز", "تیم مافیا (جادوگر/دن/جلاد)"],
-          pedarkhande: ["نوستراداموس (فقط شب معارفه)", "تیم مافیا (پدرخوانده/ماتادور/ساول)", "دکتر واتسون", "لئون", "همشهری کین", "کنستانتین"],
-          zodiac: ["تیم مافیا", "زودیاک", "حرفه‌ای", "پزشک", "کارآگاه", "تفنگدار", "اوشن"],
-          meeting_epic: ["تیم مافیا", "پزشک", "کارآگاه", "تک‌تیرانداز"],
-          pishrafte: ["تیم مافیا", "پزشک", "کارآگاه", "تک‌تیرانداز"],
-          shab_mafia: ["تیم مافیا", "جوکر مافیا", "کارآگاه", "حرفه‌ای", "پزشک", "جان‌سخت", "روانپزشک", "شهردار", "فروشنده"],
-        };
-        const scenarioWakeOrderEn = {
-          classic: ["Mafia team", "Doctor", "Detective"],
-          bazras: ["Researcher", "Charlatan", "Mafia team", "Doctor", "Sniper", "Detective", "Inspector"],
-          namayande: ["Mafia team", "Doctor", "Detective", "Representative"],
-          mozaker: ["Mafia team", "Doctor", "Detective", "Negotiator", "Reporter"],
-          takavar: ["Mafia team", "Doctor", "Detective", "Sniper"],
-          kabo: ["Heir", "Herbalist", "Detective", "Armorsmith", "Mafia team (Witch/Don/Executioner)"],
-          pedarkhande: ["Nostradamus (intro night only)", "Mafia team (Godfather/Matador/Saul)", "Dr. Watson", "Leon", "Citizen Kane", "Constantine"],
-          zodiac: ["Mafia team", "Zodiac", "Professional", "Doctor", "Detective", "Gunslinger", "Ocean"],
-          meeting_epic: ["Mafia team", "Doctor", "Detective", "Sniper"],
-          pishrafte: ["Mafia team", "Doctor", "Detective", "Sniper"],
-          shab_mafia: ["Mafia team", "Mafia Joker", "Detective", "Professional", "Doctor", "Hard John", "Psychiatrist", "Mayor", "Seller"],
-        };
-
         function showWakeTool() {
           const scenario = getScenario();
           const title = t("tool.wake.title");
-          const list = (appLang === "en" ? (scenarioWakeOrderEn[scenario] || scenarioWakeOrderFa[scenario] || []) : (scenarioWakeOrderFa[scenario] || []));
+          const wakeOrder = getScenarioConfig(scenario).wakeOrder || {};
+          const list = appLang === "en" ? (wakeOrder.en || wakeOrder.fa || []) : (wakeOrder.fa || []);
           const scenarioName = (($("scenario") && $("scenario").selectedOptions && $("scenario").selectedOptions[0]) ? $("scenario").selectedOptions[0].textContent : scenario);
           const itemsHtml = list.length
             ? `<div class="toolBox"><div style="font-weight:1100;margin-bottom:6px">${escapeHtml(t("tool.wake.scenario", { name: scenarioName }))}</div>${list.map((x, i) => `<div style="padding:6px 0;font-weight:950">${i + 1}. ${escapeHtml(x)}</div>`).join("")}</div>`
@@ -2908,6 +1011,10 @@
           const m = (s && typeof s.mafiaDead === "number") ? s.mafiaDead : 0;
           const c = (s && typeof s.cityDead === "number") ? s.cityDead : 0;
           const i = (s && typeof s.indDead === "number") ? s.indDead : 0;
+          const aliveTotal = (s && typeof s.alive === "number") ? s.alive : 0;
+          const mA = (s && typeof s.mafiaAlive === "number") ? s.mafiaAlive : 0;
+          const cA = (s && typeof s.cityAlive === "number") ? s.cityAlive : 0;
+          const iA = (s && typeof s.indAlive === "number") ? s.indAlive : 0;
 
           const fmtNum = (n) => {
             try {
@@ -2941,6 +1048,22 @@
               m ? `${fmtNum(m)} Mafia` : "",
               c ? `${fmtNum(c)} ${citizenLabel(c)}` : "",
               i ? `${fmtNum(i)} ${indepLabel(i)}` : "",
+            ].filter(Boolean);
+          };
+          const aliveParts = () => {
+            if (appLang === "fa") {
+              return [
+                mA ? `${fmtNum(mA)} مافیا` : "",
+                cA ? `${fmtNum(cA)} شهروند` : "",
+                iA ? `${fmtNum(iA)} مستقل` : "",
+              ].filter(Boolean);
+            }
+            const citizenLabel = (n) => n === 1 ? "Citizen" : "Citizens";
+            const indepLabel = (n) => n === 1 ? "Independent" : "Independents";
+            return [
+              mA ? `${fmtNum(mA)} Mafia` : "",
+              cA ? `${fmtNum(cA)} ${citizenLabel(cA)}` : "",
+              iA ? `${fmtNum(iA)} ${indepLabel(iA)}` : "",
             ].filter(Boolean);
           };
           const summaryText = (() => {
@@ -2984,29 +1107,549 @@
               : `From your game ${fmtNum(total)} people are out`;
             return `${head}. ${joinList(parts)}.`;
           })();
+          const aliveLine = (() => {
+            const total = aliveTotal || 0;
+            const parts = aliveParts();
+            if (total <= 0) {
+              return (appLang === "fa")
+                ? "در بازی شما کسی زنده نیست."
+                : "No one is alive in your game.";
+            }
+            if (appLang === "fa") {
+              return `در بازی شما ${fmtNum(total)} نفر داخل بازی هستند؛ ${joinList(parts)}.`;
+            }
+            const head = (total === 1)
+              ? `In your game ${fmtNum(total)} person is still in`
+              : `In your game ${fmtNum(total)} people are still in`;
+            return `${head}. ${joinList(parts)}.`;
+          })();
+
+          const timelineHtml = (() => {
+            try {
+              const f = (appState.god && appState.god.flow) ? ensureFlow() : null;
+              const evs = (f && Array.isArray(f.events)) ? f.events.slice() : [];
+              const draw = appState.draw;
+              const names = getPlayerNamesForFlow();
+              if (!evs.length) {
+                const noneTxt = (appLang === "fa")
+                  ? "هنوز چیزی در روند بازی ثبت نشده است."
+                  : "Nothing has been recorded in the game flow yet.";
+                return `<div class="toolBox" style="margin-top:12px"><div style="font-weight:1100; margin-bottom:6px">${escapeHtml(appLang === "fa" ? "روند (روز/شب)" : "Timeline (Day/Night)")}</div><div class="note">${escapeHtml(noneTxt)}</div></div>`;
+              }
+
+              const plainNameOf = (idx) => {
+                const i = parseInt(idx, 10);
+                if (!Number.isFinite(i) || i < 0 || !draw || !draw.players || i >= draw.players.length) return appLang === "fa" ? "—" : "—";
+                return names[i] || t("common.playerN", { n: i + 1 });
+              };
+              const nameOf = (idx) => {
+                const i = parseInt(idx, 10);
+                if (!Number.isFinite(i) || i < 0 || !draw || !draw.players || i >= draw.players.length) return plainNameOf(i);
+                const rid = (draw.players[i] && draw.players[i].roleId) ? draw.players[i].roleId : "citizen";
+                const rn = (typeof roleName === "function") ? roleName(rid) : String(rid || "");
+                return `${plainNameOf(i)} (${rn})`;
+              };
+              const listNames = (idxs) => {
+                const arr = Array.isArray(idxs) ? idxs : [];
+                const clean = arr.map((x) => parseInt(x, 10)).filter((x) => Number.isFinite(x));
+                if (!clean.length) return appLang === "fa" ? "—" : "—";
+                const parts = clean.map((i) => nameOf(i));
+                // use simple join for readability
+                return (appLang === "fa") ? parts.join("، ") : parts.join(", ");
+              };
+              const idxFrom = (v) => {
+                const n = parseInt(String(v ?? "").trim(), 10);
+                if (!Number.isFinite(n)) return null;
+                if (!draw || !draw.players) return n;
+                if (n < 0 || n >= draw.players.length) return null;
+                return n;
+              };
+              const idxArrFrom = (v) => {
+                if (v === null || v === undefined) return [];
+                const arr = Array.isArray(v) ? v : [v];
+                return arr.map((x) => idxFrom(x)).filter((x) => x !== null);
+              };
+              const hasAnyRole = (roleIds) => {
+                try {
+                  const ids = Array.isArray(roleIds) ? roleIds : [roleIds];
+                  for (const p of (draw.players || [])) {
+                    if (!p) continue;
+                    if (ids.includes(p.roleId)) return true;
+                  }
+                  return false;
+                } catch {
+                  return false;
+                }
+              };
+              const findIdxByRole = (roleIds) => {
+                try {
+                  const ids = Array.isArray(roleIds) ? roleIds : [roleIds];
+                  for (let i = 0; i < (draw.players || []).length; i++) {
+                    const p = draw.players[i];
+                    if (!p) continue;
+                    if (ids.includes(p.roleId)) return i;
+                  }
+                  return null;
+                } catch {
+                  return null;
+                }
+              };
+              const phaseTitle = (day, phase) => {
+                const d = fmtNum(day);
+                if (phase === "night") return (appLang === "fa") ? `شب ${d}` : `Night ${d}`;
+                if (phase === "midday") return (appLang === "fa") ? `نیم‌روز ${d}` : `Mid-day ${d}`;
+                return (appLang === "fa") ? `روز ${d}` : `Day ${d}`;
+              };
+              const phaseOrder = { day: 0, midday: 1, night: 2 };
+              // Only show events strictly before the current flow position so that
+              // navigating backwards in the Flow window hides future-phase logs.
+              const curFlowDay = f ? (f.day || 1) : Infinity;
+              const curFlowPo = f ? (phaseOrder[f.phase] ?? 99) : Infinity;
+              const groups = new Map(); // key -> { day, phase, items: [] }
+              for (const e of evs) {
+                if (!e || !e.phase || e.day === undefined || e.day === null) continue;
+                const day = parseInt(e.day, 10);
+                const phase = String(e.phase);
+                if (!Number.isFinite(day) || !["day", "midday", "night"].includes(phase)) continue;
+                // Skip events from the current phase and any phase after it.
+                if (day > curFlowDay) continue;
+                if (day === curFlowDay && (phaseOrder[phase] ?? 99) >= curFlowPo) continue;
+                const key = `${day}:${phase}`;
+                if (!groups.has(key)) groups.set(key, { day, phase, items: [] });
+                groups.get(key).items.push(e);
+              }
+              const keys = Array.from(groups.values())
+                .sort((a, b) => (a.day - b.day) || ((phaseOrder[a.phase] ?? 99) - (phaseOrder[b.phase] ?? 99)));
+
+              const describeNightActions = (payload) => {
+                const out = [];
+                if (!payload || typeof payload !== "object") return out;
+                const mafiaShot = idxFrom(payload.mafiaShot);
+                const doctorSave = idxFrom(payload.doctorSave);
+                const mafiaIdx = findIdxByRole(["mafiaBoss", "godfather", "mafia", "danMafia", "alcapone", "matador", "saulGoodman", "doctorLecter", "jokerMafia"]);
+                const lecterSaveForMafia = idxFrom(payload.lecterSave);
+                if (mafiaShot !== null && mafiaIdx !== null) {
+                  const targetRole = (draw.players[mafiaShot] && draw.players[mafiaShot].roleId) ? draw.players[mafiaShot].roleId : "citizen";
+                  const alwaysImmuneToMafiaShot = (targetRole === "zodiac" || targetRole === "invulnerable" || targetRole === "armored");
+                  const savedByDoctor = (doctorSave !== null && doctorSave === mafiaShot);
+                  const savedByLecter = (lecterSaveForMafia !== null && lecterSaveForMafia === mafiaShot);
+                  if (savedByDoctor || savedByLecter) {
+                    const saverLabel = savedByLecter && !savedByDoctor ? (appLang === "fa" ? "دکتر لکتر" : "Dr. Lecter") : (appLang === "fa" ? "پزشک" : "Doctor");
+                    out.push((appLang === "fa")
+                      ? `${nameOf(mafiaIdx)} به ${nameOf(mafiaShot)} شلیک کرد، اما ${saverLabel} نجاتش داد.`
+                      : `${nameOf(mafiaIdx)} shot ${nameOf(mafiaShot)}, but ${saverLabel} saved them.`);
+                  } else if (alwaysImmuneToMafiaShot) {
+                    out.push((appLang === "fa")
+                      ? `${nameOf(mafiaIdx)} به ${nameOf(mafiaShot)} شلیک کرد (بدون اثر).`
+                      : `${nameOf(mafiaIdx)} shot ${nameOf(mafiaShot)} (no effect).`);
+                  } else {
+                    out.push((appLang === "fa")
+                      ? `${nameOf(mafiaIdx)} به ${nameOf(mafiaShot)} شلیک کرد.`
+                      : `${nameOf(mafiaIdx)} shot ${nameOf(mafiaShot)}.`);
+                  }
+                }
+                const doctorIdx = findIdxByRole(["doctor", "watson"]);
+                if (doctorSave !== null && (mafiaShot === null || doctorSave !== mafiaShot) && doctorIdx !== null) {
+                  out.push((appLang === "fa")
+                    ? `${nameOf(doctorIdx)} ${nameOf(doctorSave)} را نجات داد.`
+                    : `${nameOf(doctorIdx)} saved ${nameOf(doctorSave)}.`);
+                }
+                const oceanIdx = findIdxByRole(["ocean"]);
+                const oceanWake = idxArrFrom(payload.oceanWake);
+                if (oceanWake.length && oceanIdx !== null) {
+                  out.push((appLang === "fa")
+                    ? `${nameOf(oceanIdx)} بیدار کرد: ${listNames(oceanWake)}.`
+                    : `${nameOf(oceanIdx)} woke: ${listNames(oceanWake)}.`);
+                  // If Ocean wakes Mafia or Zodiac => Ocean is out (rule used in the app).
+                  try {
+                    const isBad = oceanWake.some((x) => {
+                      const i = idxFrom(x);
+                      if (i === null || !draw || !draw.players || !draw.players[i]) return false;
+                      const rid = (draw.players[i] && draw.players[i].roleId) ? draw.players[i].roleId : "citizen";
+                      const teamFa = (roles[rid] && roles[rid].teamFa) ? roles[rid].teamFa : "شهر";
+                      return teamFa === "مافیا" || rid === "zodiac";
+                    });
+                    if (isBad) {
+                      out.push((appLang === "fa")
+                        ? "اوشن به مافیا/زودیاک برخورد کرد و از بازی خارج شد."
+                        : "Ocean woke Mafia/Zodiac and got eliminated.");
+                    }
+                  } catch {}
+                }
+                const proIdx = findIdxByRole(["professional"]);
+                const proShot = idxFrom(payload.professionalShot);
+                if (proShot !== null && proIdx !== null) {
+                  try {
+                    const tr = (draw && draw.players && draw.players[proShot] && draw.players[proShot].roleId) ? draw.players[proShot].roleId : "citizen";
+                    const teamFa = (roles[tr] && roles[tr].teamFa) ? roles[tr].teamFa : "شهر";
+                    if (tr === "zodiac") {
+                      out.push((appLang === "fa")
+                        ? `${nameOf(proIdx)} به ${nameOf(proShot)} شلیک کرد (بی‌اثر روی زودیاک).`
+                        : `${nameOf(proIdx)} shot ${nameOf(proShot)} (no effect on Zodiac).`);
+                    } else if (teamFa === "مافیا") {
+                      out.push((appLang === "fa")
+                        ? `${nameOf(proIdx)} به ${nameOf(proShot)} شلیک کرد و او از بازی خارج شد.`
+                        : `${nameOf(proIdx)} shot ${nameOf(proShot)} and they were eliminated.`);
+                    } else {
+                      out.push((appLang === "fa")
+                        ? `${nameOf(proIdx)} به اشتباه به ${nameOf(proShot)} شلیک کرد و خودش از بازی خارج شد.`
+                        : `${nameOf(proIdx)} shot ${nameOf(proShot)} by mistake and got eliminated.`);
+                    }
+                  } catch {
+                    out.push((appLang === "fa")
+                      ? `${nameOf(proIdx)} به ${nameOf(proShot)} شلیک کرد.`
+                      : `${nameOf(proIdx)} shot ${nameOf(proShot)}.`);
+                  }
+                }
+                const zodiacIdx = findIdxByRole(["zodiac"]);
+                const zodiacShot = idxFrom(payload.zodiacShot);
+                if (zodiacShot !== null && zodiacIdx !== null) {
+                  out.push((appLang === "fa")
+                    ? `${nameOf(zodiacIdx)} به ${nameOf(zodiacShot)} شلیک کرد.`
+                    : `${nameOf(zodiacIdx)} shot ${nameOf(zodiacShot)}.`);
+                }
+                const magicianIdx = findIdxByRole(["magician"]);
+                const magicianDisable = idxFrom(payload.magicianDisable);
+                if (magicianDisable !== null && magicianIdx !== null) {
+                  out.push((appLang === "fa")
+                    ? `${nameOf(magicianIdx)} ${nameOf(magicianDisable)} را غیرفعال کرد.`
+                    : `${nameOf(magicianIdx)} disabled ${nameOf(magicianDisable)}.`);
+                }
+                const bomberIdx = findIdxByRole(["bomber"]);
+                const bombTarget = idxFrom(payload.bombTarget);
+                if (bombTarget !== null && bomberIdx !== null) {
+                  const code = (payload.bombCode != null && String(payload.bombCode).trim()) ? String(payload.bombCode).trim() : null;
+                  out.push((appLang === "fa")
+                    ? `${nameOf(bomberIdx)} بمب جلوی ${nameOf(bombTarget)} گذاشت${code ? ` (رمز: ${code})` : ""}.`
+                    : `${nameOf(bomberIdx)} placed bomb in front of ${nameOf(bombTarget)}${code ? ` (code: ${code})` : ""}.`);
+                }
+                const kaneIdx = findIdxByRole(["citizenKane"]);
+                const kaneMark = idxFrom(payload.kaneMark);
+                if (kaneMark !== null && kaneIdx !== null) {
+                  out.push((appLang === "fa")
+                    ? `${nameOf(kaneIdx)} نشان کرد: ${nameOf(kaneMark)}.`
+                    : `${nameOf(kaneIdx)} marked: ${nameOf(kaneMark)}.`);
+                }
+                const constantineIdx = findIdxByRole(["constantine"]);
+                const constantineRevive = idxFrom(payload.constantineRevive);
+                if (constantineRevive !== null && constantineIdx !== null) {
+                  out.push((appLang === "fa")
+                    ? `${nameOf(constantineIdx)} بازگرداند: ${nameOf(constantineRevive)}.`
+                    : `${nameOf(constantineIdx)} revived: ${nameOf(constantineRevive)}.`);
+                }
+                const heirIdx = findIdxByRole(["heir"]);
+                const heirPick = idxFrom(payload.heirPick);
+                if (heirPick !== null && heirIdx !== null) {
+                  out.push((appLang === "fa")
+                    ? `${nameOf(heirIdx)} انتخاب کرد: ${nameOf(heirPick)}.`
+                    : `${nameOf(heirIdx)} picked: ${nameOf(heirPick)}.`);
+                }
+                const herbalistIdx = findIdxByRole(["herbalist"]);
+                const herbalistPoison = idxFrom(payload.herbalistPoison);
+                if (herbalistPoison !== null && herbalistIdx !== null) {
+                  out.push((appLang === "fa")
+                    ? `${nameOf(herbalistIdx)} زهر داد به: ${nameOf(herbalistPoison)}.`
+                    : `${nameOf(herbalistIdx)} poisoned: ${nameOf(herbalistPoison)}.`);
+                }
+                const herbalistAntidote = idxFrom(payload.herbalistAntidote);
+                if (herbalistAntidote !== null && herbalistIdx !== null) {
+                  out.push((appLang === "fa")
+                    ? `${nameOf(herbalistIdx)} پادزهر داد به: ${nameOf(herbalistAntidote)}.`
+                    : `${nameOf(herbalistIdx)} antidote to: ${nameOf(herbalistAntidote)}.`);
+                }
+                const armorsmithIdx = findIdxByRole(["armorsmith"]);
+                const armor = idxFrom(payload.armorsmithArmor);
+                if (armor !== null && armorsmithIdx !== null) {
+                  out.push((appLang === "fa")
+                    ? `${nameOf(armorsmithIdx)} به ${nameOf(armor)} زره داد.`
+                    : `${nameOf(armorsmithIdx)} armored ${nameOf(armor)}.`);
+                }
+                const nostIdx = findIdxByRole(["nostradamus"]);
+                const nost = idxArrFrom(payload.nostPick3);
+                if (nost.length && nostIdx !== null) {
+                  out.push((appLang === "fa")
+                    ? `${nameOf(nostIdx)} انتخاب کرد: ${listNames(nost)}.`
+                    : `${nameOf(nostIdx)} picked: ${listNames(nost)}.`);
+                }
+                const lecterIdx = findIdxByRole(["doctorLecter"]);
+                const lecterSave = idxFrom(payload.lecterSave);
+                if (lecterSave !== null && lecterIdx !== null) {
+                  out.push((appLang === "fa")
+                    ? `${nameOf(lecterIdx)} (دکتر لکتر) نجات داد: ${nameOf(lecterSave)}.`
+                    : `${nameOf(lecterIdx)} (Dr. Lecter) saved: ${nameOf(lecterSave)}.`);
+                }
+                const jokerIdx = findIdxByRole(["jokerMafia"]);
+                const jokerTarget = idxFrom(payload.jokerTarget);
+                if (jokerTarget !== null && jokerIdx !== null) {
+                  out.push((appLang === "fa")
+                    ? `${nameOf(jokerIdx)} (جوکر) استعلام از ${nameOf(jokerTarget)} را برعکس کرد.`
+                    : `${nameOf(jokerIdx)} (Joker) flipped inquiry on ${nameOf(jokerTarget)}.`);
+                }
+                const swindlerIdx = findIdxByRole(["swindler"]);
+                const swindlerTarget = idxFrom(payload.swindlerTarget);
+                if (swindlerTarget !== null && swindlerIdx !== null) {
+                  out.push((appLang === "fa")
+                    ? `${nameOf(swindlerIdx)} (شیاد) روی ${nameOf(swindlerTarget)} اثر گذاشت.`
+                    : `${nameOf(swindlerIdx)} (Swindler) targeted ${nameOf(swindlerTarget)}.`);
+                }
+                const researcherIdx = findIdxByRole(["researcher"]);
+                const researcherLink = idxFrom(payload.researcherLink);
+                if (researcherLink !== null && researcherIdx !== null) {
+                  out.push((appLang === "fa")
+                    ? `${nameOf(researcherIdx)} (محقق) به ${nameOf(researcherLink)} گره زد.`
+                    : `${nameOf(researcherIdx)} (Researcher) linked to ${nameOf(researcherLink)}.`);
+                }
+                const natashaIdx = findIdxByRole(["natasha"]);
+                const natashaTarget = idxFrom(payload.natashaTarget);
+                if (natashaTarget !== null && natashaIdx !== null) {
+                  out.push((appLang === "fa")
+                    ? `${nameOf(natashaIdx)} (ناتاشا) ${nameOf(natashaTarget)} را ساکت کرد.`
+                    : `${nameOf(natashaIdx)} (Natasha) silenced ${nameOf(natashaTarget)}.`);
+                }
+                const sniperIdx = findIdxByRole(["sniper"]);
+                const sniperShot = idxFrom(payload.sniperShot);
+                if (sniperShot !== null && sniperIdx !== null) {
+                  try {
+                    const tr = (draw.players[sniperShot] && draw.players[sniperShot].roleId) ? draw.players[sniperShot].roleId : "citizen";
+                    const teamFa = (roles[tr] && roles[tr].teamFa) ? roles[tr].teamFa : "شهر";
+                    if (teamFa === "مافیا") {
+                      out.push((appLang === "fa")
+                        ? `${nameOf(sniperIdx)} (تک‌تیرانداز) به ${nameOf(sniperShot)} شلیک کرد (مافیا — خارج شد).`
+                        : `${nameOf(sniperIdx)} (Sniper) shot ${nameOf(sniperShot)} (Mafia — eliminated).`);
+                    } else {
+                      out.push((appLang === "fa")
+                        ? `${nameOf(sniperIdx)} (تک‌تیرانداز) به ${nameOf(sniperShot)} شلیک کرد (اشتباه — تک‌تیرانداز خارج شد).`
+                        : `${nameOf(sniperIdx)} (Sniper) shot ${nameOf(sniperShot)} (wrong — Sniper eliminated).`);
+                    }
+                  } catch {}
+                }
+                const negotiatorIdx = findIdxByRole(["negotiator"]);
+                const negotiatorTarget = idxFrom(payload.negotiatorTarget);
+                if (negotiatorTarget !== null && negotiatorIdx !== null) {
+                  out.push((appLang === "fa")
+                    ? `${nameOf(negotiatorIdx)} (مذاکره‌کننده) مذاکره با ${nameOf(negotiatorTarget)} را انتخاب کرد.`
+                    : `${nameOf(negotiatorIdx)} (Negotiator) attempted to negotiate with ${nameOf(negotiatorTarget)}.`);
+                }
+                const kadkhodaIdx = findIdxByRole(["kadkhoda"]);
+                const kadkhodaTarget = idxFrom(payload.kadkhodaTarget);
+                if (kadkhodaTarget !== null && kadkhodaIdx !== null) {
+                  out.push((appLang === "fa")
+                    ? `${nameOf(kadkhodaIdx)} (کدخدا) ${nameOf(kadkhodaTarget)} را بیدار کرد.`
+                    : `${nameOf(kadkhodaIdx)} (Kadkhoda) linked/woke ${nameOf(kadkhodaTarget)}.`);
+                }
+                const hackerIdx = findIdxByRole(["hacker"]);
+                const hackerBlock = idxFrom(payload.hackerBlock);
+                if (hackerBlock !== null && hackerIdx !== null) {
+                  out.push((appLang === "fa")
+                    ? `${nameOf(hackerIdx)} (هکر) توانایی ${nameOf(hackerBlock)} را مسدود کرد.`
+                    : `${nameOf(hackerIdx)} (Hacker) blocked ${nameOf(hackerBlock)}'s ability.`);
+                }
+                const guideIdx = findIdxByRole(["guide"]);
+                const guideTarget = idxFrom(payload.guideTarget);
+                if (guideTarget !== null && guideIdx !== null) {
+                  try {
+                    const tr = (draw.players[guideTarget] && draw.players[guideTarget].roleId) ? draw.players[guideTarget].roleId : "citizen";
+                    const isMafia = detectiveInquiryIsMafia(tr);
+                    if (isMafia) {
+                      out.push((appLang === "fa")
+                        ? `${nameOf(guideIdx)} (راهنما) ${nameOf(guideTarget)} را انتخاب کرد — مافیا (راهنما لو رفت).`
+                        : `${nameOf(guideIdx)} (Guide) targeted ${nameOf(guideTarget)} — Mafia (Guide exposed).`);
+                    } else {
+                      out.push((appLang === "fa")
+                        ? `${nameOf(guideIdx)} (راهنما) ${nameOf(guideTarget)} را انتخاب کرد — شهروند.`
+                        : `${nameOf(guideIdx)} (Guide) targeted ${nameOf(guideTarget)} — Citizen.`);
+                    }
+                  } catch {
+                    out.push((appLang === "fa")
+                      ? `${nameOf(guideIdx)} (راهنما) ${nameOf(guideTarget)} را انتخاب کرد.`
+                      : `${nameOf(guideIdx)} (Guide) targeted ${nameOf(guideTarget)}.`);
+                  }
+                }
+                const bodyguardIdx = findIdxByRole(["bodyguard"]);
+                const bodyguardProtect = idxFrom(payload.bodyguardProtect);
+                if (bodyguardProtect !== null && bodyguardIdx !== null) {
+                  out.push((appLang === "fa")
+                    ? `${nameOf(bodyguardIdx)} (محافظ) از ${nameOf(bodyguardProtect)} محافظت کرد.`
+                    : `${nameOf(bodyguardIdx)} (Bodyguard) protected ${nameOf(bodyguardProtect)}.`);
+                }
+                const minemakerIdx = findIdxByRole(["minemaker"]);
+                const minemakerTarget = idxFrom(payload.minemakerTarget);
+                if (minemakerTarget !== null && minemakerIdx !== null) {
+                  out.push((appLang === "fa")
+                    ? `${nameOf(minemakerIdx)} (مین‌گذار) روی ${nameOf(minemakerTarget)} مین گذاشت.`
+                    : `${nameOf(minemakerIdx)} (Minemaker) planted a mine on ${nameOf(minemakerTarget)}.`);
+                }
+                const lawyerIdx = findIdxByRole(["lawyer"]);
+                const lawyerTarget = idxFrom(payload.lawyerTarget);
+                if (lawyerTarget !== null && lawyerIdx !== null) {
+                  out.push((appLang === "fa")
+                    ? `${nameOf(lawyerIdx)} (وکیل) ${nameOf(lawyerTarget)} را برای فردا مصون کرد.`
+                    : `${nameOf(lawyerIdx)} (Lawyer) granted ${nameOf(lawyerTarget)} immunity for tomorrow.`);
+                }
+                const natoIdx = findIdxByRole(["nato"]);
+                const natoTarget = idxFrom(payload.natoTarget);
+                const natoRoleGuess = (payload.natoRoleGuess != null && String(payload.natoRoleGuess).trim()) ? String(payload.natoRoleGuess).trim() : null;
+                if (natoTarget !== null && natoIdx !== null && natoRoleGuess) {
+                  out.push((appLang === "fa")
+                    ? `${nameOf(natoIdx)} (ناتو) نقش ${nameOf(natoTarget)} را «${natoRoleGuess}» حدس زد.`
+                    : `${nameOf(natoIdx)} (NATO) guessed ${nameOf(natoTarget)}'s role as "${natoRoleGuess}".`);
+                }
+                return out;
+              };
+
+              const describe = (e) => {
+                const k = String(e.kind || "");
+                const d0 = e.data || null;
+                const out = [];
+                if (k === "day_elim_out") {
+                  const outIdx = d0 && d0.out !== null && d0.out !== undefined && Number.isFinite(Number(d0.out)) ? parseInt(d0.out, 10) : null;
+                  if (outIdx !== null && !(d0 && d0.preview)) {
+                    out.push((appLang === "fa")
+                      ? `${nameOf(outIdx)} با رأی از بازی خارج شد${d0 && d0.draw ? " (قرعه)" : ""}.`
+                      : `${nameOf(outIdx)} was eliminated by voting${d0 && d0.draw ? " (draw)" : ""}.`);
+                    try {
+                      const rec = f && f.draft && f.draft.dayElimAppliedByDay && f.draft.dayElimAppliedByDay[String(e.day)];
+                      if (rec && Number.isFinite(Number(rec.chainOut))) {
+                        const chainIdx = parseInt(rec.chainOut, 10);
+                        if (draw.players[chainIdx]) {
+                          out.push((appLang === "fa")
+                            ? `${nameOf(chainIdx)} (که محقق با او لینک داشت) نیز از بازی خارج شد.`
+                            : `${nameOf(chainIdx)} (linked to Researcher) was also eliminated.`);
+                        }
+                      }
+                    } catch {}
+                  }
+                } else if (k === "gun_shot") {
+                  const sh = d0 && Number.isFinite(Number(d0.shooter)) ? parseInt(d0.shooter, 10) : null;
+                  const tg = d0 && Number.isFinite(Number(d0.target)) ? parseInt(d0.target, 10) : null;
+                  const tp = d0 && d0.type ? String(d0.type) : "real";
+                  if (sh !== null && tg !== null) {
+                    if (tp === "fake") {
+                      out.push((appLang === "fa")
+                        ? `${nameOf(sh)} با تفنگِ مشقی به ${nameOf(tg)} شلیک کرد (بدون اثر).`
+                        : `${nameOf(sh)} used a fake gun and shot ${nameOf(tg)} (no effect).`);
+                    } else {
+                      out.push((appLang === "fa")
+                        ? `${nameOf(sh)} با تفنگِ واقعی به ${nameOf(tg)} شلیک کرد.`
+                        : `${nameOf(sh)} used a real gun and shot ${nameOf(tg)}.`);
+                    }
+                  }
+                } else if (k === "gun_give") {
+                  const to = d0 && Number.isFinite(Number(d0.to)) ? parseInt(d0.to, 10) : null;
+                  const tp = d0 && d0.type ? String(d0.type) : "real";
+                  if (to !== null) {
+                    out.push((appLang === "fa")
+                      ? `تفنگ (${tp === "fake" ? "مشقی" : "واقعی"}) به ${nameOf(to)} داده شد.`
+                      : `A ${tp === "fake" ? "fake" : "real"} gun was given to ${nameOf(to)}.`);
+                  }
+                } else if (k === "gun_remove") {
+                  const to = d0 && Number.isFinite(Number(d0.to)) ? parseInt(d0.to, 10) : null;
+                  if (to !== null) {
+                    out.push((appLang === "fa")
+                      ? `تفنگِ ${nameOf(to)} حذف شد.`
+                      : `Removed gun from ${nameOf(to)}.`);
+                  }
+                } else if (k === "detective_query") {
+                  const target = d0 ? idxFrom(d0.target) : null;
+                  const isMafia = d0 && typeof d0.isMafia === "boolean" ? d0.isMafia : null;
+                  const detIdx = findIdxByRole(["detective"]);
+                  if (target !== null && isMafia !== null && detIdx !== null) {
+                    const thumb = isMafia ? "👍" : "👎";
+                    out.push((appLang === "fa")
+                      ? `استعلام ${nameOf(detIdx)} از ${nameOf(target)}: ${thumb} ${isMafia ? "مافیا" : "شهروند"}.`
+                      : `${nameOf(detIdx)} inquiry on ${nameOf(target)}: ${thumb} ${isMafia ? "Mafia" : "Citizen"}.`);
+                  }
+                } else if (k === "night_actions") {
+                  out.push(...describeNightActions(d0));
+                } else if (k === "bomb_resolve") {
+                  try {
+                    if (!d0 || typeof d0 !== "object") return out;
+                    const target = idxFrom(d0.target);
+                    const killed = idxFrom(d0.killed);
+                    const ok = (d0.ok === true);
+                    const sac = (d0.guardSacrifice === true);
+                    const guess = (d0.guess != null) ? String(d0.guess).trim() : "";
+                    const code = (d0.code != null) ? String(d0.code).trim() : "";
+                    if (target === null) return out;
+                    if (sac) {
+                      out.push((appLang === "fa")
+                        ? `بمبِ جلوی ${nameOf(target)} با فداکاریِ محافظ حل شد (حدس: ${guess || "—"} / کد: ${code || "—"}).`
+                        : `Bomb in front of ${nameOf(target)} was resolved by Guard sacrifice (guess: ${guess || "—"} / code: ${code || "—"}).`);
+                      if (!ok && killed !== null) {
+                        out.push((appLang === "fa")
+                          ? `${nameOf(killed)} به‌خاطر حدسِ غلطِ کدِ بمب کشته شد.`
+                          : `${nameOf(killed)} died due to wrong bomb code guess.`);
+                      }
+                    } else {
+                      if (ok) {
+                        out.push((appLang === "fa")
+                          ? `${nameOf(target)} کدِ بمب را درست حدس زد و بمب خنثی شد.`
+                          : `${nameOf(target)} guessed the bomb code and it was neutralized.`);
+                      } else {
+                        out.push((appLang === "fa")
+                          ? `${nameOf(target)} کدِ بمب را غلط حدس زد و کشته شد.`
+                          : `${nameOf(target)} guessed the bomb code wrong and died.`);
+                      }
+                    }
+                  } catch {}
+                }
+                return out;
+              };
+
+              const blocks = keys.map((g) => {
+                const items = (g.items || []).slice().sort((a, b) => (Number(a.at || 0) - Number(b.at || 0)));
+                const lines = [];
+                for (const e of items) {
+                  const xs = describe(e);
+                  for (const s of xs) if (s) lines.push(s);
+                }
+                // de-dupe identical adjacent lines for cleanliness
+                const clean = [];
+                for (const s of lines) {
+                  if (!s) continue;
+                  if (!clean.length || clean[clean.length - 1] !== s) clean.push(s);
+                }
+                if (!clean.length) return "";
+                return `
+                  <div class="toolBox" style="margin-top:12px">
+                    <div style="font-weight:1100; margin-bottom:6px">${escapeHtml(phaseTitle(g.day, g.phase))}</div>
+                    <ul style="margin:0; padding-${appLang === "fa" ? "right" : "left"}:18px; line-height:1.9">
+                      ${clean.map((s) => `<li>${escapeHtml(s)}</li>`).join("")}
+                    </ul>
+                  </div>
+                `;
+              }).filter(Boolean).join("");
+
+              const title = escapeHtml(appLang === "fa" ? "روند (روز/شب)" : "Timeline (Day/Night)");
+              return `
+                <div style="margin-top:12px">
+                  <div style="font-weight:1200; margin-bottom:6px">${title}</div>
+                  ${blocks || `<div class="note">${escapeHtml(appLang === "fa" ? "چیزی برای نمایش نیست." : "Nothing to show.")}</div>`}
+                </div>
+              `;
+            } catch {
+              return "";
+            }
+          })();
 
           openToolModal(t("tool.status.title"), `
             <div class="toolBox" style="font-weight:950; line-height:1.9">
-              ${escapeHtml(summaryText)}
+              <div>${escapeHtml(summaryText)}</div>
+              <div class="note" style="margin-top:10px">${escapeHtml(aliveLine)}</div>
             </div>
+            ${timelineHtml}
           `);
         }
 
         function showLastMoveTool() {
           const scenario = getScenario();
-          const supports = scenario === "shab_mafia";
+          const _lmCfg = getScenarioConfig(scenario);
+          const supports = !!_lmCfg.features?.lastMove;
           if (!supports) {
             openToolModal(t("tool.lastMove.title"), `<div class="toolBox">${escapeHtml(t("tool.lastMove.none"))}</div>`);
             return;
           }
-          const lastMoveCards = [
-            { id: "insomnia", fa: "بی‌خوابی", en: "Insomnia" },
-            { id: "final_shot", fa: "شلیک نهایی", en: "Final Shot" },
-            { id: "beautiful_mind", fa: "ذهن زیبا", en: "Beautiful Mind" },
-            { id: "thirteen_lies", fa: "دروغ سیزده", en: "Thirteen Lies" },
-            { id: "green_mile", fa: "مسیر سبز", en: "Green Mile" },
-            { id: "red_carpet", fa: "فرش قرمز", en: "Red Carpet" },
-          ];
+          const lastMoveCards = _lmCfg.eliminationCards || [];
           const labelFor = (id) => {
             const c = lastMoveCards.find((x) => x.id === id);
             if (!c) return String(id || "");
@@ -3070,6 +1713,9 @@
             }
           }
         }
+
+        let bombApplyJustHappened = false;
+
 
         function showRoleChangeTool() {
           const draw = appState.draw;
@@ -3200,11 +1846,11 @@
         function ensureTimers() {
           if (appState.god.timers) return;
           appState.god.timers = {
-            talk: 60,
-            challenge: 30,
-            defense: 75,
+            talk: 50,
+            challenge: 40,
+            defense: 60,
             running: null, // key
-            remaining: { talk: 60, challenge: 30, defense: 75 },
+            remaining: { talk: 50, challenge: 40, defense: 60 },
             startedAt: null,
           };
         }
@@ -3314,17 +1960,21 @@
         function updateTimerIcons() {
           const t = appState.god.timers;
           if (!t) return;
+          const playSvg = `<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8 6.82v10.36c0 .79.87 1.27 1.54.84l8.14-5.18a1 1 0 0 0 0-1.68L9.54 5.98A1 1 0 0 0 8 6.82z"/></svg>`;
+          const pauseSvg = `<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><rect x="6" y="4" width="4" height="16" rx="2"/><rect x="14" y="4" width="4" height="16" rx="2"/></svg>`;
           const set = (key) => {
             const b = document.getElementById("tm_btn_" + key);
             if (!b) return;
-            b.textContent = (t.running === key) ? "⏸" : "▶";
+            const running = (t.running === key);
+            b.innerHTML = running ? pauseSvg : playSvg;
+            b.classList.toggle("is-running", running);
           };
           set("talk");
           set("challenge");
           set("defense");
         }
 
-        function showTimerPicker(key) {
+        function showTimerPicker(key, returnFn) {
           ensureTimers();
           const tmr = appState.god.timers;
           const labels = { talk: t("tool.timer.turn"), challenge: t("tool.timer.challenge"), defense: t("tool.timer.defense") };
@@ -3360,9 +2010,9 @@
             tmr.remaining[key] = v;
             delete tmr.remaining[key + "_base"];
             saveState(appState);
-            showTimerTool();
+            (returnFn || showTimerTool)();
           };
-          $("tp_cancel").onclick = () => showTimerTool();
+          $("tp_cancel").onclick = () => (returnFn || showTimerTool)();
         }
         function startOrPauseTimer(key) {
           ensureTimers();
@@ -3387,15 +2037,40 @@
           saveState(appState);
           updateTimerIcons();
         }
+        function resetSingleTimer(key) {
+          ensureTimers();
+          const t = appState.god.timers;
+          if (t.running === key) {
+            t.running = null;
+            t.startedAt = null;
+            stopTimerInterval();
+          }
+          t.remaining[key] = t[key];
+          delete t.remaining[key + "_base"];
+          saveState(appState);
+          const el = document.getElementById("tm_" + key);
+          if (el) el.textContent = formatMMSS(t.remaining[key]);
+          updateTimerIcons();
+        }
         function resetTimers() {
           ensureTimers();
           const t = appState.god.timers;
           t.running = null;
           t.startedAt = null;
           t.remaining = { talk: t.talk, challenge: t.challenge, defense: t.defense };
+          try { delete t.remaining.talk_base; delete t.remaining.challenge_base; delete t.remaining.defense_base; } catch {}
           stopTimerInterval();
           saveState(appState);
           updateTimerIcons();
+          // update visible numbers immediately (if tool is open)
+          try {
+            const a = document.getElementById("tm_talk");
+            const b = document.getElementById("tm_challenge");
+            const c = document.getElementById("tm_defense");
+            if (a) a.textContent = formatMMSS(t.remaining.talk);
+            if (b) b.textContent = formatMMSS(t.remaining.challenge);
+            if (c) c.textContent = formatMMSS(t.remaining.defense);
+          } catch {}
         }
         function showTimerTool() {
           ensureTimers();
@@ -3407,17 +2082,17 @@
               <div class="timerCard">
                 <div class="tname">${escapeHtml(t("tool.timer.turn"))}</div>
                 <div class="tval clickable" id="tm_talk">${formatMMSS(tmr.remaining.talk)}</div>
-                <button class="tbtn" id="tm_btn_talk" type="button">▶</button>
+                <button class="tbtn" id="tm_btn_talk" type="button" aria-label="Play/Pause"></button>
               </div>
               <div class="timerCard">
                 <div class="tname">${escapeHtml(t("tool.timer.challenge"))}</div>
                 <div class="tval clickable" id="tm_challenge">${formatMMSS(tmr.remaining.challenge)}</div>
-                <button class="tbtn" id="tm_btn_challenge" type="button">▶</button>
+                <button class="tbtn" id="tm_btn_challenge" type="button" aria-label="Play/Pause"></button>
               </div>
               <div class="timerCard" style="grid-column: 1 / -1;">
                 <div class="tname">${escapeHtml(t("tool.timer.defense"))}</div>
                 <div class="tval clickable" id="tm_defense">${formatMMSS(tmr.remaining.defense)}</div>
-                <button class="tbtn" id="tm_btn_defense" type="button">▶</button>
+                <button class="tbtn" id="tm_btn_defense" type="button" aria-label="Play/Pause"></button>
               </div>
             </div>
             <div class="timerActions">
@@ -3558,7 +2233,7 @@
             ? appState.draw.uiAtDraw.scenario
             : getScenario();
           const rBase = roles[rid];
-          const rOv = (roleScenarioOverrides[rid] && roleScenarioOverrides[rid][scenario]) ? roleScenarioOverrides[rid][scenario] : null;
+          const rOv = getScenarioConfig(scenario).roleOverrides?.[rid] ?? null;
           const r = rBase ? { ...rBase, ...(rOv || {}) } : null;
           const teamFa = r ? (r.teamFa || "شهر") : "شهر";
           const teamCls =
@@ -3619,44 +2294,6 @@
           updateQuickStat();
         }
 
-        // Scenario defaults (recommended config).
-        // If a scenario doesn't have a known "official" player count, we still support
-        // resetting roles to that scenario's default role-set + recomputing mafia count.
-        const scenarioDefaults = {
-          // Classic Mafia: commonly defined as min 12 (8 citizens, 4 mafia).
-          // Source: danoma.ir (scenario classic).
-          classic: { nPlayers: 12, mafiaCount: 4 },
-
-          // "Shahrvand o Mafia" TV scenario (بازپرس): 3 mafia + 7 citizens.
-          // Source: fa.wikipedia.org/wiki/شهروند_و_مافیا
-          bazras: { nPlayers: 10, mafiaCount: 3 },
-          // These are variants of the same TV-style scenario family in this app.
-          namayande: { nPlayers: 10, mafiaCount: 3 },
-          mozaker: { nPlayers: 10, mafiaCount: 3 },
-          takavar: { nPlayers: 10, mafiaCount: 3 },
-
-          // Capo: designed for 10 players (7 citizens, 3 mafia).
-          // Source: danoma.ir (scenario list) and gorgine.com (capo).
-          kabo: { nPlayers: 10, mafiaCount: 3 },
-
-          // Pedarkhande: designed for 11 players (7 citizens, 3 mafia, 1 independent).
-          // Source: danoma.ir (scenario pedarkhande).
-          pedarkhande: { nPlayers: 11, mafiaCount: 3 },
-
-          // Zodiac (Shab-haye Mafia: Zodiac): 12 players per match (the show). We default to 12.
-          // Source: fa.wikipedia.org/wiki/شب‌های_مافیا
-          zodiac: { nPlayers: 12, mafiaCount: 3 },
-
-          // "Meeting/Epic" and "Pishrafte" are advanced mixes in this app.
-          // We default them to a common advanced-classic count.
-          // Source: danoma.ir (classic advanced: 12/13/15 players).
-          meeting_epic: { nPlayers: 12, mafiaCount: 4 },
-          pishrafte: { nPlayers: 15, mafiaCount: 5 },
-
-          // Shab-haye Mafia: 12 players per match.
-          // Source: fa.wikipedia.org/wiki/شب‌های_مافیا
-          shab_mafia: { nPlayers: 12, mafiaCount: 4 },
-        };
         let applyingScenarioDefaults = false;
 
         function scenarioHasDefaults(scenario) {
@@ -3675,7 +2312,7 @@
         }
         function computeScenarioDefaultCounts(scenario) {
           // Use explicit overrides if known; otherwise derive a reasonable default from the scenario's default roles.
-          const d = scenarioDefaults[scenario] || {};
+          const d = getScenarioConfig(scenario).defaults || {};
           const defaultTog = normalizeTogglesForScenario(defaultTogglesForScenario(scenario), scenario);
           const enabled = countEnabledToggles(defaultTog);
           const mafiaSpecials = countEnabledMafiaSpecials(defaultTog);
@@ -4051,7 +2688,7 @@
             // Zodiac
             alcapone: "crown",
             zodiac: "skull",
-            showman: "masks-theater",
+            magician: "masks-theater",
             bomber: "bomb",
             guard: "shield",
             ocean: "moon-stars",
@@ -4062,6 +2699,15 @@
             constantine: "heart-plus",
             citizenKane: "eye",
             nostradamus: "crystal-ball",
+
+            // Representative (نماینده)
+            don: "crown",
+            rebel: "sword",
+            hacker: "ban",
+            guide: "search",
+            minemaker: "bomb",
+            lawyer: "briefcase",
+            bodyguard: "shield",
           };
 
           if (map[rid]) return map[rid];
@@ -4087,7 +2733,7 @@
             ? appState.draw.uiAtDraw.scenario
             : getScenario();
           const rBase = roles[roleId];
-          const rOv = (roleScenarioOverrides[roleId] && roleScenarioOverrides[roleId][scenario]) ? roleScenarioOverrides[roleId][scenario] : null;
+          const rOv = getScenarioConfig(scenario).roleOverrides?.[roleId] ?? null;
           const r = rBase ? { ...rBase, ...(rOv || {}) } : null;
           const teamFa = r ? (r.teamFa || "شهر") : "شهر";
           const teamCls =
@@ -4178,17 +2824,18 @@
           const who = (appState.ui.playerNames && appState.ui.playerNames[cur]) ? appState.ui.playerNames[cur] : `بازیکن ${cur + 1}`;
           const roleId = draw.deck[cardIdx];
 
+          // Record the pick immediately (no need to click "Seen").
+          draw.usedCards[cardIdx] = true;
+          const prev = draw.players[cur] || {};
+          draw.players[cur] = { ...prev, roleId, revealed: true, cardIdx, alive: prev.alive !== false, deathReason: prev.deathReason || null };
+          draw.currentIdx = cur + 1;
+          saveState(appState);
+          renderCards();
+
           openRoleModal({
             who,
             roleId,
-            onConfirm: () => {
-              draw.usedCards[cardIdx] = true;
-              const prev = draw.players[cur] || {};
-              draw.players[cur] = { ...prev, roleId, revealed: true, cardIdx, alive: prev.alive !== false, deathReason: prev.deathReason || null };
-              draw.currentIdx = cur + 1;
-              saveState(appState);
-              renderCards();
-            },
+            onConfirm: null,
           });
         }
 
@@ -4234,6 +2881,27 @@
           if (!draw || !draw.players || !draw.players[idx]) return;
           draw.players[idx].alive = !!alive;
           draw.players[idx].deathReason = alive ? null : (reason || "vote");
+          // Track when a player died so Night UI can distinguish:
+          // - dead before tonight (should not act)
+          // - killed this night (pending until dawn; can still act tonight)
+          try {
+            if (appState.god && appState.god.flow) {
+              const f = ensureFlow();
+              const d = f.draft || {};
+              if (!d.deadAtByIdx || typeof d.deadAtByIdx !== "object") d.deadAtByIdx = {};
+              if (alive) {
+                delete d.deadAtByIdx[String(idx)];
+              } else {
+                d.deadAtByIdx[String(idx)] = {
+                  day: Number(f.day || 1),
+                  phase: String(f.phase || "day"),
+                  reason: String(reason || "vote"),
+                  at: Date.now(),
+                };
+              }
+              f.draft = d;
+            }
+          } catch {}
           syncGodStatusFromPlayers();
           saveState(appState);
         }
@@ -4248,7 +2916,7 @@
             ? appState.draw.uiAtDraw.scenario
             : getScenario();
           const rBase = roles[rid];
-          const rOv = (roleScenarioOverrides[rid] && roleScenarioOverrides[rid][scenario]) ? roleScenarioOverrides[rid][scenario] : null;
+          const rOv = getScenarioConfig(scenario).roleOverrides?.[rid] ?? null;
           const r = rBase ? { ...rBase, ...(rOv || {}) } : null;
           const teamFa = r ? (r.teamFa || "شهر") : "شهر";
           const alive = p.alive !== false;
@@ -4256,7 +2924,7 @@
 
           const statusText = alive
             ? t("lifeSheet.alive")
-            : (reason === "shot" ? t("lifeSheet.deadShot") : t("lifeSheet.deadVote"));
+            : t("lifeSheet.dead");
           const teamCls =
             teamFa === "مافیا" ? "team-mafia" :
             teamFa === "شهر" ? "team-city" : "team-ind";
@@ -4278,20 +2946,153 @@
               <div style="height:10px"></div>
               <div class="lifeActions">
                 <button class="btn lifeActionBtn is-danger" id="life_shot" type="button">${escapeHtml(t("lifeSheet.actionShot"))}</button>
-                <button class="btn lifeActionBtn is-warn" id="life_vote" type="button">${escapeHtml(t("lifeSheet.actionVote"))}</button>
                 <button class="btn lifeActionBtn is-ok" id="life_revive" type="button">${escapeHtml(t("lifeSheet.actionRevive"))}</button>
               </div>
             </div>
           `, { hideBottom: true });
 
           $("life_shot").onclick = () => { setPlayerLife(idx, { alive: false, reason: "shot" }); renderCast(); closeToolModal(); };
-          $("life_vote").onclick = () => { setPlayerLife(idx, { alive: false, reason: "vote" }); renderCast(); closeToolModal(); };
           $("life_revive").onclick = () => { setPlayerLife(idx, { alive: true }); renderCast(); closeToolModal(); };
         }
 
         function renderCast() {
           const draw = appState.draw;
           if (!draw) return;
+          const pending = (() => {
+            try {
+              const f = (appState.god && appState.god.flow) ? ensureFlow() : null;
+              if (!f || f.phase !== "night") return {};
+              const ev = (f.events || []).slice().reverse().find((e) => e && e.kind === "night_actions" && e.phase === "night" && e.day === f.day && e.data);
+              const payload0 = ev && ev.data ? { ...ev.data } : null;
+              if (!payload0) return {};
+              const idxFrom = (v) => {
+                const n = parseInt(String(v ?? "").trim(), 10);
+                if (!Number.isFinite(n)) return null;
+                if (!draw.players) return n;
+                if (n < 0 || n >= draw.players.length) return null;
+                return n;
+              };
+              const findIdxByRole = (roleIds) => {
+                const ids = Array.isArray(roleIds) ? roleIds : [roleIds];
+                for (let i = 0; i < (draw.players || []).length; i++) {
+                  const p = draw.players[i];
+                  if (!p) continue;
+                  if (ids.includes(p.roleId)) return i;
+                }
+                return null;
+              };
+              // Apply disable tonight (Magician) for pending computation
+              const disabledIdx = idxFrom(payload0.magicianDisable);
+              const doctorIdx = findIdxByRole(["doctor", "watson", "doctorLecter"]);
+              const detIdx = findIdxByRole(["detective"]);
+              const proIdx = findIdxByRole(["professional", "leon"]);
+              const bomberIdx = findIdxByRole(["bomber"]);
+              const oceanIdx = findIdxByRole(["ocean"]);
+              const zodiacIdx = findIdxByRole(["zodiac"]);
+              if (disabledIdx !== null) {
+                if (doctorIdx !== null && disabledIdx === doctorIdx) payload0.doctorSave = null;
+                if (detIdx !== null && disabledIdx === detIdx) payload0.detectiveQuery = null;
+                if (proIdx !== null && disabledIdx === proIdx) payload0.professionalShot = null;
+                if (bomberIdx !== null && disabledIdx === bomberIdx) { payload0.bombTarget = null; payload0.bombCode = null; }
+                if (oceanIdx !== null && disabledIdx === oceanIdx) payload0.oceanWake = null;
+                if (zodiacIdx !== null && disabledIdx === zodiacIdx) payload0.zodiacShot = null;
+              }
+
+              const out = {};
+              // Mafia pending kill (if not saved by doctor or Dr. Lecter, and not immune)
+              const mafiaShot = idxFrom(payload0.mafiaShot);
+              const doctorSave = idxFrom(payload0.doctorSave);
+              const lecterSave = idxFrom(payload0.lecterSave);
+              if (mafiaShot !== null) {
+                const mafiaTargetRole = (draw.players[mafiaShot] && draw.players[mafiaShot].roleId) ? draw.players[mafiaShot].roleId : "citizen";
+                const mafiaTargetImmune = (mafiaTargetRole === "zodiac" || mafiaTargetRole === "invulnerable" || mafiaTargetRole === "armored");
+                const mafiaTargetSaved = (doctorSave !== null && doctorSave === mafiaShot) || (lecterSave !== null && lecterSave === mafiaShot);
+                if (!mafiaTargetImmune && !mafiaTargetSaved) {
+                  out[mafiaShot] = "mafia";
+                }
+              }
+              // Professional pending kill
+              const proShot = idxFrom(payload0.professionalShot);
+              if (proIdx !== null && proShot !== null) {
+                const tr = (draw.players[proShot] && draw.players[proShot].roleId) ? draw.players[proShot].roleId : "citizen";
+                const teamFa = (roles[tr] && roles[tr].teamFa) ? roles[tr].teamFa : "شهر";
+                if (tr === "zodiac") {
+                  // no effect
+                } else if (teamFa === "مافیا") {
+                  out[proShot] = "pro";
+                } else {
+                  out[proIdx] = "pro_self";
+                }
+              }
+              // Ocean pending self-death
+              try {
+                const oceanWake = (() => {
+                  const v = payload0.oceanWake;
+                  const arr = Array.isArray(v) ? v : (v === null || v === undefined ? [] : [v]);
+                  return arr.map((x) => idxFrom(x)).filter((x) => x !== null);
+                })();
+                if (oceanIdx !== null && oceanWake.length) {
+                  const bad = oceanWake.some((i) => {
+                    const rid = (draw.players[i] && draw.players[i].roleId) ? draw.players[i].roleId : "citizen";
+                    const teamFa = (roles[rid] && roles[rid].teamFa) ? roles[rid].teamFa : "شهر";
+                    return teamFa === "مافیا" || rid === "zodiac";
+                  });
+                  if (bad) out[oceanIdx] = "ocean";
+                }
+              } catch {}
+              // Sniper pending kill
+              try {
+                const sniperIdx = findIdxByRole(["sniper"]);
+                if (disabledIdx !== null && sniperIdx !== null && disabledIdx === sniperIdx) payload0.sniperShot = null;
+                const sniperShot = idxFrom(payload0.sniperShot);
+                if (sniperIdx !== null && sniperShot !== null) {
+                  const tr = (draw.players[sniperShot] && draw.players[sniperShot].roleId) ? draw.players[sniperShot].roleId : "citizen";
+                  const teamFa = (roles[tr] && roles[tr].teamFa) ? roles[tr].teamFa : "شهر";
+                  if (tr === "zodiac") {
+                    // no effect
+                  } else if (teamFa === "مافیا") {
+                    out[sniperShot] = "sniper";
+                  } else {
+                    out[sniperIdx] = "sniper_self";
+                  }
+                }
+              } catch {}
+              // Zodiac pending kill
+              try {
+                if (zodiacIdx !== null) {
+                  const zodiacShot = idxFrom(payload0.zodiacShot);
+                  if (zodiacShot !== null) {
+                    const tr = (draw.players[zodiacShot] && draw.players[zodiacShot].roleId) ? draw.players[zodiacShot].roleId : "citizen";
+                    if (tr === "guard") {
+                      out[zodiacIdx] = "zodiac_self";
+                    } else {
+                      out[zodiacShot] = "zodiac";
+                    }
+                  }
+                }
+              } catch {}
+              // Herbalist pending kill (poison from previous night, no antidote given yet)
+              try {
+                const d = f.draft;
+                const prevNightKey = String((f.day || 1) - 1);
+                const prevActions = (d && d.nightActionsByNight && d.nightActionsByNight[prevNightKey]) ? d.nightActionsByNight[prevNightKey] : null;
+                const prevPoisonRaw = prevActions ? prevActions.herbalistPoison : null;
+                const prevPoison = (prevPoisonRaw !== null && prevPoisonRaw !== undefined && Number.isFinite(parseInt(prevPoisonRaw, 10)))
+                  ? parseInt(prevPoisonRaw, 10) : null;
+                if (prevPoison !== null) {
+                  const haRaw = payload0.herbalistAntidote;
+                  const antidoteGiven = (haRaw !== null && haRaw !== undefined &&
+                    Number.isFinite(parseInt(haRaw, 10)) && parseInt(haRaw, 10) === prevPoison);
+                  if (!antidoteGiven) {
+                    out[prevPoison] = "herbalist";
+                  }
+                }
+              } catch {}
+              return out;
+            } catch {
+              return {};
+            }
+          })();
           const mafiaHost = $("castMafia");
           const cityHost = $("castCity");
           const indHost = $("castInd");
@@ -4322,8 +3123,10 @@
           function rowHtml(e) {
             const stText = e.alive
               ? t("lifeSheet.alive")
-              : (e.deathReason === "shot" ? t("lifeSheet.deadShortShot") : t("lifeSheet.deadShortVote"));
+              : t("lifeSheet.dead");
             const stCls = e.alive ? "alive" : "dead";
+            const pendingTxt = (appLang === "fa") ? "در انتظار صبح" : "pending";
+            const isPending = !!(e.alive && pending && pending[e.idx]);
             const teamCls =
               e.team === "مافیا" ? "team-mafia" :
               e.team === "شهر" ? "team-city" : "team-ind";
@@ -4331,7 +3134,10 @@
               <div class="castRow ${e.alive ? "" : "dead"} ${teamCls}" data-idx="${e.idx}">
                 <div class="leftMeta">
                   <div>${escapeHtml(e.name)}</div>
-                  <div class="statusPill ${stCls}">${escapeHtml(stText)}</div>
+                  <div style="display:flex; gap:6px; align-items:center; justify-content:flex-end">
+                    ${!isPending ? `<div class="statusPill ${stCls}">${escapeHtml(stText)}</div>` : ``}
+                    ${isPending ? `<div class="statusPill pending">${escapeHtml(pendingTxt)}</div>` : ``}
+                  </div>
                 </div>
                 <div class="who">
                   <div class="avatar">${roleIconSvg(e.roleId, e.team)}</div>
@@ -4352,9 +3158,6 @@
             if (indep.length) indHost.innerHTML = indep.map(rowHtml).join("");
           }
 
-          $("castStat").textContent = indep.length
-            ? t("cast.stat.withInd", { p: entries.length, m: mafia.length, c: city.length, i: indep.length })
-            : t("cast.stat.noInd", { p: entries.length, m: mafia.length, c: city.length });
 
           // click-to-set life status
           document.querySelectorAll("#castCard .castRow[data-idx]").forEach((el) => {
@@ -4404,12 +3207,7 @@
         }
 
         function showHelp() {
-          openToolModal(t("help.title"), `
-            <div class="toolBox">
-              <div style="font-weight:1100; margin-bottom:10px">${escapeHtml(t("help.quick"))}</div>
-              <div style="font-weight:900; font-size:12px; line-height:1.9; color: var(--muted)">${t("help.body")}</div>
-            </div>
-          `);
+          showScenarioGuide(getScenario());
         }
 
         function hasSavedGame() {
@@ -4470,6 +3268,11 @@
           // merge lightly (avoid breaking on partial state)
           appState.ui = { ...appState.ui, ...(saved.ui || {}) };
           appState.draw = saved.draw || null;
+          // IMPORTANT: restore GOD recorded state too (flow, timers, etc.)
+          // Without this, clicking "ادامه بازی" appears to wipe recorded flow.
+          if (saved.god && typeof saved.god === "object") {
+            appState.god = { ...appState.god, ...saved.god };
+          }
           // drop incompatible older saved games
           if (
             appState.draw &&
@@ -4528,6 +3331,20 @@
             return;
           }
 
+          // Reset all recorded game data, keep only player names.
+          try {
+            const keepNames = (appState.ui && Array.isArray(appState.ui.playerNames)) ? appState.ui.playerNames.slice() : [];
+            // stop any running timers
+            try { stopTimerInterval(); } catch {}
+            // clear draw + GOD recorded state
+            appState.draw = null;
+            appState.god = null;
+            // restore names (and length will be enforced below)
+            if (!appState.ui) appState.ui = {};
+            appState.ui.playerNames = keepNames;
+            saveState(appState);
+          } catch {}
+
           setError("");
           regenerateFromUI();
           ensureNamesLength(appState.ui.nPlayers);
@@ -4549,9 +3366,10 @@
           showCast();
         });
         $("castBackBtn").addEventListener("click", showSetup);
-        $("castNewBtn").addEventListener("click", () => {
-          showSetup();
-          startNewDraw({ keepUI: true });
+        $("castFlowBtn").addEventListener("click", showFlowTool);
+        $("castPrivacyBtn").addEventListener("click", () => {
+          $("castCard").classList.toggle("cast-blurred");
+          updateCastPrivacyBtn();
         });
 
         $("modalCloseBtn").addEventListener("click", closeModal);
@@ -4566,12 +3384,12 @@
         });
 
         // GOD tools
-        $("toolWake").addEventListener("click", showWakeTool);
+        // Wake order tool removed (replaced by Flow Runner night page).
         $("toolStatus").addEventListener("click", showStatusTool);
-        $("toolLastMove").addEventListener("click", showLastMoveTool);
+        // Last move tool removed from toolbar (shown only after a vote-out).
         $("toolRoleChange").addEventListener("click", showRoleChangeTool);
-        $("toolChance").addEventListener("click", showChanceTool);
         $("toolTimer").addEventListener("click", showTimerTool);
+        // Chance tool removed.
 
         $("namesDefaultBtn").addEventListener("click", () => setNamesMode("default"));
         $("namesLastBtn").addEventListener("click", () => setNamesMode("last"));
@@ -4671,7 +3489,6 @@
         // final persist ui
         syncUIToState();
         if (shouldPersist()) saveState(appState);
-      })();
     </script>
   </body>
 </html>
