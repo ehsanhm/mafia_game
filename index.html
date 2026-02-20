@@ -152,12 +152,13 @@
 
           <div class="actions">
             <button class="btn primary" id="castFlowBtn" type="button"><svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" style="vertical-align:-2px;margin-inline-end:4px" aria-hidden="true"><path d="M5.5 5.5 Q5.5 3 7.5 4.3 L18 10.7 Q20 12 18 13.3 L7.5 19.7 Q5.5 21 5.5 18.5Z"/></svg><span data-i18n="tools.flow">جریان</span></button>
-            <button class="btn secondary" id="toolTimer" type="button"><svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" style="vertical-align:-2px;margin-inline-end:4px" aria-hidden="true"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67V7z"/></svg><span data-i18n="tools.timer">تایم</span></button>
             <button class="btn secondary" id="toolStatus" type="button"><svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" style="vertical-align:-2px;margin-inline-end:4px" aria-hidden="true"><path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg><span data-i18n="tools.status">استعلام</span></button>
+            <button class="btn secondary" id="toolTimer" type="button"><svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" style="vertical-align:-2px;margin-inline-end:4px" aria-hidden="true"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67V7z"/></svg><span data-i18n="tools.timer">تایم</span></button>
           </div>
           <div class="actions" style="margin-top:8px">
-            <button class="btn" id="castBackBtn" type="button"><svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" style="vertical-align:-2px;margin-inline-end:4px" aria-hidden="true"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg><span data-i18n="cast.back">بازگشت به تنظیمات بازی</span></button>
+            <button class="btn" id="castBackBtn" type="button"><svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" style="vertical-align:-2px;margin-inline-end:4px" aria-hidden="true"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg><span data-i18n="cast.back">بازگشت</span></button>
             <button class="btn" id="toolRoleChange" type="button"><svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" style="vertical-align:-2px;margin-inline-end:4px" aria-hidden="true"><path d="M6.99 11L3 15l3.99 4v-3H14v-2H6.99v-3zM21 9l-3.99-4v3H10v2h7.01v3L21 9z"/></svg><span data-i18n="tools.roleChange">تغییر نقش</span></button>
+            <button class="btn secondary" id="toolDraw" type="button"><svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" style="vertical-align:-2px;margin-inline-end:4px" aria-hidden="true"><path d="M5 3h14a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2zm2 4a1 1 0 1 0 2 0 1 1 0 0 0-2 0zm10 0a1 1 0 1 0 2 0 1 1 0 0 0-2 0zM8 11a1 1 0 1 0 0 2 1 1 0 0 0 0-2zm8 0a1 1 0 1 0 0 2 1 1 0 0 0 0-2zM8 16a1 1 0 1 0 0 2 1 1 0 0 0 0-2zm8 0a1 1 0 1 0 0 2 1 1 0 0 0 0-2z"/></svg><span data-i18n="tools.chance">قرعه</span></button>
           </div>
         </div>
       </div>
@@ -1221,7 +1222,7 @@
               const keys = Array.from(groups.values())
                 .sort((a, b) => (a.day - b.day) || ((phaseOrder[a.phase] ?? 99) - (phaseOrder[b.phase] ?? 99)));
 
-              const describeNightActions = (payload) => {
+              const describeNightActions = (payload, eventDay) => {
                 const out = [];
                 if (!payload || typeof payload !== "object") return out;
                 const mafiaShot = idxFrom(payload.mafiaShot);
@@ -1375,36 +1376,36 @@
                 const lecterSave = idxFrom(payload.lecterSave);
                 if (lecterSave !== null && lecterIdx !== null) {
                   out.push((appLang === "fa")
-                    ? `${nameOf(lecterIdx)} (دکتر لکتر) نجات داد: ${nameOf(lecterSave)}.`
-                    : `${nameOf(lecterIdx)} (Dr. Lecter) saved: ${nameOf(lecterSave)}.`);
+                    ? `${plainNameOf(lecterIdx)} (دکتر لکتر) نجات داد: ${nameOf(lecterSave)}.`
+                    : `${plainNameOf(lecterIdx)} (Dr. Lecter) saved: ${nameOf(lecterSave)}.`);
                 }
                 const jokerIdx = findIdxByRole(["jokerMafia"]);
                 const jokerTarget = idxFrom(payload.jokerTarget);
                 if (jokerTarget !== null && jokerIdx !== null) {
                   out.push((appLang === "fa")
-                    ? `${nameOf(jokerIdx)} (جوکر) استعلام از ${nameOf(jokerTarget)} را برعکس کرد.`
-                    : `${nameOf(jokerIdx)} (Joker) flipped inquiry on ${nameOf(jokerTarget)}.`);
+                    ? `${plainNameOf(jokerIdx)} (جوکر) استعلام از ${nameOf(jokerTarget)} را برعکس کرد.`
+                    : `${plainNameOf(jokerIdx)} (Joker) flipped inquiry on ${nameOf(jokerTarget)}.`);
                 }
                 const swindlerIdx = findIdxByRole(["swindler"]);
                 const swindlerTarget = idxFrom(payload.swindlerTarget);
                 if (swindlerTarget !== null && swindlerIdx !== null) {
                   out.push((appLang === "fa")
-                    ? `${nameOf(swindlerIdx)} (شیاد) روی ${nameOf(swindlerTarget)} اثر گذاشت.`
-                    : `${nameOf(swindlerIdx)} (Swindler) targeted ${nameOf(swindlerTarget)}.`);
+                    ? `${plainNameOf(swindlerIdx)} (شیاد) روی ${nameOf(swindlerTarget)} اثر گذاشت.`
+                    : `${plainNameOf(swindlerIdx)} (Swindler) targeted ${nameOf(swindlerTarget)}.`);
                 }
                 const researcherIdx = findIdxByRole(["researcher"]);
                 const researcherLink = idxFrom(payload.researcherLink);
                 if (researcherLink !== null && researcherIdx !== null) {
                   out.push((appLang === "fa")
-                    ? `${nameOf(researcherIdx)} (محقق) به ${nameOf(researcherLink)} گره زد.`
-                    : `${nameOf(researcherIdx)} (Researcher) linked to ${nameOf(researcherLink)}.`);
+                    ? `${plainNameOf(researcherIdx)} (محقق) به ${nameOf(researcherLink)} گره زد.`
+                    : `${plainNameOf(researcherIdx)} (Researcher) linked to ${nameOf(researcherLink)}.`);
                 }
                 const natashaIdx = findIdxByRole(["natasha"]);
                 const natashaTarget = idxFrom(payload.natashaTarget);
                 if (natashaTarget !== null && natashaIdx !== null) {
                   out.push((appLang === "fa")
-                    ? `${nameOf(natashaIdx)} (ناتاشا) ${nameOf(natashaTarget)} را ساکت کرد.`
-                    : `${nameOf(natashaIdx)} (Natasha) silenced ${nameOf(natashaTarget)}.`);
+                    ? `${plainNameOf(natashaIdx)} (ناتاشا) ${nameOf(natashaTarget)} را ساکت کرد.`
+                    : `${plainNameOf(natashaIdx)} (Natasha) silenced ${nameOf(natashaTarget)}.`);
                 }
                 const sniperIdx = findIdxByRole(["sniper"]);
                 const sniperShot = idxFrom(payload.sniperShot);
@@ -1414,35 +1415,76 @@
                     const teamFa = (roles[tr] && roles[tr].teamFa) ? roles[tr].teamFa : "شهر";
                     if (teamFa === "مافیا") {
                       out.push((appLang === "fa")
-                        ? `${nameOf(sniperIdx)} (تک‌تیرانداز) به ${nameOf(sniperShot)} شلیک کرد (مافیا — خارج شد).`
-                        : `${nameOf(sniperIdx)} (Sniper) shot ${nameOf(sniperShot)} (Mafia — eliminated).`);
+                        ? `${plainNameOf(sniperIdx)} (تک‌تیرانداز) به ${nameOf(sniperShot)} شلیک کرد (مافیا — خارج شد).`
+                        : `${plainNameOf(sniperIdx)} (Sniper) shot ${nameOf(sniperShot)} (Mafia — eliminated).`);
                     } else {
                       out.push((appLang === "fa")
-                        ? `${nameOf(sniperIdx)} (تک‌تیرانداز) به ${nameOf(sniperShot)} شلیک کرد (اشتباه — تک‌تیرانداز خارج شد).`
-                        : `${nameOf(sniperIdx)} (Sniper) shot ${nameOf(sniperShot)} (wrong — Sniper eliminated).`);
+                        ? `${plainNameOf(sniperIdx)} (تک‌تیرانداز) به ${nameOf(sniperShot)} شلیک کرد (اشتباه — تک‌تیرانداز خارج شد).`
+                        : `${plainNameOf(sniperIdx)} (Sniper) shot ${nameOf(sniperShot)} (wrong — Sniper eliminated).`);
                     }
                   } catch {}
                 }
                 const negotiatorIdx = findIdxByRole(["negotiator"]);
                 const negotiatorTarget = idxFrom(payload.negotiatorTarget);
                 if (negotiatorTarget !== null && negotiatorIdx !== null) {
-                  out.push((appLang === "fa")
-                    ? `${nameOf(negotiatorIdx)} (مذاکره‌کننده) مذاکره با ${nameOf(negotiatorTarget)} را انتخاب کرد.`
-                    : `${nameOf(negotiatorIdx)} (Negotiator) attempted to negotiate with ${nameOf(negotiatorTarget)}.`);
+                  try {
+                    const negRec = f && f.draft && f.draft.nightNegotiatorAppliedByDay
+                      && f.draft.nightNegotiatorAppliedByDay[String(eventDay)];
+                    const negSucceeded = negRec ? negRec.succeeded : null;
+                    if (negSucceeded === true) {
+                      out.push((appLang === "fa")
+                        ? `${plainNameOf(negotiatorIdx)} (مذاکره‌کننده) با ${plainNameOf(negotiatorTarget)} مذاکره کرد — موفق (به مافیا تبدیل شد).`
+                        : `${plainNameOf(negotiatorIdx)} (Negotiator) negotiated with ${plainNameOf(negotiatorTarget)} — success (converted to Mafia).`);
+                    } else if (negSucceeded === false) {
+                      out.push((appLang === "fa")
+                        ? `${plainNameOf(negotiatorIdx)} (مذاکره‌کننده) با ${nameOf(negotiatorTarget)} مذاکره کرد — شکست خورد.`
+                        : `${plainNameOf(negotiatorIdx)} (Negotiator) negotiated with ${nameOf(negotiatorTarget)} — failed.`);
+                    } else {
+                      out.push((appLang === "fa")
+                        ? `${plainNameOf(negotiatorIdx)} (مذاکره‌کننده) مذاکره با ${nameOf(negotiatorTarget)} را انتخاب کرد.`
+                        : `${plainNameOf(negotiatorIdx)} (Negotiator) attempted to negotiate with ${nameOf(negotiatorTarget)}.`);
+                    }
+                  } catch {
+                    out.push((appLang === "fa")
+                      ? `${plainNameOf(negotiatorIdx)} (مذاکره‌کننده) مذاکره با ${nameOf(negotiatorTarget)} را انتخاب کرد.`
+                      : `${plainNameOf(negotiatorIdx)} (Negotiator) attempted to negotiate with ${nameOf(negotiatorTarget)}.`);
+                  }
+                }
+                const reporterIdx = findIdxByRole(["reporter"]);
+                const reporterTarget = idxFrom(payload.reporterTarget);
+                if (reporterTarget !== null && reporterIdx !== null) {
+                  try {
+                    const repRec = f && f.draft && f.draft.reporterResultByNight
+                      && f.draft.reporterResultByNight[String(eventDay)];
+                    if (repRec && repRec.wasNegotiated !== undefined) {
+                      const thumb = repRec.wasNegotiated ? "👍" : "👎";
+                      out.push((appLang === "fa")
+                        ? `${plainNameOf(reporterIdx)} (خبرنگار) استعلام از ${nameOf(reporterTarget)}: ${thumb} ${repRec.wasNegotiated ? "مذاکره شده" : "مذاکره نشده"}.`
+                        : `${plainNameOf(reporterIdx)} (Reporter) inquiry on ${nameOf(reporterTarget)}: ${thumb} ${repRec.wasNegotiated ? "negotiated" : "not negotiated"}.`);
+                    } else {
+                      out.push((appLang === "fa")
+                        ? `${plainNameOf(reporterIdx)} (خبرنگار) استعلام از ${nameOf(reporterTarget)}.`
+                        : `${plainNameOf(reporterIdx)} (Reporter) inquiry about ${nameOf(reporterTarget)}.`);
+                    }
+                  } catch {
+                    out.push((appLang === "fa")
+                      ? `${plainNameOf(reporterIdx)} (خبرنگار) استعلام از ${nameOf(reporterTarget)}.`
+                      : `${plainNameOf(reporterIdx)} (Reporter) inquiry about ${nameOf(reporterTarget)}.`);
+                  }
                 }
                 const kadkhodaIdx = findIdxByRole(["kadkhoda"]);
                 const kadkhodaTarget = idxFrom(payload.kadkhodaTarget);
                 if (kadkhodaTarget !== null && kadkhodaIdx !== null) {
                   out.push((appLang === "fa")
-                    ? `${nameOf(kadkhodaIdx)} (کدخدا) ${nameOf(kadkhodaTarget)} را بیدار کرد.`
-                    : `${nameOf(kadkhodaIdx)} (Kadkhoda) linked/woke ${nameOf(kadkhodaTarget)}.`);
+                    ? `${plainNameOf(kadkhodaIdx)} (کدخدا) ${nameOf(kadkhodaTarget)} را بیدار کرد.`
+                    : `${plainNameOf(kadkhodaIdx)} (Kadkhoda) linked/woke ${nameOf(kadkhodaTarget)}.`);
                 }
                 const hackerIdx = findIdxByRole(["hacker"]);
                 const hackerBlock = idxFrom(payload.hackerBlock);
                 if (hackerBlock !== null && hackerIdx !== null) {
                   out.push((appLang === "fa")
-                    ? `${nameOf(hackerIdx)} (هکر) توانایی ${nameOf(hackerBlock)} را مسدود کرد.`
-                    : `${nameOf(hackerIdx)} (Hacker) blocked ${nameOf(hackerBlock)}'s ability.`);
+                    ? `${plainNameOf(hackerIdx)} (هکر) توانایی ${nameOf(hackerBlock)} را مسدود کرد.`
+                    : `${plainNameOf(hackerIdx)} (Hacker) blocked ${nameOf(hackerBlock)}'s ability.`);
                 }
                 const guideIdx = findIdxByRole(["guide"]);
                 const guideTarget = idxFrom(payload.guideTarget);
@@ -1452,47 +1494,50 @@
                     const isMafia = detectiveInquiryIsMafia(tr);
                     if (isMafia) {
                       out.push((appLang === "fa")
-                        ? `${nameOf(guideIdx)} (راهنما) ${nameOf(guideTarget)} را انتخاب کرد — مافیا (راهنما لو رفت).`
-                        : `${nameOf(guideIdx)} (Guide) targeted ${nameOf(guideTarget)} — Mafia (Guide exposed).`);
+                        ? `${plainNameOf(guideIdx)} (راهنما) ${nameOf(guideTarget)} را انتخاب کرد — مافیا (راهنما لو رفت).`
+                        : `${plainNameOf(guideIdx)} (Guide) targeted ${nameOf(guideTarget)} — Mafia (Guide exposed).`);
                     } else {
                       out.push((appLang === "fa")
-                        ? `${nameOf(guideIdx)} (راهنما) ${nameOf(guideTarget)} را انتخاب کرد — شهروند.`
-                        : `${nameOf(guideIdx)} (Guide) targeted ${nameOf(guideTarget)} — Citizen.`);
+                        ? `${plainNameOf(guideIdx)} (راهنما) ${nameOf(guideTarget)} را انتخاب کرد — شهروند.`
+                        : `${plainNameOf(guideIdx)} (Guide) targeted ${nameOf(guideTarget)} — Citizen.`);
                     }
                   } catch {
                     out.push((appLang === "fa")
-                      ? `${nameOf(guideIdx)} (راهنما) ${nameOf(guideTarget)} را انتخاب کرد.`
-                      : `${nameOf(guideIdx)} (Guide) targeted ${nameOf(guideTarget)}.`);
+                      ? `${plainNameOf(guideIdx)} (راهنما) ${nameOf(guideTarget)} را انتخاب کرد.`
+                      : `${plainNameOf(guideIdx)} (Guide) targeted ${nameOf(guideTarget)}.`);
                   }
                 }
                 const bodyguardIdx = findIdxByRole(["bodyguard"]);
                 const bodyguardProtect = idxFrom(payload.bodyguardProtect);
                 if (bodyguardProtect !== null && bodyguardIdx !== null) {
                   out.push((appLang === "fa")
-                    ? `${nameOf(bodyguardIdx)} (محافظ) از ${nameOf(bodyguardProtect)} محافظت کرد.`
-                    : `${nameOf(bodyguardIdx)} (Bodyguard) protected ${nameOf(bodyguardProtect)}.`);
+                    ? `${plainNameOf(bodyguardIdx)} (محافظ) از ${nameOf(bodyguardProtect)} محافظت کرد.`
+                    : `${plainNameOf(bodyguardIdx)} (Bodyguard) protected ${nameOf(bodyguardProtect)}.`);
                 }
                 const minemakerIdx = findIdxByRole(["minemaker"]);
                 const minemakerTarget = idxFrom(payload.minemakerTarget);
                 if (minemakerTarget !== null && minemakerIdx !== null) {
                   out.push((appLang === "fa")
-                    ? `${nameOf(minemakerIdx)} (مین‌گذار) روی ${nameOf(minemakerTarget)} مین گذاشت.`
-                    : `${nameOf(minemakerIdx)} (Minemaker) planted a mine on ${nameOf(minemakerTarget)}.`);
+                    ? `${plainNameOf(minemakerIdx)} (مین‌گذار) روی ${nameOf(minemakerTarget)} مین گذاشت.`
+                    : `${plainNameOf(minemakerIdx)} (Minemaker) planted a mine on ${nameOf(minemakerTarget)}.`);
                 }
                 const lawyerIdx = findIdxByRole(["lawyer"]);
                 const lawyerTarget = idxFrom(payload.lawyerTarget);
                 if (lawyerTarget !== null && lawyerIdx !== null) {
                   out.push((appLang === "fa")
-                    ? `${nameOf(lawyerIdx)} (وکیل) ${nameOf(lawyerTarget)} را برای فردا مصون کرد.`
-                    : `${nameOf(lawyerIdx)} (Lawyer) granted ${nameOf(lawyerTarget)} immunity for tomorrow.`);
+                    ? `${plainNameOf(lawyerIdx)} (وکیل) ${nameOf(lawyerTarget)} را برای فردا مصون کرد.`
+                    : `${plainNameOf(lawyerIdx)} (Lawyer) granted ${nameOf(lawyerTarget)} immunity for tomorrow.`);
                 }
                 const natoIdx = findIdxByRole(["nato"]);
                 const natoTarget = idxFrom(payload.natoTarget);
                 const natoRoleGuess = (payload.natoRoleGuess != null && String(payload.natoRoleGuess).trim()) ? String(payload.natoRoleGuess).trim() : null;
                 if (natoTarget !== null && natoIdx !== null && natoRoleGuess) {
+                  const natoGuessLabel = (appLang === "fa")
+                    ? ((roles[natoRoleGuess] && roles[natoRoleGuess].faName) ? roles[natoRoleGuess].faName : natoRoleGuess)
+                    : ((typeof ROLE_I18N !== "undefined" && ROLE_I18N[natoRoleGuess] && ROLE_I18N[natoRoleGuess].name) ? ROLE_I18N[natoRoleGuess].name : natoRoleGuess);
                   out.push((appLang === "fa")
-                    ? `${nameOf(natoIdx)} (ناتو) نقش ${nameOf(natoTarget)} را «${natoRoleGuess}» حدس زد.`
-                    : `${nameOf(natoIdx)} (NATO) guessed ${nameOf(natoTarget)}'s role as "${natoRoleGuess}".`);
+                    ? `${plainNameOf(natoIdx)} (ناتو) نقش ${nameOf(natoTarget)} را «${natoGuessLabel}» حدس زد.`
+                    : `${plainNameOf(natoIdx)} (NATO) guessed ${nameOf(natoTarget)}'s role as "${natoGuessLabel}".`);
                 }
                 return out;
               };
@@ -1560,7 +1605,7 @@
                       : `${nameOf(detIdx)} inquiry on ${nameOf(target)}: ${thumb} ${isMafia ? "Mafia" : "Citizen"}.`);
                   }
                 } else if (k === "night_actions") {
-                  out.push(...describeNightActions(d0));
+                  out.push(...describeNightActions(d0, e.day));
                 } else if (k === "bomb_resolve") {
                   try {
                     if (!d0 || typeof d0 !== "object") return out;
@@ -2072,6 +2117,88 @@
             if (c) c.textContent = formatMMSS(t.remaining.defense);
           } catch {}
         }
+        function showDrawTool() {
+          const draw = appState.draw;
+          if (!draw || !draw.players) {
+            openToolModal(t("tools.chance"), `<p style="padding:8px 0;color:var(--muted)">${appLang === "fa" ? "داده‌ای موجود نیست." : "No data available."}</p>`, { hideBottom: true });
+            return;
+          }
+          const getName = (i) => (appState.ui.playerNames && appState.ui.playerNames[i]) ? appState.ui.playerNames[i] : t("common.playerN", { n: i + 1 });
+          const alivePlayers = draw.players.map((p, i) => ({ ...p, idx: i })).filter(p => p.alive !== false);
+          if (alivePlayers.length === 0) {
+            openToolModal(t("tools.chance"), `<p style="padding:8px 0;color:var(--muted)">${appLang === "fa" ? "بازیکن زنده‌ای وجود ندارد." : "No alive players."}</p>`, { hideBottom: true });
+            return;
+          }
+
+          const S_IDLE = `background:rgba(255,255,255,.05);border:2px solid rgba(255,255,255,.10);color:var(--muted);font-weight:950;`;
+          const S_SEL  = `background:rgba(99,179,237,.22);border:2px solid #63b3ed;color:#fff;font-weight:1100;`;
+          const S_WIN  = `background:rgba(53,208,127,.28);border:2px solid rgba(53,208,127,.9);color:#fff;font-weight:1100;`;
+          const CARD_BASE = `width:100%;aspect-ratio:1/1;border-radius:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;text-align:center;padding:8px;font-size:13px;line-height:1.3;transition:background .12s,border-color .12s;box-shadow:0 4px 12px rgba(0,0,0,.25);`;
+
+          const cards = alivePlayers.map(p =>
+            `<button class="drawCard" data-idx="${p.idx}" type="button" style="${CARD_BASE}${S_IDLE}">${escapeHtml(getName(p.idx))}</button>`
+          ).join("");
+
+          const bodyHtml = `
+            <div style="padding:4px 0 8px">
+              <div class="note" style="margin-bottom:10px">${escapeHtml(appLang === "fa" ? "بازیکنان شرکت‌کننده را انتخاب کنید:" : "Select players to include in the draw:")}</div>
+              <div id="drawGrid" style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;max-height:52vh;overflow:auto;-webkit-overflow-scrolling:touch;">${cards}</div>
+              <div style="margin-top:14px;display:flex;gap:8px;">
+                <button id="drawBtn" class="btn primary" type="button" style="flex:1;opacity:0.45" disabled>${appLang === "fa" ? "قرعه‌کشی" : "Draw"}</button>
+                <button id="drawEliminateBtn" class="btn" style="flex:1;background:#dc2626;color:#fff;border-color:#dc2626;display:none" type="button">${appLang === "fa" ? "حذف از بازی" : "Eliminate"}</button>
+              </div>
+            </div>`;
+
+          openToolModal(t("tools.chance"), bodyHtml, { hideBottom: true });
+
+          const grid = document.getElementById("drawGrid");
+          const drawBtn = document.getElementById("drawBtn");
+          const elimBtn = document.getElementById("drawEliminateBtn");
+          const selected = new Set();
+          let winnerIdx = null;
+
+          const refreshDrawBtn = () => {
+            const hasSelected = selected.size > 0;
+            drawBtn.disabled = !hasSelected;
+            drawBtn.style.opacity = hasSelected ? "" : "0.45";
+          };
+
+          grid.addEventListener("click", (e) => {
+            const card = e.target.closest(".drawCard");
+            if (!card || winnerIdx !== null) return;
+            const idx = parseInt(card.dataset.idx, 10);
+            if (selected.has(idx)) {
+              selected.delete(idx);
+              card.style.cssText = CARD_BASE + S_IDLE;
+            } else {
+              selected.add(idx);
+              card.style.cssText = CARD_BASE + S_SEL;
+            }
+            refreshDrawBtn();
+          });
+
+          drawBtn.addEventListener("click", () => {
+            if (selected.size === 0) return;
+            const pool = Array.from(selected);
+            winnerIdx = pool[Math.floor(Math.random() * pool.length)];
+            // Update all cards: dim non-winners, highlight winner
+            grid.querySelectorAll(".drawCard").forEach(card => {
+              const idx = parseInt(card.dataset.idx, 10);
+              card.style.cssText = CARD_BASE + (idx === winnerIdx ? S_WIN : S_IDLE);
+            });
+            drawBtn.disabled = true;
+            drawBtn.style.opacity = "0.45";
+            elimBtn.style.display = "";
+          });
+
+          elimBtn.addEventListener("click", () => {
+            if (winnerIdx === null) return;
+            setPlayerLife(winnerIdx, { alive: false, reason: "vote" });
+            renderCast();
+            closeToolModal();
+          });
+        }
+
         function showTimerTool() {
           ensureTimers();
           const tmr = appState.god.timers;
@@ -3133,7 +3260,7 @@
             return `
               <div class="castRow ${e.alive ? "" : "dead"} ${teamCls}" data-idx="${e.idx}">
                 <div class="leftMeta">
-                  <div>${escapeHtml(e.name)}</div>
+                  <div class="castName">${escapeHtml(e.name)}</div>
                   <div style="display:flex; gap:6px; align-items:center; justify-content:flex-end">
                     ${!isPending ? `<div class="statusPill ${stCls}">${escapeHtml(stText)}</div>` : ``}
                     ${isPending ? `<div class="statusPill pending">${escapeHtml(pendingTxt)}</div>` : ``}
@@ -3389,7 +3516,7 @@
         // Last move tool removed from toolbar (shown only after a vote-out).
         $("toolRoleChange").addEventListener("click", showRoleChangeTool);
         $("toolTimer").addEventListener("click", showTimerTool);
-        // Chance tool removed.
+        $("toolDraw").addEventListener("click", showDrawTool);
 
         $("namesDefaultBtn").addEventListener("click", () => setNamesMode("default"));
         $("namesLastBtn").addEventListener("click", () => setNamesMode("last"));

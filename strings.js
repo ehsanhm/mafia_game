@@ -33,7 +33,7 @@ const STR = {
     "cards.next": "برو مرحله بعد!",
 
     "cast.title": "فهرست شخصیت‌ها",
-    "cast.back": "بازگشت به تنظیمات بازی",
+    "cast.back": "بازگشت",
     "cast.new": "قرعه‌کشی جدید",
     "cast.reveal": "نمایش نقش‌ها",
     "cast.hide": "پنهان‌کردن نقش‌ها",
@@ -293,7 +293,7 @@ const STR = {
     "cards.next": "Next step",
 
     "cast.title": "Cast list",
-    "cast.back": "Back to setup",
+    "cast.back": "Back",
     "cast.new": "New draw",
     "cast.reveal": "Reveal Roles",
     "cast.hide": "Hide Roles",

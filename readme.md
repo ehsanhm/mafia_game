@@ -1,16 +1,16 @@
 
 #### TODO:
 
-- Nato's correct guess doesn't kill the person and also mafia team can make a shot and guess at the same time which is not possible.
+
+#### Done:
+
+- we need a way to mark people when take use their challenge. so the moderator knows they are not allowed to get another challange. how can we add an option to mark people as "challage used" in the page "Step 1 of 2 • Voting".  we already have cards for each player and I don't want to add more cards
+
+- After negotation happend, the reporter can make an inquiry (only one night) and see if someone was negotiated. something like detective. They get a thumbs up if the person they chose was negotiated.
 
 - Armored won't die the first time they're voted out, but after that, they will be killed at nights if they're shot.
 
-- When negotiator chooses someone and that someone is a citizen or an armored without shield (armored who's been voted out before, but still alive), that person becomes part of Mafia team and becomes a simple Mafia (negotiated Mafia).
-
-- After negotation nights, reporter can make an inquiry (only one night) and see if someone was negotiated. something like detective. They get a thumbs up if the person they chose was negotiated.
-
-
-#### Done:
+- Nato's correct guess doesn't kill the person and also mafia team can make a shot and guess at the same time which is not possible.
 
 - we should see a list of available roles not and should not have to write down the role name "Guessed role name". also when we go back to that night, it still says "NATO — Role Guess (once per game)
 NATO already used the role-guess ability."

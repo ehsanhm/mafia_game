@@ -8,7 +8,7 @@
               bombActive: false,
               guns: {}, // idx -> { type: "real"|"fake", used: boolean, givenAt }
               events: [], // { at, phase, day, kind, data }
-              draft: {}, // ui-only scratch (not required but persisted ok)
+              draft: { challengeUsedByDay: {} }, // ui-only scratch (not required but persisted ok)
             };
           }
           if (!Array.isArray(appState.god.flow.events)) appState.god.flow.events = [];
@@ -94,6 +94,53 @@
               if (rec.target !== null && rec.target !== undefined) {
                 d.sniperShotUsed = false;
               }
+            }
+            // Once-per-game "used" flags set during the night being reverted.
+            // Reporter
+            if (d.reporterResultByNight && d.reporterResultByNight[dayKey]) {
+              d.reporterResultByNight[dayKey] = null;
+              d.reporterUsed = Object.values(d.reporterResultByNight).some((r) => r !== null && r !== undefined);
+            }
+            // NATO
+            if (d.natoUsedNight != null && Number(d.natoUsedNight) === nightDayNum) {
+              d.natoUsedNight = null;
+            }
+            // Minemaker
+            if (d.minemakerUsedOnNight != null && Number(d.minemakerUsedOnNight) === nightDayNum) {
+              d.minemakerUsed = false;
+              d.minemakerUsedOnNight = null;
+              d.minemakerMine = null;
+            }
+            // Lawyer
+            if (d.lawyerUsedOnNight != null && Number(d.lawyerUsedOnNight) === nightDayNum) {
+              d.lawyerUsed = false;
+              d.lawyerUsedOnNight = null;
+            }
+            // Armorsmith self-armor
+            if (d.armorsmithSelfUsedOnNight != null && Number(d.armorsmithSelfUsedOnNight) === nightDayNum) {
+              d.armorsmithSelfUsed = false;
+              d.armorsmithSelfUsedOnNight = null;
+            }
+            // Herbalist cycle complete (set during night→day for the night after poisoning)
+            if (d.nightHerbalistAppliedByDay && d.nightHerbalistAppliedByDay[dayKey]) {
+              const hRec = d.nightHerbalistAppliedByDay[dayKey];
+              if (hRec && (hRec.killed !== null || hRec.prevAlive !== null)) {
+                d.herbalistCycleComplete = false;
+              }
+            }
+            // Hard John first-survival flag
+            if (d.hardJohnSurvivedOnNight != null && Number(d.hardJohnSurvivedOnNight) === nightDayNum) {
+              d.hardJohnSurvivedMafiaShotOnce = false;
+              d.hardJohnSurvivedOnNight = null;
+            }
+            // Negotiator conversion
+            if (d.nightNegotiatorAppliedByDay && d.nightNegotiatorAppliedByDay[dayKey]) {
+              const rec = d.nightNegotiatorAppliedByDay[dayKey];
+              if (Number.isFinite(Number(rec.converted)) && rec.prevRoleId !== null) {
+                const p = appState.draw && appState.draw.players && appState.draw.players[parseInt(rec.converted, 10)];
+                if (p) p.roleId = rec.prevRoleId;
+              }
+              d.nightNegotiatorAppliedByDay[dayKey] = { converted: null, prevRoleId: null, succeeded: false };
             }
             // Bomb planted that night (stored in bombByDay[nightDayNum+1])
             const nextDayKey = String(nightDayNum + 1);
@@ -278,14 +325,34 @@
             const ms = (payload.mafiaShot === null || payload.mafiaShot === undefined) ? null : parseInt(payload.mafiaShot, 10);
             const ds = (payload.doctorSave === null || payload.doctorSave === undefined) ? null : parseInt(payload.doctorSave, 10);
             const ls = (payload.lecterSave === null || payload.lecterSave === undefined) ? null : parseInt(payload.lecterSave, 10);
+
+            // NATO rule: if NATO made a role guess this night, mafia cannot shoot.
+            // If the guess was correct, NATO's target dies instead.
+            const natoTgt = (payload.natoTarget === null || payload.natoTarget === undefined) ? null : parseInt(payload.natoTarget, 10);
+            const natoGuess = (payload.natoRoleGuess != null && String(payload.natoRoleGuess).trim()) ? String(payload.natoRoleGuess).trim() : null;
+            const natoMadeGuess = Number.isFinite(natoTgt) && natoTgt >= 0 && natoTgt < draw.players.length && natoGuess !== null;
+
             let desiredKill = (Number.isFinite(ms) && ms >= 0 && ms < draw.players.length && ms !== ds && ms !== ls) ? ms : null;
+            // NATO blocks the mafia shot entirely when a guess was made.
+            if (natoMadeGuess) desiredKill = null;
+
+            // If NATO's guess was correct, kill that target (subject to same immunities as mafia shot).
+            if (natoMadeGuess && natoTgt !== ds && natoTgt !== ls) {
+              const actualRole = (draw.players[natoTgt] && draw.players[natoTgt].roleId) ? draw.players[natoTgt].roleId : "citizen";
+              if (natoGuess === actualRole) desiredKill = natoTgt;
+            }
+
             if (desiredKill !== null) {
               const targetRole = (draw.players[desiredKill] && draw.players[desiredKill].roleId) ? draw.players[desiredKill].roleId : "citizen";
-              if (targetRole === "zodiac" || targetRole === "invulnerable" || targetRole === "armored") {
+              if (targetRole === "zodiac" || targetRole === "invulnerable") {
+                desiredKill = null;
+              } else if (targetRole === "armored" && !f.draft.armoredVoteUsed) {
+                // Armored is immune to night shots until their armor has been spent by a vote-out.
                 desiredKill = null;
               } else if (targetRole === "hardJohn") {
                 if (!f.draft.hardJohnSurvivedMafiaShotOnce) {
                   f.draft.hardJohnSurvivedMafiaShotOnce = true;
+                  f.draft.hardJohnSurvivedOnNight = f.day || 1;
                   desiredKill = null;
                 }
               }
@@ -797,6 +864,66 @@
           }
         }
 
+        // Apply Negotiator role-conversion immediately (with reversible preview).
+        // Succeeds only when target is a plain citizen (roleId === "citizen")
+        // or an armored player who still has armor (!f.draft.armoredVoteUsed).
+        // On success the target's roleId becomes "mafia". Reversible via back-nav.
+        function applyNightNegotiatorFromPayload(f, payload) {
+          try {
+            if (!f || !payload) return false;
+            const draw = appState.draw;
+            if (!draw || !draw.players) return false;
+            const dayKey = String(f.day || 1);
+            if (!f.draft || typeof f.draft !== "object") f.draft = {};
+            if (!f.draft.nightNegotiatorAppliedByDay || typeof f.draft.nightNegotiatorAppliedByDay !== "object") f.draft.nightNegotiatorAppliedByDay = {};
+            const rec = (f.draft.nightNegotiatorAppliedByDay[dayKey] && typeof f.draft.nightNegotiatorAppliedByDay[dayKey] === "object")
+              ? f.draft.nightNegotiatorAppliedByDay[dayKey]
+              : { converted: null, prevRoleId: null, succeeded: false };
+
+            const ntRaw = (payload.negotiatorTarget === null || payload.negotiatorTarget === undefined) ? null : parseInt(payload.negotiatorTarget, 10);
+            const desiredTarget = (Number.isFinite(ntRaw) && ntRaw >= 0 && ntRaw < draw.players.length) ? ntRaw : null;
+
+            // no change
+            if ((rec.converted === null || rec.converted === undefined) && desiredTarget === null) return false;
+            if (Number.isFinite(Number(rec.converted)) && desiredTarget !== null && parseInt(rec.converted, 10) === desiredTarget) return false;
+
+            // revert previous conversion
+            if (Number.isFinite(Number(rec.converted)) && rec.prevRoleId !== null) {
+              const prevIdx = parseInt(rec.converted, 10);
+              const p = draw.players[prevIdx];
+              if (p) p.roleId = rec.prevRoleId;
+            }
+            rec.converted = null;
+            rec.prevRoleId = null;
+            rec.succeeded = false;
+
+            // apply new conversion
+            if (desiredTarget !== null) {
+              const p = draw.players[desiredTarget];
+              const targetRole = (p && p.roleId) ? p.roleId : "citizen";
+              const isEligible = (targetRole === "citizen") ||
+                (targetRole === "armored" && !f.draft.armoredVoteUsed);
+              if (isEligible && p) {
+                rec.prevRoleId = targetRole;
+                p.roleId = "mafia";
+                rec.converted = desiredTarget;
+                rec.succeeded = true;
+              } else {
+                // target not eligible — record attempt but don't convert
+                rec.converted = desiredTarget;
+                rec.prevRoleId = null;
+                rec.succeeded = false;
+              }
+            }
+
+            f.draft.nightNegotiatorAppliedByDay[dayKey] = rec;
+            saveState(appState);
+            return true;
+          } catch {
+            return false;
+          }
+        }
+
         // Apply day elimination (vote-out) immediately (with reversible preview).
         function applyDayElimFromPayload(f, payload) {
           try {
@@ -817,10 +944,13 @@
             if ((rec.out === null || rec.out === undefined) && desiredOut === null) return false;
             if (Number.isFinite(Number(rec.out)) && desiredOut !== null && parseInt(rec.out, 10) === desiredOut) return false;
 
-            // revert previous applied out (only if they were alive before)
+            // revert previous applied out
             if (Number.isFinite(Number(rec.out))) {
               const prevIdx = parseInt(rec.out, 10);
-              if (rec.prevAlive === true) {
+              if (rec.armoredAbsorbed) {
+                // Armor absorbed the vote — just clear the used flag on revert
+                f.draft.armoredVoteUsed = false;
+              } else if (rec.prevAlive === true) {
                 try { setPlayerLife(prevIdx, { alive: true }); } catch {}
               }
             }
@@ -832,38 +962,51 @@
             }
             rec.chainOut = null;
             rec.chainPrevAlive = null;
+            rec.armoredAbsorbed = false;
 
             // apply new out
             if (desiredOut !== null) {
               const p = draw.players[desiredOut];
               const wasAlive = p ? (p.alive !== false) : null;
-              if (wasAlive) {
-                try { setPlayerLife(desiredOut, { alive: false, reason: "vote" }); } catch {}
-              }
-              rec.out = desiredOut;
-              rec.prevAlive = wasAlive === true;
+              const isArmored = (p && p.roleId === "armored");
+              const armorAbsorbs = isArmored && !f.draft.armoredVoteUsed;
 
-              // researcher chain kill: if voted-out player is Researcher linked to non-boss Mafia
-              try {
-                if ((draw.players[desiredOut] || {}).roleId === "researcher") {
-                  const prevNightKey = String((f.day || 1) - 1);
-                  const prevNightActions = (f.draft.nightActionsByNight && f.draft.nightActionsByNight[prevNightKey]) || null;
-                  const linkedIdxRaw = prevNightActions ? prevNightActions.researcherLink : null;
-                  const linkedIdx = (linkedIdxRaw !== null && linkedIdxRaw !== undefined && Number.isFinite(parseInt(linkedIdxRaw, 10))) ? parseInt(linkedIdxRaw, 10) : null;
-                  if (linkedIdx !== null && draw.players[linkedIdx]) {
-                    const linkedRoleId = draw.players[linkedIdx].roleId || "citizen";
-                    const linkedTeamFa = (roles[linkedRoleId] && roles[linkedRoleId].teamFa) ? roles[linkedRoleId].teamFa : "شهر";
-                    if (linkedTeamFa === "مافیا" && linkedRoleId !== "mafiaBoss") {
-                      const chainWasAlive = draw.players[linkedIdx].alive !== false;
-                      if (chainWasAlive) {
-                        try { setPlayerLife(linkedIdx, { alive: false, reason: "researcher_chain" }); } catch {}
+              if (armorAbsorbs) {
+                // Armored survives the first vote-out; armor is now spent.
+                f.draft.armoredVoteUsed = true;
+                rec.armoredAbsorbed = true;
+                rec.out = desiredOut;
+                rec.prevAlive = null;
+              } else {
+                if (wasAlive) {
+                  try { setPlayerLife(desiredOut, { alive: false, reason: "vote" }); } catch {}
+                }
+                rec.armoredAbsorbed = false;
+                rec.out = desiredOut;
+                rec.prevAlive = wasAlive === true;
+
+                // researcher chain kill: if voted-out player is Researcher linked to non-boss Mafia
+                try {
+                  if ((draw.players[desiredOut] || {}).roleId === "researcher") {
+                    const prevNightKey = String((f.day || 1) - 1);
+                    const prevNightActions = (f.draft.nightActionsByNight && f.draft.nightActionsByNight[prevNightKey]) || null;
+                    const linkedIdxRaw = prevNightActions ? prevNightActions.researcherLink : null;
+                    const linkedIdx = (linkedIdxRaw !== null && linkedIdxRaw !== undefined && Number.isFinite(parseInt(linkedIdxRaw, 10))) ? parseInt(linkedIdxRaw, 10) : null;
+                    if (linkedIdx !== null && draw.players[linkedIdx]) {
+                      const linkedRoleId = draw.players[linkedIdx].roleId || "citizen";
+                      const linkedTeamFa = (roles[linkedRoleId] && roles[linkedRoleId].teamFa) ? roles[linkedRoleId].teamFa : "شهر";
+                      if (linkedTeamFa === "مافیا" && linkedRoleId !== "mafiaBoss") {
+                        const chainWasAlive = draw.players[linkedIdx].alive !== false;
+                        if (chainWasAlive) {
+                          try { setPlayerLife(linkedIdx, { alive: false, reason: "researcher_chain" }); } catch {}
+                        }
+                        rec.chainOut = linkedIdx;
+                        rec.chainPrevAlive = chainWasAlive;
                       }
-                      rec.chainOut = linkedIdx;
-                      rec.chainPrevAlive = chainWasAlive;
                     }
                   }
-                }
-              } catch {}
+                } catch {}
+              }
             } else {
               rec.out = null;
               rec.prevAlive = null;
@@ -1102,6 +1245,8 @@
                 try { applyNightSniperFromPayload(f, payload0); } catch {}
                 try { applyNightOceanFromPayload(f, payload0); } catch {}
                 try { applyNightZodiacFromPayload(f, payload0); } catch {}
+                // Negotiator converts a citizen/armored to mafia (role conversion, not a kill).
+                try { applyNightNegotiatorFromPayload(f, payload0); } catch {}
                 // Apply mafia last (uses doctorSave + lecterSave, possibly cleared by disable).
                 try { applyNightMafiaFromPayload(f, payload0); } catch {}
                 try { renderCast(); } catch {}

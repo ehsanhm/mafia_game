@@ -232,20 +232,37 @@
             if (!d.voteCandidatesByDay || typeof d.voteCandidatesByDay !== "object") d.voteCandidatesByDay = {};
             const selected = Array.isArray(d.voteCandidatesByDay[f.day]) ? d.voteCandidatesByDay[f.day] : [];
 
+            if (!d.challengeUsedByDay || typeof d.challengeUsedByDay !== "object") d.challengeUsedByDay = {};
+            const challengeUsed = Array.isArray(d.challengeUsedByDay[f.day]) ? d.challengeUsedByDay[f.day].map(Number) : [];
             const cells = aliveIdxs.map((idx) => {
               const isSel = selected.includes(idx) || selected.map(Number).includes(idx);
+              const isChallenged = challengeUsed.includes(idx);
               const name = escapeHtml(names[idx] || t("common.playerN", { n: idx + 1 }));
               const selStyle = isSel
                 ? `background:rgba(99,179,237,.22); border:2px solid #63b3ed; color:#fff; font-weight:1100;`
                 : `background:rgba(255,255,255,.05); border:2px solid rgba(255,255,255,.10); color:var(--muted); font-weight:950;`;
+              const badgeStyle = isChallenged
+                ? `background:rgba(255,75,75,.9); border:1px solid rgba(255,75,75,.6); color:#fff;`
+                : `background:transparent; border:1px solid rgba(255,255,255,.18); color:rgba(255,255,255,.2);`;
               return `
                 <button class="fl_vote_btn" data-idx="${idx}" type="button"
-                  style="width:100%; aspect-ratio:1/1; border-radius:14px; cursor:pointer;
+                  style="position:relative; width:100%; aspect-ratio:1/1; border-radius:14px; cursor:pointer;
                          display:flex; align-items:center; justify-content:center; text-align:center;
                          padding:8px; font-size:13px; line-height:1.3;
                          transition:background .12s,border-color .12s;
                          box-shadow:0 4px 12px rgba(0,0,0,.25); ${selStyle}">
                   ${name}
+                  <span data-challenge data-idx="${idx}"
+                    style="position:absolute; top:2px; right:2px; width:40px; height:40px; border-radius:50%;
+                           overflow:hidden; cursor:pointer; ${badgeStyle}">
+                    <svg width="40" height="40" viewBox="100 10 580 570" style="pointer-events:none" fill="none" stroke="currentColor" stroke-width="22" stroke-linecap="round" stroke-linejoin="round">
+                      <path transform="rotate(-6 340.204 272.672)" d="m226.22263,379.11109c-1.34911,-1.34174 35.07686,-28.17648 33.72775,-28.17648c-1.34911,0 1.34911,-41.59385 29.68042,-67.08685c28.33131,-25.493 64.75728,-44.27732 79.59749,-56.35296c14.84021,-12.07563 44.52063,-52.32775 55.31351,-57.69469c10.79288,-5.36695 29.68042,-6.70869 29.68042,10.7339c0,17.44258 -8.09466,42.93559 -18.88754,52.32775"/>
+                      <path d="m315.55554,460.44443c0,0 33.33333,-20 54.66667,-25.33333c21.33333,-5.33333 48,-9.33333 64,-20c16,-10.66667 30.66667,-64 40,-74.66666c9.33333,-10.66667 41.33333,-48 41.33333,-62.66666c0,-14.66667 -74.66666,-58.66666 -98.66666,-52c-24,6.66667 -54.66667,13.33333 -57.33333,33.33333"/>
+                      <path d="m448.88887,361.77776c0,0 29.33333,-61.33333 18.66667,-76c-10.66667,-14.66667 -61.33333,-38.66667 -74.66666,-37.33333c-13.33333,1.33333 -48,21.33333 -53.33333,22.66667c-5.33333,1.33333 -4,18.66667 10.66667,21.33333"/>
+                      <path d="m419.55554,380.44443c0,0 17.33333,-58.66666 10.66667,-73.33333c-6.66667,-14.66667 -42.66667,-30.66667 -58.66666,-25.33333c-16,5.33333 -41.33333,30.66667 -42.66667,41.33333c-1.33333,10.66667 10.66667,16 18.66667,17.33333c8,1.33333 25.33333,-6.66667 30.66667,-12c5.33333,-5.33333 -2.66667,6.66667 -4,14.66667c-1.33333,8 -8,-2.66667 -18.66667,24"/>
+                      <path d="m500.88887,308.44443c0,0 40,-22.66667 46.66667,-37.33333c6.66667,-14.66667 16,-62.66666 10.66667,-82.66666c-5.33333,-20 -24,-50.66667 -21.33333,-57.33333c2.66667,-6.66667 -38.66667,-5.33333 -32,40c6.66667,45.33333 10.66667,36 10.66667,34.66667c0,-1.33333 -16,13.33333 -16,36c0,22.66667 -10.66667,8 -11.55554,7.55557"/>
+                    </svg>
+                  </span>
                 </button>
               `;
             }).join("");
@@ -255,6 +272,7 @@
             const _tmrV = appState.god.timers;
             body = `
               <div class="note" style="margin-top:6px">${escapeHtml(appLang === "fa" ? "برای دفاع، بازیکنان نامزدشده را انتخاب کنید." : "Tap the players who have been nominated to defend themselves.")}</div>
+              <div class="note" style="margin-top:4px">${escapeHtml(appLang === "fa" ? "اگر چالش خود را استفاده کرده‌اند، آیکون «چالش» را بزنید." : "Tap the \"Challenge\" icon if they've already used their challenge.")}</div>
               ${showBombWarn ? `<div class="note" style="margin-top:10px; font-weight:950">${escapeHtml(t("tool.flow.bomb.active"))}</div>` : ``}
               <div class="timerRow" style="margin-top:10px; padding-bottom:10px; border-bottom:1px solid rgba(255,255,255,.08)">
                 <div class="timerCard">
@@ -1261,8 +1279,25 @@
                 `;
               }
               if (k === "reporter") {
+                const reporterUsed = !!(d && d.reporterUsed);
+                const reporterNightKey = String(f.day || 1);
+                const reporterRes = (d && d.reporterResultByNight && d.reporterResultByNight[reporterNightKey]) ? d.reporterResultByNight[reporterNightKey] : null;
+                const reporterResultLine = (() => {
+                  if (!reporterRes || reporterRes.target === null || reporterRes.target === undefined) return "";
+                  return reporterRes.wasNegotiated
+                    ? (appLang === "fa" ? "نتیجه: 👍 این بازیکن مذاکره شده." : "Result: 👍 This player was negotiated.")
+                    : (appLang === "fa" ? "نتیجه: 👎 این بازیکن مذاکره نشده." : "Result: 👎 This player was not negotiated.");
+                })();
+                if (reporterUsed && !reporterRes) {
+                  return `
+                    <div class="note" style="color:rgba(255,200,0,.9)">${escapeHtml(appLang === "fa" ? "خبرنگار استعلام خود را استفاده کرده است." : "Reporter has used their inquiry.")}</div>
+                  `;
+                }
                 return `
-                  <div class="note">${escapeHtml(appLang === "fa" ? "خبرنگار فقط در «شب مذاکره» بیدار می‌شود و استعلامِ نتیجهٔ مذاکره را دریافت می‌کند. در شب‌های معمولی این مرحله را رد کنید." : "Reporter only wakes on negotiation nights to receive the negotiation inquiry result. Skip this step on regular nights.")}</div>
+                  <label>${escapeHtml(appLang === "fa" ? "استعلام خبرنگار (مذاکره شده؟)" : "Reporter inquiry (was negotiated?)")}
+                    <select id="fl_reporter_target">${mkAliveOptsSel(savedNight.reporterTarget)}</select>
+                  </label>
+                  <div id="fl_reporter_result" class="note" style="margin-top:6px; ${reporterResultLine ? "" : "display:none"}">${escapeHtml(reporterResultLine)}</div>
                 `;
               }
               if (k === "representative") {
@@ -2213,6 +2248,7 @@
               const lawyerTarget = (document.getElementById("fl_lawyer_target") || {}).value || "";
               const natoTarget = (document.getElementById("fl_nato_target") || {}).value || "";
               const natoRoleGuess = (document.getElementById("fl_nato_role_guess") || {}).value || "";
+              const reporterTarget = (document.getElementById("fl_reporter_target") || {}).value || "";
               const nostPick3 = (() => {
                 const el = document.getElementById("fl_nost_pick3");
                 if (!el) return [];
@@ -2277,6 +2313,7 @@
               per.lawyerTarget = lawyerTarget === "" ? null : parseInt(lawyerTarget, 10);
               per.natoTarget = natoTarget === "" ? null : parseInt(natoTarget, 10);
               per.natoRoleGuess = String(natoRoleGuess || "");
+              per.reporterTarget = reporterTarget === "" ? null : parseInt(reporterTarget, 10);
               d.nightActionsByNight[nk] = per;
               // keep existing legacy draft fields too
               d.bombCode = String(bombCode || "");
@@ -2295,6 +2332,7 @@
                   })();
                   if (armorIdx !== null && parseInt(per.armorsmithArmor, 10) === armorIdx) {
                     d.armorsmithSelfUsed = true;
+                    d.armorsmithSelfUsedOnNight = Number(nk);
                     f.draft = d;
                   }
                 }
@@ -2332,6 +2370,7 @@
                 lawyerTarget: lawyerTarget === "" ? null : parseInt(lawyerTarget, 10),
                 natoTarget: natoTarget === "" ? null : parseInt(natoTarget, 10),
                 natoRoleGuess: String(natoRoleGuess || "") || null,
+                reporterTarget: reporterTarget === "" ? null : parseInt(reporterTarget, 10),
               };
               addFlowEvent("night_actions", payload);
 
@@ -2482,7 +2521,14 @@
                 const gd3 = f.draft || {};
                 if (minemakerTarget !== "") {
                   gd3.minemakerUsed = true;
+                  gd3.minemakerUsedOnNight = Number(nk);
                   gd3.minemakerMine = parseInt(minemakerTarget, 10);
+                  f.draft = gd3;
+                } else if (gd3.minemakerUsedOnNight != null && Number(gd3.minemakerUsedOnNight) === Number(nk)) {
+                  // User cleared on the same night it was set — unset it.
+                  gd3.minemakerUsed = false;
+                  gd3.minemakerUsedOnNight = null;
+                  gd3.minemakerMine = null;
                   f.draft = gd3;
                 }
               } catch {}
@@ -2492,7 +2538,59 @@
                 const gd4 = f.draft || {};
                 if (lawyerTarget !== "") {
                   gd4.lawyerUsed = true;
+                  gd4.lawyerUsedOnNight = Number(nk);
                   f.draft = gd4;
+                } else if (gd4.lawyerUsedOnNight != null && Number(gd4.lawyerUsedOnNight) === Number(nk)) {
+                  gd4.lawyerUsed = false;
+                  gd4.lawyerUsedOnNight = null;
+                  f.draft = gd4;
+                }
+              } catch {}
+
+              // Reporter inquiry result — thumbs up if the chosen player was ever negotiated.
+              try {
+                const reporterKey = String(f.day || 1);
+                const gdr = f.draft || {};
+                if (!gdr.reporterResultByNight || typeof gdr.reporterResultByNight !== "object") gdr.reporterResultByNight = {};
+                if (reporterTarget !== "" && appState.draw && appState.draw.players && appState.draw.players[parseInt(reporterTarget, 10)]) {
+                  const tIdx = parseInt(reporterTarget, 10);
+                  // Check previous nights (already applied at night→day transition).
+                  const negByDay = (gdr.nightNegotiatorAppliedByDay && typeof gdr.nightNegotiatorAppliedByDay === "object") ? gdr.nightNegotiatorAppliedByDay : {};
+                  let wasNegotiated = false;
+                  for (const dk of Object.keys(negByDay)) {
+                    const rec = negByDay[dk];
+                    if (rec && rec.succeeded === true && Number.isFinite(Number(rec.converted)) && parseInt(rec.converted, 10) === tIdx) {
+                      wasNegotiated = true;
+                      break;
+                    }
+                  }
+                  // Also check the current night's payload directly (not yet applied to draft).
+                  if (!wasNegotiated && payload.negotiatorTarget !== null && payload.negotiatorTarget !== undefined &&
+                      Number.isFinite(Number(payload.negotiatorTarget)) && parseInt(payload.negotiatorTarget, 10) === tIdx) {
+                    const p = appState.draw.players[tIdx];
+                    const roleId = (p && p.roleId) ? p.roleId : "citizen";
+                    wasNegotiated = (roleId === "citizen") || (roleId === "armored" && !gdr.armoredVoteUsed);
+                  }
+                  gdr.reporterResultByNight[reporterKey] = { target: tIdx, wasNegotiated, at: Date.now() };
+                  gdr.reporterUsed = true;
+                  f.draft = gdr;
+                  try {
+                    const el = document.getElementById("fl_reporter_result");
+                    if (el) {
+                      const resultText = wasNegotiated
+                        ? (appLang === "fa" ? "نتیجه: 👍 این بازیکن مذاکره شده." : "Result: 👍 This player was negotiated.")
+                        : (appLang === "fa" ? "نتیجه: 👎 این بازیکن مذاکره نشده." : "Result: 👎 This player was not negotiated.");
+                      el.style.display = "";
+                      el.textContent = resultText;
+                    }
+                  } catch {}
+                } else {
+                  gdr.reporterResultByNight[reporterKey] = null;
+                  f.draft = gdr;
+                  try {
+                    const el = document.getElementById("fl_reporter_result");
+                    if (el) { el.style.display = "none"; el.textContent = ""; }
+                  } catch {}
                 }
               } catch {}
 
@@ -2779,8 +2877,25 @@
             try {
               const btns = document.querySelectorAll(".fl_vote_btn");
               btns.forEach((btn) => {
-                btn.addEventListener("click", () => {
+                btn.addEventListener("click", (e) => {
                   try {
+                    // Challenge badge click — toggle "challenge used" for this player.
+                    if (e.target && e.target.hasAttribute && e.target.hasAttribute("data-challenge")) {
+                      e.stopPropagation();
+                      const cidx = parseInt(e.target.dataset.idx, 10);
+                      if (!Number.isFinite(cidx)) return;
+                      const d = f.draft || {};
+                      if (!d.challengeUsedByDay || typeof d.challengeUsedByDay !== "object") d.challengeUsedByDay = {};
+                      if (!Array.isArray(d.challengeUsedByDay[f.day])) d.challengeUsedByDay[f.day] = [];
+                      const cp = d.challengeUsedByDay[f.day].map(Number).indexOf(cidx);
+                      if (cp >= 0) d.challengeUsedByDay[f.day].splice(cp, 1);
+                      else d.challengeUsedByDay[f.day].push(cidx);
+                      f.draft = d;
+                      saveState(appState);
+                      showFlowTool();
+                      return;
+                    }
+                    // Card body click — toggle candidate for defense.
                     const idx = parseInt(btn.dataset.idx, 10);
                     if (!Number.isFinite(idx)) return;
                     const d = f.draft || {};
@@ -2842,14 +2957,53 @@
               "fl_lawyer_target",
               "fl_nato_target",
               "fl_nato_role_guess",
+              "fl_reporter_target",
             ];
+            // Helper: enforce mafia-shot ↔ NATO-guess mutual exclusion.
+            // Neither side is ever hard-disabled — both remain interactive so the user
+            // can always switch back by choosing "—". Dimming is visual hint only.
+            const enforceNatoMafiaMutex = () => {
+              try {
+                const shotEl  = document.getElementById("fl_mafia_shot");
+                const natoTEl = document.getElementById("fl_nato_target");
+                const natoGEl = document.getElementById("fl_nato_role_guess");
+                if (!shotEl && !natoTEl) return;
+                const shotActive = shotEl && shotEl.value !== "";
+                const natoActive = (natoTEl && natoTEl.value !== "") || (natoGEl && natoGEl.value !== "");
+                // Dim the inactive side as a hint, but never disable it.
+                if (shotEl)  shotEl.style.opacity  = natoActive ? "0.45" : "";
+                if (natoTEl) natoTEl.style.opacity = shotActive ? "0.45" : "";
+                if (natoGEl) natoGEl.style.opacity = shotActive ? "0.45" : "";
+              } catch {}
+            };
+
             for (const id of ids) {
               const el = document.getElementById(id);
               if (!el) continue;
               const evt = "change";
               try {
                 el.addEventListener(evt, () => {
+                  // Mutual exclusion: when mafia shot is chosen, clear NATO fields (and vice versa).
+                  if (id === "fl_mafia_shot") {
+                    const shotEl = document.getElementById("fl_mafia_shot");
+                    if (shotEl && shotEl.value !== "") {
+                      const natoTEl = document.getElementById("fl_nato_target");
+                      const natoGEl = document.getElementById("fl_nato_role_guess");
+                      if (natoTEl) natoTEl.value = "";
+                      if (natoGEl) natoGEl.value = "";
+                    }
+                  }
+                  if (id === "fl_nato_target" || id === "fl_nato_role_guess") {
+                    const natoTEl = document.getElementById("fl_nato_target");
+                    const natoGEl = document.getElementById("fl_nato_role_guess");
+                    const natoActive = (natoTEl && natoTEl.value !== "") || (natoGEl && natoGEl.value !== "");
+                    if (natoActive) {
+                      const shotEl = document.getElementById("fl_mafia_shot");
+                      if (shotEl) shotEl.value = "";
+                    }
+                  }
                   snapshotNightActionsFromUI();
+                  enforceNatoMafiaMutex();
                   // Re-render when disable target changes so blocked actions get greyed/disabled correctly.
                   if (id === "fl_magician_disable") {
                     try { showFlowTool(); } catch {}
@@ -2866,6 +3020,8 @@
                 });
               } catch {}
             }
+            // Apply initial disable state in case saved data has one side already set.
+            enforceNatoMafiaMutex();
           }
           // mid_vote (legacy midday bomb page) removed
 
