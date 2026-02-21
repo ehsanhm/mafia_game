@@ -690,6 +690,154 @@
                 ${lastMoveUi}
               </div>
             `;
+          } else if (cur.id === "namayande_rep_election") {
+            const d = f.draft || {};
+            const savedRep1 = (d.representatives && d.representatives[0] != null) ? d.representatives[0] : null;
+            const savedRep2 = (d.representatives && d.representatives[1] != null) ? d.representatives[1] : null;
+            const mkRepOptsSel = (sel, excludeIdx) => {
+              const s = sel !== null ? String(sel) : "";
+              const base = [`<option value="" ${s === "" ? "selected" : ""}>—</option>`];
+              for (const idx of aliveIdxs) {
+                if (excludeIdx !== null && idx === excludeIdx) continue;
+                const v = String(idx);
+                base.push(`<option value="${v}" ${v === s ? "selected" : ""}>${escapeHtml(names[idx] || t("common.playerN", { n: idx + 1 }))}</option>`);
+              }
+              return base.join("");
+            };
+            body = `<div class="toolBox">
+              <div class="note" style="margin-bottom:12px">${escapeHtml(appLang === "fa"
+                ? "هر بازیکن یک نماینده معرفی می‌کند. بیشترین رأی = نماینده."
+                : "Each player nominates a representative. Most votes wins.")}</div>
+              <div class="note" style="margin-bottom:12px; color:rgba(255,200,0,.9)">${escapeHtml(appLang === "fa"
+                ? "⚠ اگر دقیقاً ۲ نفر مساوی → هر دو نماینده می‌شوند. اگر ≥۳ نفر مساوی → مجدد رأی‌گیری بین آن‌ها."
+                : "⚠ Exactly 2 tied → both become reps. 3 or more tied → re-vote among them.")}</div>
+              <label style="margin-bottom:12px">${escapeHtml(appLang === "fa" ? "نماینده اول (دور رو به جلو)" : "Representative 1 (forward round)")}
+                <select id="fl_rep1">${mkRepOptsSel(savedRep1, null)}</select>
+              </label>
+              <label>${escapeHtml(appLang === "fa" ? "نماینده دوم (دور معکوس)" : "Representative 2 (reverse round)")}
+                <select id="fl_rep2">${mkRepOptsSel(savedRep2, savedRep1)}</select>
+              </label>
+            </div>`;
+          } else if (cur.id === "namayande_rep_action") {
+            const d = f.draft || {};
+            const reps = (d.representatives && d.representatives.length) ? d.representatives : [];
+            const rep1Idx = reps[0] != null ? reps[0] : null;
+            const rep2Idx = reps[1] != null ? reps[1] : null;
+            const rep1Name = rep1Idx !== null ? (names[rep1Idx] || t("common.playerN", { n: rep1Idx + 1 })) : "—";
+            const rep2Name = rep2Idx !== null ? (names[rep2Idx] || t("common.playerN", { n: rep2Idx + 1 })) : "—";
+            const savedTargets = (d.repTargetsByDay && d.repTargetsByDay[String(f.day)]) ? d.repTargetsByDay[String(f.day)] : {};
+            const mkRepTargetOpts = (sel) => {
+              const s = sel != null ? String(sel) : "";
+              const base = [`<option value="" ${s === "" ? "selected" : ""}>—</option>`];
+              for (const idx of aliveIdxs) {
+                const v = String(idx);
+                base.push(`<option value="${v}" ${v === s ? "selected" : ""}>${escapeHtml(names[idx] || t("common.playerN", { n: idx + 1 }))}</option>`);
+              }
+              return base.join("");
+            };
+            // Show previous night's betrayal vote as MC reminder
+            const prevNightKey = String((f.day || 1) - 1);
+            const prevNightActions = (d.nightActionsByNight && d.nightActionsByNight[prevNightKey]) ? d.nightActionsByNight[prevNightKey] : null;
+            const bRep = prevNightActions ? prevNightActions.betrayalRep : null;
+            const bDir = prevNightActions ? prevNightActions.betrayalDir : null;
+            const betrayalMemo = (bRep != null && bDir != null) ? (() => {
+              const repName = bRep === 1 ? rep1Name : rep2Name;
+              const dirText = bDir === "more"
+                ? (appLang === "fa" ? "رأی بیشتر شود" : "more votes")
+                : (appLang === "fa" ? "رأی کمتر شود" : "fewer votes");
+              return `<div class="note" style="margin-bottom:12px; padding:8px 10px; background:rgba(255,100,80,.12); border-radius:8px; border:1px solid rgba(255,100,80,.25)">
+                🔒 ${escapeHtml(appLang === "fa"
+                  ? `رأی خیانت (شب ${prevNightKey}): نماینده ${bRep} — ${repName} → ${dirText}`
+                  : `Betrayal vote (Night ${prevNightKey}): Rep ${bRep} — ${repName} → ${dirText}`)}
+              </div>`;
+            })() : "";
+            const noRepsWarn = reps.length < 2 ? `<div class="note" style="color:rgba(255,200,0,.9); margin-bottom:12px">${escapeHtml(appLang === "fa" ? "⚠ نمایندگان هنوز ثبت نشده‌اند." : "⚠ Representatives not yet recorded.")}</div>` : "";
+            body = `<div class="toolBox">
+              ${noRepsWarn}
+              ${betrayalMemo}
+              <div style="margin-bottom:10px; font-weight:1100">${escapeHtml(appLang === "fa" ? `نمایندگان: ${rep1Name} و ${rep2Name}` : `Representatives: ${rep1Name} & ${rep2Name}`)}</div>
+              <label style="margin-bottom:12px">${escapeHtml(appLang === "fa" ? `هدف نماینده اول (${rep1Name})` : `Rep 1 target (${rep1Name})`)}
+                <select id="fl_rep1_target">${mkRepTargetOpts(savedTargets[1])}</select>
+              </label>
+              <label>${escapeHtml(appLang === "fa" ? `هدف نماینده دوم (${rep2Name})` : `Rep 2 target (${rep2Name})`)}
+                <select id="fl_rep2_target">${mkRepTargetOpts(savedTargets[2])}</select>
+              </label>
+            </div>`;
+          } else if (cur.id === "namayande_cover") {
+            const d = f.draft || {};
+            const reps = (d.representatives && d.representatives.length) ? d.representatives : [];
+            const rep1Idx = reps[0] != null ? reps[0] : null;
+            const rep2Idx = reps[1] != null ? reps[1] : null;
+            const savedTargets = (d.repTargetsByDay && d.repTargetsByDay[String(f.day)]) ? d.repTargetsByDay[String(f.day)] : {};
+            const t1Name = savedTargets[1] != null ? (names[savedTargets[1]] || t("common.playerN", { n: savedTargets[1] + 1 })) : "—";
+            const t2Name = savedTargets[2] != null ? (names[savedTargets[2]] || t("common.playerN", { n: savedTargets[2] + 1 })) : "—";
+            const rep1Name = rep1Idx !== null ? (names[rep1Idx] || t("common.playerN", { n: rep1Idx + 1 })) : "—";
+            const rep2Name = rep2Idx !== null ? (names[rep2Idx] || t("common.playerN", { n: rep2Idx + 1 })) : "—";
+            body = `<div class="toolBox">
+              <div style="margin-bottom:12px">
+                <div style="font-weight:1100; margin-bottom:6px">${escapeHtml(appLang === "fa" ? "هدف‌های انتخاب‌شده:" : "Chosen targets:")}</div>
+                <div class="note">• ${escapeHtml(appLang === "fa" ? `هدف نماینده اول (${rep1Name}): ${t1Name}` : `Rep 1 (${rep1Name}) target: ${t1Name}`)}</div>
+                <div class="note" style="margin-top:4px">• ${escapeHtml(appLang === "fa" ? `هدف نماینده دوم (${rep2Name}): ${t2Name}` : `Rep 2 (${rep2Name}) target: ${t2Name}`)}</div>
+              </div>
+              <div class="note">${escapeHtml(appLang === "fa"
+                ? "هر تارگت می‌تواند برای خودش کاور مشخص کند. کاورها به نوبت از تارگت‌ها دفاع می‌کنند."
+                : "Each target may select a cover player. Covers defend their targets in turn.")}</div>
+            </div>`;
+          } else if (cur.id === "namayande_defense") {
+            const d = f.draft || {};
+            const savedTargets = (d.repTargetsByDay && d.repTargetsByDay[String(f.day)]) ? d.repTargetsByDay[String(f.day)] : {};
+            const t1Name = savedTargets[1] != null ? (names[savedTargets[1]] || t("common.playerN", { n: savedTargets[1] + 1 })) : "—";
+            const t2Name = savedTargets[2] != null ? (names[savedTargets[2]] || t("common.playerN", { n: savedTargets[2] + 1 })) : "—";
+            body = `<div class="toolBox">
+              <div style="font-weight:1100; margin-bottom:8px">${escapeHtml(appLang === "fa" ? "دفاعیه نهایی" : "Final Defense")}</div>
+              <div class="note" style="margin-bottom:8px">${escapeHtml(appLang === "fa" ? "ابتدا کاورها، سپس تارگت‌ها از خود دفاع می‌کنند." : "Covers speak first, then targets defend themselves.")}</div>
+              <div class="note">• ${escapeHtml(appLang === "fa" ? `تارگت اول: ${t1Name}` : `Target 1: ${t1Name}`)}</div>
+              <div class="note" style="margin-top:4px">• ${escapeHtml(appLang === "fa" ? `تارگت دوم: ${t2Name}` : `Target 2: ${t2Name}`)}</div>
+            </div>`;
+          } else if (cur.id === "namayande_vote") {
+            const d = f.draft || {};
+            const savedTargets = (d.repTargetsByDay && d.repTargetsByDay[String(f.day)]) ? d.repTargetsByDay[String(f.day)] : {};
+            const t1Idx = savedTargets[1] != null ? savedTargets[1] : null;
+            const t2Idx = savedTargets[2] != null ? savedTargets[2] : null;
+            const t1Name = t1Idx !== null ? (names[t1Idx] || t("common.playerN", { n: t1Idx + 1 })) : null;
+            const t2Name = t2Idx !== null ? (names[t2Idx] || t("common.playerN", { n: t2Idx + 1 })) : null;
+            const rec = (d.dayElimAppliedByDay && d.dayElimAppliedByDay[String(f.day)]) ? d.dayElimAppliedByDay[String(f.day)] : {};
+            const savedOut = rec.out != null ? rec.out : null;
+            const mkVoteOutOpts = () => {
+              const s = savedOut !== null ? String(savedOut) : "";
+              const base = [`<option value="" ${s === "" ? "selected" : ""}>— ${escapeHtml(appLang === "fa" ? "(هیچ‌کس)" : "(nobody)")}</option>`];
+              if (t1Idx !== null) {
+                const t1Alive = (draw.players[t1Idx] || {}).alive !== false;
+                base.push(`<option value="${t1Idx}" ${String(t1Idx) === s ? "selected" : ""} ${!t1Alive ? "disabled" : ""}>${escapeHtml(t1Name + (!t1Alive ? (appLang === "fa" ? " (خارج شد)" : " (out)") : ""))}</option>`);
+              }
+              if (t2Idx !== null) {
+                const t2Alive = (draw.players[t2Idx] || {}).alive !== false;
+                base.push(`<option value="${t2Idx}" ${String(t2Idx) === s ? "selected" : ""} ${!t2Alive ? "disabled" : ""}>${escapeHtml(t2Name + (!t2Alive ? (appLang === "fa" ? " (خارج شد)" : " (out)") : ""))}</option>`);
+              }
+              if (!t1Idx && !t2Idx) {
+                // fallback: show all alive players if targets not set
+                for (const idx of aliveIdxs) {
+                  base.push(`<option value="${idx}" ${String(idx) === s ? "selected" : ""}>${escapeHtml(names[idx] || t("common.playerN", { n: idx + 1 }))}</option>`);
+                }
+              }
+              return base.join("");
+            };
+            const resultLine = (() => {
+              if (savedOut === null) return "";
+              const nm = names[savedOut] || t("common.playerN", { n: savedOut + 1 });
+              if (rec.armoredAbsorbed) return appLang === "fa" ? `${escapeHtml(nm)} — زره جلوی رأی را گرفت.` : `${escapeHtml(nm)} — armor absorbed the vote.`;
+              return appLang === "fa" ? `${escapeHtml(nm)} از بازی خارج می‌شود.` : `${escapeHtml(nm)} is eliminated.`;
+            })();
+            body = `<div class="toolBox">
+              <div style="font-weight:1100; margin-bottom:8px">${escapeHtml(appLang === "fa" ? "رأی‌گیری (اختیاری)" : "Vote (optional)")}</div>
+              <div class="note" style="margin-bottom:12px">${escapeHtml(appLang === "fa"
+                ? "اگر یکی از تارگت‌ها رأی حدنصاب بیاورد، از بازی خارج می‌شود."
+                : "If a target reaches the required vote threshold, they are eliminated.")}</div>
+              <label>${escapeHtml(appLang === "fa" ? "خارج‌شده" : "Eliminated")}
+                <select id="fl_namayande_out">${mkVoteOutOpts()}</select>
+              </label>
+              ${resultLine ? `<div class="note" style="margin-top:10px; font-weight:1100; color:rgba(255,150,80,1)">${resultLine}</div>` : ""}
+            </div>`;
           } else if (cur.id === "night_run") {
             const d = f.draft || {};
             const evenNight = ((f.day || 1) % 2 === 0);
@@ -919,12 +1067,50 @@
                     </label>
                   `;
                 })();
+                // Betrayal vote block (namayande only) — Don Mafia's special ability
+                const betrayalVoteBlock = (() => {
+                  if (scenario !== "namayande") return "";
+                  const reps = (d && Array.isArray(d.representatives) && d.representatives.length) ? d.representatives : null;
+                  const selRep = savedNight.betrayalRep != null ? String(savedNight.betrayalRep) : "";
+                  const selDir = savedNight.betrayalDir || "";
+                  const header = `
+                    <div style="height:10px"></div>
+                    <div style="font-weight:1100; border-top:1px solid rgba(255,255,255,.15); padding-top:10px">${escapeHtml(appLang === "fa" ? "رأی خیانت (دون مافیا)" : "Betrayal Vote (Don Mafia)")}</div>
+                    <div class="note" style="margin-top:4px">${escapeHtml(appLang === "fa" ? "قبل از انتخاب هدف نماینده‌ها. دون روی یکی از نمایندگان رأی خیانت می‌گذارد." : "Before reps pick targets. Don places a betrayal vote on one representative.")}</div>
+                  `;
+                  if (!reps) {
+                    return header + `<div class="note" style="color:rgba(255,200,0,.9)">${escapeHtml(appLang === "fa" ? "نمایندگان هنوز انتخاب نشده‌اند." : "Representatives not yet elected.")}</div>`;
+                  }
+                  const rep1Name = names[reps[0]] || t("common.playerN", { n: reps[0] + 1 });
+                  const rep2Name = reps[1] !== undefined ? (names[reps[1]] || t("common.playerN", { n: reps[1] + 1 })) : null;
+                  const donIdx = (draw.players || []).findIndex((p) => p && p.roleId === "mafiaBoss");
+                  const donIsRep = (donIdx !== -1) ? reps.indexOf(donIdx) : -1; // 0-based
+                  const mkRepOpts = () => [
+                    `<option value="" ${selRep === "" ? "selected" : ""}>—</option>`,
+                    `<option value="1" ${selRep === "1" ? "selected" : ""} ${donIsRep === 0 ? "disabled" : ""}>${escapeHtml((appLang === "fa" ? "نماینده اول: " : "Rep 1: ") + rep1Name + (donIsRep === 0 ? (appLang === "fa" ? " (دون — غیرمجاز)" : " (Don — not allowed)") : ""))}</option>`,
+                    rep2Name ? `<option value="2" ${selRep === "2" ? "selected" : ""} ${donIsRep === 1 ? "disabled" : ""}>${escapeHtml((appLang === "fa" ? "نماینده دوم: " : "Rep 2: ") + rep2Name + (donIsRep === 1 ? (appLang === "fa" ? " (دون — غیرمجاز)" : " (Don — not allowed)") : ""))}</option>` : "",
+                  ].join("");
+                  const mkDirOpts = () => [
+                    `<option value="" ${selDir === "" ? "selected" : ""}>—</option>`,
+                    `<option value="more" ${selDir === "more" ? "selected" : ""}>${escapeHtml(appLang === "fa" ? "رأی بیشتر شود" : "More votes")}</option>`,
+                    `<option value="less" ${selDir === "less" ? "selected" : ""}>${escapeHtml(appLang === "fa" ? "رأی کمتر شود" : "Fewer votes")}</option>`,
+                  ].join("");
+                  return header + `
+                    <label style="margin-top:8px">${escapeHtml(appLang === "fa" ? "نماینده هدف" : "Target representative")}
+                      <select id="fl_betrayal_rep">${mkRepOpts()}</select>
+                    </label>
+                    <label style="margin-top:6px">${escapeHtml(appLang === "fa" ? "جهت رأی" : "Vote direction")}
+                      <select id="fl_betrayal_dir">${mkDirOpts()}</select>
+                    </label>
+                  `;
+                })();
                 return `
                   <label>${escapeHtml(t("tool.flow.action.mafiaShot"))}
                     <select id="fl_mafia_shot">${mkAliveOptsSel(savedNight.mafiaShot)}</select>
                   </label>
                   ${natoBlock}
                   ${sodagariBlock}
+                  ${betrayalVoteBlock}
                   ${neutralizedShotBlock}
                 `;
               }
@@ -1438,15 +1624,6 @@
                 const guidePrevNightKey = String((f.day || 1) - 1);
                 const guidePrevActions = (d && d.nightActionsByNight && d.nightActionsByNight[guidePrevNightKey]) ? d.nightActionsByNight[guidePrevNightKey] : null;
                 const guidePrevTarget = (guidePrevActions && guidePrevActions.guideTarget !== null && guidePrevActions.guideTarget !== undefined && Number.isFinite(parseInt(guidePrevActions.guideTarget, 10))) ? parseInt(guidePrevActions.guideTarget, 10) : null;
-                // Show saved result
-                const guideNightKey = String(f.day || 1);
-                const guideRes = (d && d.guideResultByNight && d.guideResultByNight[guideNightKey]) ? d.guideResultByNight[guideNightKey] : null;
-                const guideResultLine = (() => {
-                  if (!guideRes || guideRes.target === null || guideRes.target === undefined) return "";
-                  return guideRes.isMafia
-                    ? (appLang === "fa" ? "نتیجه: مافیا — آن عضو مافیا بیدار می‌شود و هویت راهنما را می‌شناسد." : "Result: Mafia — that member wakes and learns the Guide's identity.")
-                    : (appLang === "fa" ? "نتیجه: شهروند — راهنما استعلام منفی دریافت می‌کند." : "Result: Citizen — Guide receives a negative inquiry result.");
-                })();
                 // Build options with prev-night target disabled
                 const optsGuideSel = (sel) => {
                   const sIdx = (sel === null || sel === undefined || sel === "") ? null : parseInt(sel, 10);
@@ -1465,12 +1642,39 @@
                   }
                   return base.join("");
                 };
+                // Guided player inquiry section (shown after guide picks a target)
+                const guideTargetIdx = (savedNight.guideTarget !== null && savedNight.guideTarget !== undefined && savedNight.guideTarget !== "")
+                  ? parseInt(savedNight.guideTarget, 10) : null;
+                const guideTargetName = guideTargetIdx !== null ? (names[guideTargetIdx] || t("common.playerN", { n: guideTargetIdx + 1 })) : null;
+                const guideTargetIsMafia = guideTargetIdx !== null
+                  ? detectiveInquiryIsMafia((draw.players[guideTargetIdx] || {}).roleId || "citizen") : false;
+                const guideRevealWarning = (guideTargetIsMafia && guideTargetName)
+                  ? `<div class="note" style="margin-top:6px; color:rgba(255,120,80,1); font-weight:1100">⚠ ${escapeHtml(appLang === "fa" ? `راهنما برای ${guideTargetName} لو رفت.` : `Guide is revealed to ${guideTargetName}.`)}</div>` : "";
+                // Guided player's inquiry result
+                const guideInqTargetIdx = (savedNight.guideInquiryTarget !== null && savedNight.guideInquiryTarget !== undefined && savedNight.guideInquiryTarget !== "")
+                  ? parseInt(savedNight.guideInquiryTarget, 10) : null;
+                const guideInqIsMafia = savedNight.guideInquiryIsMafia;
+                const guideInqResultLine = guideInqTargetIdx !== null
+                  ? (guideInqIsMafia
+                    ? (appLang === "fa" ? "✓ مافیا" : "✓ Mafia")
+                    : (appLang === "fa" ? "✗ شهروند" : "✗ Citizen"))
+                  : "";
+                const guidedInquirySection = (guideTargetIdx !== null && !guideTargetIsMafia) ? `
+                  <div style="margin-top:12px; padding-top:10px; border-top:1px solid rgba(255,255,255,.18)">
+                    <div style="font-weight:1100">${escapeHtml(appLang === "fa" ? `${guideTargetName} — استعلام` : `${guideTargetName} — Inquiry`)}</div>
+                    <div class="note" style="margin-top:4px">${escapeHtml(appLang === "fa" ? "این بازیکن بیدار می‌شود و از یک نفر استعلام می‌گیرد." : "This player wakes up and chooses someone to inquire about.")}</div>
+                    <label style="margin-top:8px">${escapeHtml(appLang === "fa" ? "هدف استعلام" : "Inquiry target")}
+                      <select id="fl_guide_inquiry_target">${mkAliveOptsSel(savedNight.guideInquiryTarget)}</select>
+                    </label>
+                    <div id="fl_guide_inquiry_result" style="margin-top:6px; font-size:1.1em; font-weight:1100; ${guideInqResultLine ? "" : "display:none"}; color:${guideInqIsMafia ? "rgba(255,100,80,1)" : "rgba(60,210,160,1)"}">${escapeHtml(guideInqResultLine)}</div>
+                  </div>` : "";
                 return `
                   <label>${escapeHtml(appLang === "fa" ? "هدف راهنما" : "Guide target")}
                     <select id="fl_guide_target">${optsGuideSel(savedNight.guideTarget)}</select>
                   </label>
-                  <div class="note" style="margin-top:6px">${escapeHtml(appLang === "fa" ? "شهروند → استعلام. مافیا → آن عضو بیدار می‌شود و راهنما را می‌شناسد (راهنما لو می‌رود)." : "Citizen → inquiry. Mafia → that member wakes and learns the Guide's identity (Guide is exposed).")}</div>
-                  <div id="fl_guide_result" class="note" style="margin-top:6px; ${guideResultLine ? "" : "display:none"}">${escapeHtml(guideResultLine)}</div>
+                  <div class="note" style="margin-top:6px">${escapeHtml(appLang === "fa" ? "بازیکن انتخاب‌شده از یک نفر استعلام می‌گیرد. اگر مافیا انتخاب شود، هویت راهنما برای آن مافیا لو می‌رود." : "The chosen player inquires about someone. If mafia is chosen, Guide's identity is revealed to that mafia.")}</div>
+                  ${guideRevealWarning}
+                  ${guidedInquirySection}
                 `;
               }
               if (k === "bodyguard") {
@@ -1778,6 +1982,13 @@
                   constantine: ["constantine"],
                   reporter: ["reporter"],
                   representative: ["representative"],
+                  nato: ["nato"],
+                  hacker: ["hacker"],
+                  guide: ["guide"],
+                  bodyguard: ["bodyguard"],
+                  minemaker: ["minemaker"],
+                  lawyer: ["lawyer"],
+                  soldier: ["soldier"],
                 };
                 let all = [];
                 if (k === "mafia") {
@@ -2339,6 +2550,7 @@
                 document.getElementById("fl_kadkhoda_target") ||
                 document.getElementById("fl_hacker_block") ||
                 document.getElementById("fl_guide_target") ||
+                document.getElementById("fl_guide_inquiry_target") ||
                 document.getElementById("fl_bodyguard_protect") ||
                 document.getElementById("fl_minemaker_target") ||
                 document.getElementById("fl_lawyer_target") ||
@@ -2350,7 +2562,9 @@
                 document.getElementById("fl_sodagari_target") ||
                 document.getElementById("fl_soldier_target") ||
                 document.getElementById("fl_soldier_gun_shot") ||
-                document.getElementById("fl_neutralized_shot");
+                document.getElementById("fl_neutralized_shot") ||
+                document.getElementById("fl_betrayal_rep") ||
+                document.getElementById("fl_betrayal_dir");
               if (!hasAny) return false;
 
               const mafiaShot = (document.getElementById("fl_mafia_shot") || {}).value || "";
@@ -2377,6 +2591,7 @@
               const kadkhodaTarget = (document.getElementById("fl_kadkhoda_target") || {}).value || "";
               const hackerBlock = (document.getElementById("fl_hacker_block") || {}).value || "";
               const guideTarget = (document.getElementById("fl_guide_target") || {}).value || "";
+              const guideInquiryTarget = (document.getElementById("fl_guide_inquiry_target") || {}).value || "";
               const bodyguardProtect = (document.getElementById("fl_bodyguard_protect") || {}).value || "";
               const minemakerTarget = (document.getElementById("fl_minemaker_target") || {}).value || "";
               const lawyerTarget = (document.getElementById("fl_lawyer_target") || {}).value || "";
@@ -2390,6 +2605,8 @@
               const soldierTarget = (document.getElementById("fl_soldier_target") || {}).value || "";
               const soldierGunShot = (document.getElementById("fl_soldier_gun_shot") || {}).value || "";
               const neutralizedShot = !!(document.getElementById("fl_neutralized_shot") || {}).checked;
+              const betrayalRep = (document.getElementById("fl_betrayal_rep") || {}).value || "";
+              const betrayalDir = (document.getElementById("fl_betrayal_dir") || {}).value || "";
               const nostPick3 = (() => {
                 const el = document.getElementById("fl_nost_pick3");
                 if (!el) return [];
@@ -2449,6 +2666,12 @@
               per.kadkhodaTarget = kadkhodaTarget === "" ? null : parseInt(kadkhodaTarget, 10);
               per.hackerBlock = hackerBlock === "" ? null : parseInt(hackerBlock, 10);
               per.guideTarget = guideTarget === "" ? null : parseInt(guideTarget, 10);
+              per.guideInquiryTarget = guideInquiryTarget === "" ? null : parseInt(guideInquiryTarget, 10);
+              per.guideInquiryIsMafia = (() => {
+                if (per.guideInquiryTarget === null) return null;
+                const tp = (appState.draw && appState.draw.players && appState.draw.players[per.guideInquiryTarget]) || {};
+                return detectiveInquiryIsMafia(tp.roleId || "citizen");
+              })();
               per.bodyguardProtect = bodyguardProtect === "" ? null : parseInt(bodyguardProtect, 10);
               per.minemakerTarget = minemakerTarget === "" ? null : parseInt(minemakerTarget, 10);
               per.lawyerTarget = lawyerTarget === "" ? null : parseInt(lawyerTarget, 10);
@@ -2462,6 +2685,8 @@
               per.soldierTarget = soldierTarget === "" ? null : parseInt(soldierTarget, 10);
               per.soldierGunShot = soldierGunShot === "" ? null : parseInt(soldierGunShot, 10);
               per.neutralizedShot = neutralizedShot === true;
+              per.betrayalRep = betrayalRep === "" ? null : parseInt(betrayalRep, 10);
+              per.betrayalDir = betrayalDir === "" ? null : betrayalDir;
               d.nightActionsByNight[nk] = per;
               // keep existing legacy draft fields too
               d.bombCode = String(bombCode || "");
@@ -2537,6 +2762,8 @@
                 kadkhodaTarget: kadkhodaTarget === "" ? null : parseInt(kadkhodaTarget, 10),
                 hackerBlock: hackerBlock === "" ? null : parseInt(hackerBlock, 10),
                 guideTarget: guideTarget === "" ? null : parseInt(guideTarget, 10),
+                guideInquiryTarget: guideInquiryTarget === "" ? null : parseInt(guideInquiryTarget, 10),
+                guideInquiryIsMafia: per.guideInquiryIsMafia,
                 bodyguardProtect: bodyguardProtect === "" ? null : parseInt(bodyguardProtect, 10),
                 minemakerTarget: minemakerTarget === "" ? null : parseInt(minemakerTarget, 10),
                 lawyerTarget: lawyerTarget === "" ? null : parseInt(lawyerTarget, 10),
@@ -2550,6 +2777,8 @@
                 soldierTarget: soldierTarget === "" ? null : parseInt(soldierTarget, 10),
                 soldierGunShot: soldierGunShot === "" ? null : parseInt(soldierGunShot, 10),
                 neutralizedShot: neutralizedShot === true,
+                betrayalRep: betrayalRep === "" ? null : parseInt(betrayalRep, 10),
+                betrayalDir: betrayalDir === "" ? null : betrayalDir,
               };
               addFlowEvent("night_actions", payload);
 
@@ -2773,7 +3002,7 @@
                 }
               } catch {}
 
-              // Guide inquiry result (like detective, computed and shown inline).
+              // Guide: store meta-result (was guide's target mafia?) for status timeline.
               try {
                 const guideKey = String(f.day || 1);
                 const gd5 = f.draft || {};
@@ -2783,24 +3012,26 @@
                   const tr = (appState.draw.players[tIdx] && appState.draw.players[tIdx].roleId) ? appState.draw.players[tIdx].roleId : "citizen";
                   const isMafia = detectiveInquiryIsMafia(tr);
                   gd5.guideResultByNight[guideKey] = { target: tIdx, isMafia, at: Date.now() };
-                  f.draft = gd5;
-                  try {
-                    const el = document.getElementById("fl_guide_result");
-                    if (el) {
-                      const resultText = isMafia
-                        ? (appLang === "fa" ? "نتیجه: مافیا — آن عضو مافیا بیدار می‌شود و هویت راهنما را می‌شناسد." : "Result: Mafia — that member wakes and learns the Guide's identity.")
-                        : (appLang === "fa" ? "نتیجه: شهروند — راهنما استعلام منفی دریافت می‌کند." : "Result: Citizen — Guide receives a negative inquiry result.");
-                      el.style.display = "";
-                      el.textContent = resultText;
-                    }
-                  } catch {}
                 } else {
                   gd5.guideResultByNight[guideKey] = null;
-                  f.draft = gd5;
-                  try {
-                    const el = document.getElementById("fl_guide_result");
-                    if (el) { el.style.display = "none"; el.textContent = ""; }
-                  } catch {}
+                }
+                f.draft = gd5;
+              } catch {}
+              // Guided player's inquiry result — update inline display.
+              try {
+                const inqEl = document.getElementById("fl_guide_inquiry_result");
+                if (inqEl) {
+                  if (per.guideInquiryTarget !== null && per.guideInquiryIsMafia !== null) {
+                    const isMaf = per.guideInquiryIsMafia;
+                    inqEl.textContent = isMaf
+                      ? (appLang === "fa" ? "✓ مافیا" : "✓ Mafia")
+                      : (appLang === "fa" ? "✗ شهروند" : "✗ Citizen");
+                    inqEl.style.color = isMaf ? "rgba(255,100,80,1)" : "rgba(60,210,160,1)";
+                    inqEl.style.display = "";
+                  } else {
+                    inqEl.style.display = "none";
+                    inqEl.textContent = "";
+                  }
                 }
               } catch {}
 
@@ -3104,6 +3335,70 @@
               });
             } catch {}
           }
+          // Namayande rep election: save elected representatives on select change.
+          if (cur && cur.id === "namayande_rep_election") {
+            try {
+              const saveReps = () => {
+                const v1 = (document.getElementById("fl_rep1") || {}).value || "";
+                const v2 = (document.getElementById("fl_rep2") || {}).value || "";
+                const d2 = f.draft || {};
+                d2.representatives = [];
+                if (v1 !== "") d2.representatives.push(parseInt(v1, 10));
+                if (v2 !== "") d2.representatives.push(parseInt(v2, 10));
+                f.draft = d2;
+                saveState(appState);
+                // Re-render rep2 options to exclude selected rep1
+                try { showFlowTool(); } catch {}
+              };
+              const r1El = document.getElementById("fl_rep1");
+              const r2El = document.getElementById("fl_rep2");
+              if (r1El) r1El.addEventListener("change", saveReps);
+              if (r2El) r2El.addEventListener("change", () => {
+                const v2 = (document.getElementById("fl_rep2") || {}).value || "";
+                const d2 = f.draft || {};
+                const existing = Array.isArray(d2.representatives) ? d2.representatives : [];
+                d2.representatives = [existing[0] != null ? existing[0] : null, v2 !== "" ? parseInt(v2, 10) : null].filter(x => x !== null);
+                f.draft = d2;
+                saveState(appState);
+              });
+            } catch {}
+          }
+          // Namayande rep action: save rep targets on select change.
+          if (cur && cur.id === "namayande_rep_action") {
+            try {
+              const saveTargets = () => {
+                const v1 = (document.getElementById("fl_rep1_target") || {}).value || "";
+                const v2 = (document.getElementById("fl_rep2_target") || {}).value || "";
+                const d2 = f.draft || {};
+                if (!d2.repTargetsByDay || typeof d2.repTargetsByDay !== "object") d2.repTargetsByDay = {};
+                d2.repTargetsByDay[String(f.day)] = {
+                  1: v1 !== "" ? parseInt(v1, 10) : null,
+                  2: v2 !== "" ? parseInt(v2, 10) : null,
+                };
+                f.draft = d2;
+                saveState(appState);
+              };
+              const t1El = document.getElementById("fl_rep1_target");
+              const t2El = document.getElementById("fl_rep2_target");
+              if (t1El) t1El.addEventListener("change", saveTargets);
+              if (t2El) t2El.addEventListener("change", saveTargets);
+            } catch {}
+          }
+          // Namayande vote: apply/revert elimination on select change, re-render for result line.
+          if (cur && cur.id === "namayande_vote") {
+            try {
+              const outEl = document.getElementById("fl_namayande_out");
+              if (outEl) {
+                outEl.addEventListener("change", () => {
+                  const val = outEl.value;
+                  const outIdx = val === "" ? null : parseInt(val, 10);
+                  try { applyDayElimFromPayload(f, { out: outIdx }); } catch {}
+                  try { renderCast(); } catch {}
+                  try { showFlowTool(); } catch {}
+                });
+              }
+            } catch {}
+          }
           if (cur && cur.id === "night_run") {
             const ids = [
               "fl_mafia_shot",
@@ -3131,6 +3426,7 @@
               "fl_kadkhoda_target",
               "fl_hacker_block",
               "fl_guide_target",
+              "fl_guide_inquiry_target",
               "fl_bodyguard_protect",
               "fl_minemaker_target",
               "fl_lawyer_target",
@@ -3141,6 +3437,10 @@
               "fl_investigator_t2",
               "fl_sodagari_sacrifice",
               "fl_sodagari_target",
+              "fl_soldier_target",
+              "fl_soldier_gun_shot",
+              "fl_betrayal_rep",
+              "fl_betrayal_dir",
             ];
             // Helper: enforce mafia-shot ↔ NATO-guess mutual exclusion.
             // Neither side is ever hard-disabled — both remain interactive so the user
@@ -3189,6 +3489,10 @@
                   enforceNatoMafiaMutex();
                   // Re-render when disable target changes so blocked actions get greyed/disabled correctly.
                   if (id === "fl_magician_disable") {
+                    try { showFlowTool(); } catch {}
+                  }
+                  // Re-render when guide target changes so the guided player inquiry section appears/updates.
+                  if (id === "fl_guide_target") {
                     try { showFlowTool(); } catch {}
                   }
                   // Clear bomb code validation feedback when user selects a code/target.

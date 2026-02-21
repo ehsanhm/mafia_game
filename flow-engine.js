@@ -1310,6 +1310,19 @@
 
         function getFlowSteps(f) {
           if (f.phase === "day") {
+            // Namayande scenario: unique day steps that depend on the day number.
+            if (getDrawScenarioForFlow() === "namayande") {
+              if ((f.day || 1) === 1) {
+                return [{ id: "namayande_rep_election", title: appLang === "fa" ? "انتخاب نماینده" : "Representative Election" }];
+              } else {
+                return [
+                  { id: "namayande_rep_action", title: appLang === "fa" ? "صحبت و انتخاب هدف" : "Rep Speeches & Targets" },
+                  { id: "namayande_cover",      title: appLang === "fa" ? "انتخاب کاور"        : "Cover Selection" },
+                  { id: "namayande_defense",    title: appLang === "fa" ? "دفاعیه"             : "Final Defense" },
+                  { id: "namayande_vote",        title: appLang === "fa" ? "رأی‌گیری"          : "Vote" },
+                ];
+              }
+            }
             // If a day-start snapshot exists, use it so mid-day deaths don't shrink the step list.
             const snapshotIds = (f.draft && f.draft.dayStepsByDay && Array.isArray(f.draft.dayStepsByDay[String(f.day)]))
               ? f.draft.dayStepsByDay[String(f.day)]
@@ -1563,7 +1576,7 @@
             const steps = getFlowSteps(f);
             const leavingStep = steps[Math.min(steps.length - 1, Math.max(0, f.step || 0))] || {};
             // Revert deaths applied by certain steps when going backward.
-            if (leavingStep.id === "day_elim") {
+            if (leavingStep.id === "day_elim" || leavingStep.id === "namayande_vote") {
               // Revert the voted-out player so they are alive on the previous step.
               try { applyDayElimFromPayload(f, { out: null }); } catch {}
               try { renderCast(); } catch {}
