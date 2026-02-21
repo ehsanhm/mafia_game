@@ -62,6 +62,7 @@ const roles = {
   minemaker: { faName: "مین‌گذار", teamFa: "شهر", hintFa: "مین یک‌باره", descFa: "یک‌بار در کل بازی روی یک نفر مین می‌گذارد. اگر مافیا همان شب آن نفر را شات کند، مین منفجر می‌شود و یک داوطلب از تیم مافیا نیز از بازی خارج می‌شود." },
   lawyer: { faName: "وکیل", teamFa: "شهر", hintFa: "مصونیت روز", descFa: "یک‌بار در کل بازی یک نفر را انتخاب می‌کند تا روز بعد از حذف با رأی‌گیری مصون باشد." },
   bodyguard: { faName: "محافظ (سناریو نماینده)", teamFa: "شهر", hintFa: "محافظت از ترور", descFa: "هر شب یک نفر را از ترور یاغی محافظت می‌کند. خودِ محافظ نیز در برابر ترور مصون است." },
+  soldier: { faName: "سرباز", teamFa: "شهر", hintFa: "تیر یک‌باره", descFa: "شبانه یک تیر به یکی از بازیکنان می‌دهد. اگر تیر را به مافیا بدهد → سرباز خودش از بازی خارج می‌شود. اگر به شهروند بدهد → آن شهروند در همان شب قابلیت شلیک دارد: شلیک به مافیا (نه دون) → مافیا خارج؛ شلیک به دون مافیا → هیچ‌کس خارج نمی‌شود؛ شلیک به شهروند → خودش خارج می‌شود." },
 
   // --- Godfather (game) ---
   leon: { faName: "لئون", teamFa: "شهر", hintFa: "حرفه‌ای شهر", descFa: "شب‌ها می‌تواند به کسی شلیک کند. اگر به شهروند شلیک کند، خودش از بازی خارج می‌شود و دکتر نمی‌تواند نجات دهد. یک جلیقه دارد (اولین شلیک مافیا را تحمل می‌کند)." },
@@ -134,4 +135,5 @@ const ROLE_I18N = {
   minemaker: { name: "Minemaker", hint: "One-time mine", desc: "Once per game plants a mine on one player. If the mafia shoots that same player the same night, the mine activates and a volunteering mafia member is also eliminated." },
   lawyer: { name: "Lawyer", hint: "Day immunity", desc: "Once per game selects a player to be immune from vote-elimination the following day." },
   bodyguard: { name: "Bodyguard", hint: "Protect from assassination", desc: "Each night protects one player from the Rebel's assassination. Bodyguard themselves is also immune to assassination." },
+  soldier: { name: "Soldier", hint: "One-time bullet", desc: "At night gives one bullet to a player. If given to mafia → Soldier is eliminated. If given to a citizen → that citizen may shoot: hitting mafia (non-Don) → mafia eliminated; hitting Don → nobody dies; hitting a citizen → recipient is eliminated." },
 };

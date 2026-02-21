@@ -33,6 +33,7 @@
           if (x.includes("herbalist") || x.includes("attar") || x.includes("عطار")) return "herbalist";
           if (x.includes("armorsmith") || x.includes("زره")) return "armorsmith";
           if (x.includes("swindler") || x.includes("charlatan") || x.includes("شیاد")) return "swindler";
+          if (x.includes("investigator") || x.includes("inspector") || x.includes("بازپرس")) return "investigator";
           if (x.includes("researcher") || x.includes("hunter") || x.includes("محقق")) return "researcher";
           if (x.includes("natasha") || x.includes("ناتاشا")) return "natasha";
           if (x.includes("sniper") || x.includes("تک‌تیرانداز") || x.includes("تک تیرانداز")) return "sniper";
@@ -46,6 +47,7 @@
           if (x.includes("bodyguard") || x.includes("محافظ")) return "bodyguard";
           if (x.includes("minemaker") || x.includes("مین")) return "minemaker";
           if (x.includes("lawyer") || x.includes("وکیل")) return "lawyer";
+          if (x.includes("soldier") || x.includes("سرباز")) return "soldier";
           return "other";
         }
 
@@ -633,8 +635,8 @@
                 if (linkedIdx === null || !draw.players[linkedIdx]) return "";
                 const linkedPlayer = draw.players[linkedIdx];
                 const linkedRoleId = linkedPlayer.roleId || "citizen";
-                const linkedTeamFa = (roles[linkedRoleId] && roles[linkedRoleId].teamFa) ? roles[linkedRoleId].teamFa : "شهر";
-                if (linkedTeamFa !== "مافیا" || linkedRoleId === "mafiaBoss") return "";
+                if (linkedRoleId === "mafiaBoss") return "";
+                if (scenario === "bazras" && linkedRoleId !== "nato" && linkedRoleId !== "swindler") return "";
                 const linkedName = names[linkedIdx] || t("common.playerN", { n: linkedIdx + 1 });
                 const msg = appLang === "fa"
                   ? `⚠ ${linkedName} (که محقق با او لینک داشت) نیز از بازی خارج می‌شود.`
@@ -794,6 +796,7 @@
                 bodyguard: ["bodyguard"],
                 minemaker: ["minemaker"],
                 lawyer: ["lawyer"],
+                soldier: ["soldier"],
               };
               const sectionRoleIds = wakeToRoleIds[k] || [k];
               const sectionPlayerIdx = findRolePlayerIdx(sectionRoleIds);
@@ -847,11 +850,82 @@
                   </label>
                   `}
                 ` : "";
+                // Sodagari (trading) block for bazras scenario — once per game by mafiaBoss
+                const sodagariBlock = (() => {
+                  if (scenario !== "bazras") return "";
+                  const sodUsed = !!(d && d.sodagariUsed);
+                  const currentNk = String(f.day || 1);
+                  const sodUsedThisNight = d && d.sodagariUsedOnNight != null && Number(d.sodagariUsedOnNight) === Number(currentNk);
+                  const sodUsedOther = sodUsed && !sodUsedThisNight;
+                  // Build options list showing only mafia-team players (for sacrifice select)
+                  const mkMafiaOpts = (saved) => {
+                    const s = saved != null ? String(saved) : "";
+                    const opts = [`<option value="">—</option>`];
+                    for (let i = 0; i < (draw.players || []).length; i++) {
+                      const p = draw.players[i];
+                      if (!p || p.alive === false) continue;
+                      const rid = p.roleId || "citizen";
+                      const teamFa = (roles[rid] && roles[rid].teamFa) ? roles[rid].teamFa : "شهر";
+                      if (teamFa !== "مافیا") continue;
+                      const nm = names[i] || t("common.playerN", { n: i + 1 });
+                      opts.push(`<option value="${i}" ${String(i) === s ? "selected" : ""}>${escapeHtml(nm)}</option>`);
+                    }
+                    return opts.join("");
+                  };
+                  const sodSaved = (d && d.nightActionsByNight && d.nightActionsByNight[currentNk]) ? d.nightActionsByNight[currentNk] : {};
+                  if (sodUsedOther) {
+                    return `
+                      <div style="height:10px"></div>
+                      <div style="font-weight:1100; border-top:1px solid rgba(255,255,255,.15); padding-top:10px">${escapeHtml(appLang === "fa" ? "سوداگری (رئیس مافیا — یک‌بار در کل بازی)" : "Sodagari / Trade (Mafia Boss — once per game)")}</div>
+                      <div class="note" style="margin-top:6px; color:rgba(255,200,0,.9)">${escapeHtml(appLang === "fa" ? "سوداگری قبلاً انجام شده است." : "Trade already used.")}</div>
+                    `;
+                  }
+                  return `
+                    <div style="height:10px"></div>
+                    <div style="font-weight:1100; border-top:1px solid rgba(255,255,255,.15); padding-top:10px">${escapeHtml(appLang === "fa" ? "سوداگری (رئیس مافیا — یک‌بار در کل بازی)" : "Sodagari / Trade (Mafia Boss — once per game)")}</div>
+                    <div class="note" style="margin-top:6px">${escapeHtml(appLang === "fa" ? "رئیس مافیا یک عضو مافیا را فدا می‌کند (فردا حذف می‌شود) + یک شهروند/رویین‌تن را به مافیا تبدیل می‌کند." : "Mafia Boss sacrifices a mafia member (eliminated next morning) + converts a citizen/invulnerable to mafia.")}</div>
+                    <div style="height:6px"></div>
+                    <label>${escapeHtml(appLang === "fa" ? "فدایی (عضو مافیا)" : "Sacrifice (mafia member)")}
+                      <select id="fl_sodagari_sacrifice">${mkMafiaOpts(sodSaved.sodagariSacrifice)}</select>
+                    </label>
+                    <div style="height:6px"></div>
+                    <label>${escapeHtml(appLang === "fa" ? "هدف تبدیل (شهروند/رویین‌تن)" : "Convert target (citizen/invulnerable)")}
+                      <select id="fl_sodagari_target">${mkAliveOptsSel(sodSaved.sodagariTarget != null ? sodSaved.sodagariTarget : null)}</select>
+                    </label>
+                  `;
+                })();
+                // Neutralized shot block (namayande only) — once per game, mine trap is bypassed
+                const neutralizedShotBlock = (() => {
+                  if (scenario !== "namayande") return "";
+                  const nsUsed = !!(d && d.neutralizedShotUsed);
+                  const currentNk2 = String(f.day || 1);
+                  const nsUsedThisNight = d && d.neutralizedShotUsedOnNight != null && Number(d.neutralizedShotUsedOnNight) === Number(currentNk2);
+                  const nsUsedOther = nsUsed && !nsUsedThisNight;
+                  if (nsUsedOther) {
+                    return `
+                      <div style="height:10px"></div>
+                      <div style="font-weight:1100; border-top:1px solid rgba(255,255,255,.15); padding-top:10px">${escapeHtml(appLang === "fa" ? "شات خنثی (یک‌بار در کل بازی)" : "Neutralized Shot (once per game)")}</div>
+                      <div class="note" style="margin-top:6px; color:rgba(255,200,0,.9)">${escapeHtml(appLang === "fa" ? "شات خنثی قبلاً استفاده شده است." : "Neutralized shot already used.")}</div>
+                    `;
+                  }
+                  const isChecked = !!(d && d.neutralizedShotUsedOnNight != null && Number(d.neutralizedShotUsedOnNight) === Number(currentNk2));
+                  return `
+                    <div style="height:10px"></div>
+                    <div style="font-weight:1100; border-top:1px solid rgba(255,255,255,.15); padding-top:10px">${escapeHtml(appLang === "fa" ? "شات خنثی (یک‌بار در کل بازی)" : "Neutralized Shot (once per game)")}</div>
+                    <div class="note" style="margin-top:6px">${escapeHtml(appLang === "fa" ? "اگر فعال باشد و هدف مین داشته باشد، هیچ عضوی از مافیا از مین کشته نمی‌شود." : "If active and the shot target has a mine, no mafia member dies from the mine.")}</div>
+                    <label style="margin-top:6px; display:flex; align-items:center; gap:8px">
+                      <input type="checkbox" id="fl_neutralized_shot" ${isChecked ? "checked" : ""} style="width:18px; height:18px">
+                      ${escapeHtml(appLang === "fa" ? "استفاده از شات خنثی" : "Use neutralized shot")}
+                    </label>
+                  `;
+                })();
                 return `
                   <label>${escapeHtml(t("tool.flow.action.mafiaShot"))}
                     <select id="fl_mafia_shot">${mkAliveOptsSel(savedNight.mafiaShot)}</select>
                   </label>
                   ${natoBlock}
+                  ${sodagariBlock}
+                  ${neutralizedShotBlock}
                 `;
               }
               if (k === "professional") {
@@ -1300,6 +1374,21 @@
                   <div id="fl_reporter_result" class="note" style="margin-top:6px; ${reporterResultLine ? "" : "display:none"}">${escapeHtml(reporterResultLine)}</div>
                 `;
               }
+              if (k === "investigator") {
+                const nkStr = String(f.day || 1);
+                const invSaved = (d && d.nightActionsByNight && d.nightActionsByNight[nkStr]) ? d.nightActionsByNight[nkStr] : {};
+                return `
+                  <div class="note">${escapeHtml(appLang === "fa" ? "بازپرس هر شب دو نفر را برای بازپرسی انتخاب می‌کند. اگر هر دو فردا زنده باشند، بازپرسی روز آغاز می‌شود." : "Inspector picks two players each night. If both survive to morning, interrogation begins the next day.")}</div>
+                  <div style="height:6px"></div>
+                  <label>${escapeHtml(appLang === "fa" ? "هدف اول بازپرسی" : "Interrogation target 1")}
+                    <select id="fl_investigator_t1">${mkAliveOptsSel(invSaved.investigatorT1 != null ? invSaved.investigatorT1 : null)}</select>
+                  </label>
+                  <div style="height:6px"></div>
+                  <label>${escapeHtml(appLang === "fa" ? "هدف دوم بازپرسی" : "Interrogation target 2")}
+                    <select id="fl_investigator_t2">${mkAliveOptsSel(invSaved.investigatorT2 != null ? invSaved.investigatorT2 : null)}</select>
+                  </label>
+                `;
+              }
               if (k === "representative") {
                 return `
                   <div class="note">${escapeHtml(appLang === "fa" ? "نماینده قدرت روز دارد (وتو رأی‌گیری یا حمایت از بازیکن). این مرحله برای اطلاع‌رسانی یا سیگنال است — اکشن شبانه ندارد." : "Representative has a day power (veto vote or player protection). This step is for moderator notification only — no recordable night action.")}</div>
@@ -1418,6 +1507,18 @@
                   </label>
                   <div class="note" style="margin-top:6px">${escapeHtml(appLang === "fa" ? "این بازیکن فردا از حذف با رأی‌گیری مصون است." : "This player is immune to vote-elimination tomorrow.")}</div>
                   `}
+                `;
+              }
+              if (k === "soldier") {
+                return `
+                  <label>${escapeHtml(appLang === "fa" ? "دریافت‌کننده تیر (سرباز)" : "Bullet recipient (Soldier)")}
+                    <select id="fl_soldier_target">${mkAliveOptsSel(savedNight.soldierTarget)}</select>
+                  </label>
+                  <div class="note" style="margin-top:6px">${escapeHtml(appLang === "fa" ? "مافیا → سرباز خارج می‌شود. شهروند → او می‌تواند شلیک کند." : "Mafia → Soldier is eliminated. Citizen → they may shoot.")}</div>
+                  <label style="margin-top:10px">${escapeHtml(appLang === "fa" ? "هدف شلیک شهروند (اگر تیر به شهروند رفته)" : "Citizen gun shot target (if bullet given to citizen)")}
+                    <select id="fl_soldier_gun_shot">${mkAliveOptsSel(savedNight.soldierGunShot)}</select>
+                  </label>
+                  <div class="note" style="margin-top:6px">${escapeHtml(appLang === "fa" ? "مافیا → مافیا خارج؛ دون مافیا → هیچ‌کس؛ شهروند → خودش خارج می‌شود. خالی بگذارید اگر شلیک نکرد." : "Mafia → mafia out; Don Mafia → nobody; Citizen → recipient out. Leave blank if they did not shoot.")}</div>
                 `;
               }
               if (k === "gunslinger") {
@@ -1713,12 +1814,38 @@
               `;
             }).filter(Boolean).join("");
 
+            // Researcher chain death warning: shown when the mafia shot target is the researcher
+            // and the researcher has a link set for this night.
+            const researcherNightChainNote = (() => {
+              try {
+                const shotIdxRaw = savedNight && savedNight.mafiaShot != null ? parseInt(savedNight.mafiaShot, 10) : null;
+                if (shotIdxRaw === null || !Number.isFinite(shotIdxRaw)) return "";
+                const shotPlayer = draw.players[shotIdxRaw];
+                if (!shotPlayer || shotPlayer.roleId !== "researcher") return "";
+                const linkIdxRaw = savedNight && savedNight.researcherLink != null ? parseInt(savedNight.researcherLink, 10) : null;
+                if (linkIdxRaw === null || !Number.isFinite(linkIdxRaw)) return "";
+                const linkPlayer = draw.players[linkIdxRaw];
+                if (!linkPlayer) return "";
+                const linkedRoleId = linkPlayer.roleId || "citizen";
+                if (linkedRoleId === "mafiaBoss") return "";
+                if (scenario === "bazras" && linkedRoleId !== "nato" && linkedRoleId !== "swindler") return "";
+                const linkedName = names[linkIdxRaw] || t("common.playerN", { n: linkIdxRaw + 1 });
+                const msg = appLang === "fa"
+                  ? `⚠ محقق هدف شلیک مافیاست — ${linkedName} (که محقق با او لینک داشت) نیز از بازی خارج می‌شود.`
+                  : `⚠ Researcher is the mafia shot target — ${linkedName} (linked to Researcher) is also eliminated.`;
+                return `<div class="note" style="margin-top:8px; font-weight:950; color:rgba(255,180,60,.95)">${escapeHtml(msg)}</div>`;
+              } catch {
+                return "";
+              }
+            })();
+
             body = `
               ${bombLine ? `<div class="note" style="margin-top:6px">${escapeHtml(bombLine)}</div>` : ``}
               <div style="height:10px"></div>
               <div style="max-height: 60vh; overflow:auto; -webkit-overflow-scrolling: touch; border:1px solid rgba(255,255,255,.08); border-radius:14px; padding:10px; background: rgba(17,24,36,.25)">
                 ${actionBlocks || `<div class="note">${escapeHtml(t("tool.wake.none"))}</div>`}
               </div>
+              ${researcherNightChainNote}
             `;
           } else if (cur.id === "night_wake") {
             body = `${bombLine ? `<div class="note" style="margin-top:8px">${escapeHtml(bombLine)}</div>` : ``}
@@ -2216,7 +2343,14 @@
                 document.getElementById("fl_minemaker_target") ||
                 document.getElementById("fl_lawyer_target") ||
                 document.getElementById("fl_nato_target") ||
-                document.getElementById("fl_nato_role_guess");
+                document.getElementById("fl_nato_role_guess") ||
+                document.getElementById("fl_investigator_t1") ||
+                document.getElementById("fl_investigator_t2") ||
+                document.getElementById("fl_sodagari_sacrifice") ||
+                document.getElementById("fl_sodagari_target") ||
+                document.getElementById("fl_soldier_target") ||
+                document.getElementById("fl_soldier_gun_shot") ||
+                document.getElementById("fl_neutralized_shot");
               if (!hasAny) return false;
 
               const mafiaShot = (document.getElementById("fl_mafia_shot") || {}).value || "";
@@ -2249,6 +2383,13 @@
               const natoTarget = (document.getElementById("fl_nato_target") || {}).value || "";
               const natoRoleGuess = (document.getElementById("fl_nato_role_guess") || {}).value || "";
               const reporterTarget = (document.getElementById("fl_reporter_target") || {}).value || "";
+              const investigatorT1 = (document.getElementById("fl_investigator_t1") || {}).value || "";
+              const investigatorT2 = (document.getElementById("fl_investigator_t2") || {}).value || "";
+              const sodagariSacrifice = (document.getElementById("fl_sodagari_sacrifice") || {}).value || "";
+              const sodagariTarget = (document.getElementById("fl_sodagari_target") || {}).value || "";
+              const soldierTarget = (document.getElementById("fl_soldier_target") || {}).value || "";
+              const soldierGunShot = (document.getElementById("fl_soldier_gun_shot") || {}).value || "";
+              const neutralizedShot = !!(document.getElementById("fl_neutralized_shot") || {}).checked;
               const nostPick3 = (() => {
                 const el = document.getElementById("fl_nost_pick3");
                 if (!el) return [];
@@ -2314,6 +2455,13 @@
               per.natoTarget = natoTarget === "" ? null : parseInt(natoTarget, 10);
               per.natoRoleGuess = String(natoRoleGuess || "");
               per.reporterTarget = reporterTarget === "" ? null : parseInt(reporterTarget, 10);
+              per.investigatorT1 = investigatorT1 === "" ? null : parseInt(investigatorT1, 10);
+              per.investigatorT2 = investigatorT2 === "" ? null : parseInt(investigatorT2, 10);
+              per.sodagariSacrifice = sodagariSacrifice === "" ? null : parseInt(sodagariSacrifice, 10);
+              per.sodagariTarget = sodagariTarget === "" ? null : parseInt(sodagariTarget, 10);
+              per.soldierTarget = soldierTarget === "" ? null : parseInt(soldierTarget, 10);
+              per.soldierGunShot = soldierGunShot === "" ? null : parseInt(soldierGunShot, 10);
+              per.neutralizedShot = neutralizedShot === true;
               d.nightActionsByNight[nk] = per;
               // keep existing legacy draft fields too
               d.bombCode = String(bombCode || "");
@@ -2336,6 +2484,30 @@
                     f.draft = d;
                   }
                 }
+              } catch {}
+
+              // Track neutralized shot once-per-game usage, allow clearing on same night.
+              try {
+                if (neutralizedShot) {
+                  d.neutralizedShotUsed = true;
+                  d.neutralizedShotUsedOnNight = Number(nk);
+                } else if (d.neutralizedShotUsedOnNight != null && Number(d.neutralizedShotUsedOnNight) === Number(nk)) {
+                  d.neutralizedShotUsed = false;
+                  d.neutralizedShotUsedOnNight = null;
+                }
+                f.draft = d;
+              } catch {}
+
+              // Track sodagari once-per-game usage, allow clearing on same night.
+              try {
+                if (per.sodagariSacrifice !== null || per.sodagariTarget !== null) {
+                  d.sodagariUsed = true;
+                  d.sodagariUsedOnNight = Number(nk);
+                } else if (d.sodagariUsedOnNight != null && Number(d.sodagariUsedOnNight) === Number(nk)) {
+                  d.sodagariUsed = false;
+                  d.sodagariUsedOnNight = null;
+                }
+                f.draft = d;
               } catch {}
 
               const payload = {
@@ -2371,6 +2543,13 @@
                 natoTarget: natoTarget === "" ? null : parseInt(natoTarget, 10),
                 natoRoleGuess: String(natoRoleGuess || "") || null,
                 reporterTarget: reporterTarget === "" ? null : parseInt(reporterTarget, 10),
+                investigatorT1: investigatorT1 === "" ? null : parseInt(investigatorT1, 10),
+                investigatorT2: investigatorT2 === "" ? null : parseInt(investigatorT2, 10),
+                sodagariSacrifice: sodagariSacrifice === "" ? null : parseInt(sodagariSacrifice, 10),
+                sodagariTarget: sodagariTarget === "" ? null : parseInt(sodagariTarget, 10),
+                soldierTarget: soldierTarget === "" ? null : parseInt(soldierTarget, 10),
+                soldierGunShot: soldierGunShot === "" ? null : parseInt(soldierGunShot, 10),
+                neutralizedShot: neutralizedShot === true,
               };
               addFlowEvent("night_actions", payload);
 
@@ -2958,6 +3137,10 @@
               "fl_nato_target",
               "fl_nato_role_guess",
               "fl_reporter_target",
+              "fl_investigator_t1",
+              "fl_investigator_t2",
+              "fl_sodagari_sacrifice",
+              "fl_sodagari_target",
             ];
             // Helper: enforce mafia-shot ↔ NATO-guess mutual exclusion.
             // Neither side is ever hard-disabled — both remain interactive so the user

@@ -33,36 +33,43 @@ const SCENARIO_CONFIGS = {
     id: "bazras",
     name: { fa: "بازپرس", en: "Inspector" },
     defaults: { nPlayers: 10, mafiaCount: 3 },
-    allowedRoles: ["mafiaBoss", "nato", "swindler", "detective", "doctor", "investigator", "researcher", "sniper"],
+    allowedRoles: ["mafiaBoss", "nato", "swindler", "detective", "doctor", "investigator", "researcher", "sniper", "invulnerable"],
     defaultToggles: ["mafiaBoss", "nato", "swindler", "detective", "doctor", "investigator", "researcher"],
     wakeOrder: {
-      fa: ["محقق", "تیم مافیا", "شیاد", "پزشک", "تک‌تیرانداز", "کارآگاه"],
-      en: ["Researcher", "Mafia team", "Charlatan", "Doctor", "Sniper", "Detective"],
+      fa: ["محقق", "تیم مافیا", "شیاد", "پزشک", "تک‌تیرانداز", "کارآگاه", "بازپرس"],
+      en: ["Researcher", "Mafia team", "Charlatan", "Doctor", "Sniper", "Detective", "Inspector"],
     },
     features: { lastMove: false, endCards: false },
     dayPhaseConfig: { steps: ["day_vote", "day_elim"] },
     eliminationCards: [],
     roleOverrides: {
-      swindler: { descFa: "هر شب یک نفر را «می‌زند». اگر به کارآگاه بزند، استعلامِ کارآگاه برای همه (تا پایان اثر/طبق قوانین میز) «منفی» می‌شود. شیاد با تیم مافیا آشناست و شب‌ها بعد از بیداری مافیا، معمولاً به تنهایی بیدار می‌شود و کارش را انجام می‌دهد." },
-      investigator: { descFa: "بازپرس معمولاً یک‌بار در طول بازی می‌تواند دو نفر را به دفاعیه بیاورد (بازپرسی). آن دو نفر مدت کوتاهی صحبت می‌کنند و سپس (طبق قوانین میز) مشخص می‌شود رأی‌گیری میان آن‌ها انجام شود یا نه." },
-      researcher: { descFa: "محقق (هانتر): به‌جز شب معارفه می‌تواند هر شب خودش را به یک نفر «گره» بزند. اگر با شات شب یا روزِ رأی‌گیری از بازی خارج شود، آن نفر هم با او از بازی خارج می‌شود؛ معمولاً اگر رئیس مافیا را انتخاب کرده باشد، رئیس مافیا بیرون نمی‌رود." },
+      doctor: { descFa: "هر شب می‌تواند جان یک نفر را از شلیک نجات دهد. نمی‌تواند دو شب پشت‌سرهم یک نفر را نجات دهد. در سناریو بازپرس، نجات خودش دو بار در کل بازی مجاز است." },
+      swindler: { descFa: "هر شب یک نفر را «می‌زند». اگر به کارآگاه بزند، استعلامِ کارآگاه برای همه «منفی» می‌شود. در سناریو بازپرس می‌تواند دو شب پشت‌سرهم یک نفر را هدف بزند (تکرار مجاز است). شیاد با تیم مافیا آشناست و بعد از بیداری مافیا، مستقل بیدار می‌شود." },
+      sniper: { descFa: "فقط یک شلیک در کل بازی دارد. اگر به شهروند شلیک کند → خودش خارج می‌شود (حتی اگر پزشک نجات دهد). در سناریو بازپرس: شلیک به رئیس مافیا → هیچ‌کس خارج نمی‌شود؛ شلیک به ناتو/شیاد/مافیا ساده (بدون سیو پزشک) → آن نفر خارج می‌شود." },
+      investigator: { descFa: "هر شب دو نفر را برای بازپرسی انتخاب می‌کند. اگر هر دو نفر صبح روز بعد زنده باشند، بازپرسی آغاز می‌شود — هر کدام دو بار صحبت می‌کنند. بازپرس تصمیم می‌گیرد رأی‌گیری بین آن دو انجام شود یا نه." },
+      researcher: { descFa: "محقق (هانتر): به‌جز شب معارفه می‌تواند هر شب خودش را به یک نفر «گره» بزند. در سناریو بازپرس: اگر لینک‌شده ناتو یا شیاد باشد، هنگام خروج محقق آن نفر هم خارج می‌شود. اگر رئیس مافیا باشد، رئیس خارج نمی‌شود." },
     },
   },
   namayande: {
     id: "namayande",
     name: { fa: "نماینده", en: "Representative" },
+    // 10 players: 3 mafia (Don, Rebel, Hacker) + 7 city (Guide, Doctor, Minemaker, Bodyguard, Lawyer + 2 Citizens)
+    // 12 players: + NATO (mafia) + Soldier (city) → 4 mafia + 8 city
+    // 13 players: + NATO (mafia) + Soldier (city) + Citizen (city) → 4 mafia + 9 city
     defaults: { nPlayers: 10, mafiaCount: 3 },
-    allowedRoles: ["don", "rebel", "hacker", "doctor", "guide", "minemaker", "lawyer", "bodyguard"],
-    defaultToggles: ["don", "rebel", "hacker", "doctor", "guide", "minemaker", "lawyer", "bodyguard"],
+    allowedRoles: ["don", "rebel", "hacker", "nato", "doctor", "guide", "minemaker", "bodyguard", "lawyer", "soldier", "citizen"],
+    defaultToggles: ["don", "rebel", "hacker", "doctor", "guide", "minemaker", "bodyguard", "lawyer"],
     wakeOrder: {
-      fa: ["هکر", "تیم مافیا (دن)", "راهنما", "پزشک", "محافظ", "مین‌گذار", "وکیل"],
-      en: ["Hacker", "Mafia team (Don)", "Guide", "Doctor", "Bodyguard", "Minemaker", "Lawyer"],
+      fa: ["هکر", "تیم مافیا (دن)", "راهنما", "پزشک", "محافظ", "سرباز", "مین‌گذار", "وکیل"],
+      en: ["Hacker", "Mafia team (Don)", "Guide", "Doctor", "Bodyguard", "Soldier", "Minemaker", "Lawyer"],
     },
     features: { lastMove: false, endCards: false },
     dayPhaseConfig: { steps: ["day_vote", "day_elim"] },
     eliminationCards: [],
     roleOverrides: {
       doctor: { descFa: "هر شب می‌تواند جان یک نفر را نجات دهد. نمی‌تواند دو شب پشت‌سرهم یک نفر را نجات دهد. در سناریو نماینده، نجات خودش دو بار در کل بازی مجاز است." },
+      rebel: { descFa: "در سناریو نماینده: هر زمان که یکی از یارهای تیم مافیا (دون مافیا یا هکر یا ناتو) از بازی خارج شود، ضامن یاغی آزاد می‌شود. یاغی می‌تواند تا قبل از شروع رأی‌گیری اول، با یکی از شهروندان منفجر شود. اگر هدف توسط محافظ محافظت شده باشد یا خودش محافظ باشد، یاغی به تنهایی خارج می‌شود." },
+      guide: { descFa: "هر شب یکی از بازیکنان را برای راهنمایی انتخاب می‌کند. در سناریو نماینده نمی‌تواند اسپم کند (شب‌های متوالی روی یک نفر). اگر یکی از مافیاها را انتخاب کند، هویت راهنما برای تیم مافیا افشا می‌شود." },
     },
   },
   mozaker: {

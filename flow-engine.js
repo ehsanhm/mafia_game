@@ -57,6 +57,10 @@
               if (Number.isFinite(Number(rec.killed)) && rec.prevAlive === true) {
                 try { setPlayerLife(parseInt(rec.killed, 10), { alive: true }); } catch {}
               }
+              // Also revert researcher chain kill (if researcher was the mafia target)
+              if (Number.isFinite(Number(rec.chainKilled)) && rec.chainPrevAlive === true) {
+                try { setPlayerLife(parseInt(rec.chainKilled, 10), { alive: true }); } catch {}
+              }
               d.nightMafiaAppliedByDay[dayKey] = { killed: null, prevAlive: null };
             }
             // Zodiac shot
@@ -141,6 +145,42 @@
                 if (p) p.roleId = rec.prevRoleId;
               }
               d.nightNegotiatorAppliedByDay[dayKey] = { converted: null, prevRoleId: null, succeeded: false };
+            }
+            // Investigator targets
+            if (d.investigatorTargetsByNight) {
+              d.investigatorTargetsByNight[dayKey] = null;
+            }
+            // Sodagari conversion + sacrifice
+            if (d.nightSodagariAppliedByDay && d.nightSodagariAppliedByDay[dayKey]) {
+              const rec = d.nightSodagariAppliedByDay[dayKey];
+              if (Number.isFinite(Number(rec.converted)) && rec.prevRoleId !== null) {
+                const p = appState.draw && appState.draw.players && appState.draw.players[parseInt(rec.converted, 10)];
+                if (p) p.roleId = rec.prevRoleId;
+              }
+              if (Number.isFinite(Number(rec.sacrifice)) && rec.prevAlive === true) {
+                try { setPlayerLife(parseInt(rec.sacrifice, 10), { alive: true }); } catch {}
+              }
+              d.nightSodagariAppliedByDay[dayKey] = { converted: null, prevRoleId: null, sacrifice: null, prevAlive: null, succeeded: false };
+            }
+            if (d.sodagariUsedOnNight != null && Number(d.sodagariUsedOnNight) === nightDayNum) {
+              d.sodagariUsed = false;
+              d.sodagariUsedOnNight = null;
+            }
+            // Soldier kills (namayande)
+            if (d.nightSoldierAppliedByDay && d.nightSoldierAppliedByDay[dayKey]) {
+              const rec = d.nightSoldierAppliedByDay[dayKey];
+              if (Number.isFinite(Number(rec.soldierKilled)) && rec.soldierPrevAlive === true) {
+                try { setPlayerLife(parseInt(rec.soldierKilled, 10), { alive: true }); } catch {}
+              }
+              if (Number.isFinite(Number(rec.gunShotKilled)) && rec.gunShotPrevAlive === true) {
+                try { setPlayerLife(parseInt(rec.gunShotKilled, 10), { alive: true }); } catch {}
+              }
+              d.nightSoldierAppliedByDay[dayKey] = { soldierKilled: null, soldierPrevAlive: null, gunShotKilled: null, gunShotPrevAlive: null };
+            }
+            // Neutralized shot once-per-game flag
+            if (d.neutralizedShotUsedOnNight != null && Number(d.neutralizedShotUsedOnNight) === nightDayNum) {
+              d.neutralizedShotUsed = false;
+              d.neutralizedShotUsedOnNight = null;
             }
             // Bomb planted that night (stored in bombByDay[nightDayNum+1])
             const nextDayKey = String(nightDayNum + 1);
@@ -369,6 +409,12 @@
                 try { setPlayerLife(prevIdx, { alive: true }); } catch {}
               }
             }
+            // revert previous researcher chain kill
+            if (Number.isFinite(Number(rec.chainKilled)) && rec.chainPrevAlive === true) {
+              try { setPlayerLife(parseInt(rec.chainKilled, 10), { alive: true }); } catch {}
+            }
+            rec.chainKilled = null;
+            rec.chainPrevAlive = null;
 
             // apply new kill
             if (desiredKill !== null) {
@@ -379,6 +425,31 @@
               }
               rec.killed = desiredKill;
               rec.prevAlive = wasAlive === true;
+
+              // Researcher chain kill: if mafia killed the Researcher, also kill their linked player.
+              try {
+                if ((draw.players[desiredKill] || {}).roleId === "researcher") {
+                  const nightActions = (f.draft.nightActionsByNight && f.draft.nightActionsByNight[dayKey]) || null;
+                  const linkedIdxRaw = nightActions ? nightActions.researcherLink : null;
+                  const linkedIdx = (linkedIdxRaw !== null && linkedIdxRaw !== undefined && Number.isFinite(parseInt(linkedIdxRaw, 10))) ? parseInt(linkedIdxRaw, 10) : null;
+                  if (linkedIdx !== null && draw.players[linkedIdx]) {
+                    const linkedRoleId = draw.players[linkedIdx].roleId || "citizen";
+                    const linkedTeamFa = (roles[linkedRoleId] && roles[linkedRoleId].teamFa) ? roles[linkedRoleId].teamFa : "شهر";
+                    const scenario = getDrawScenarioForFlow();
+                    const chainApplies = scenario === "bazras"
+                      ? (linkedRoleId === "nato" || linkedRoleId === "swindler")
+                      : (linkedTeamFa === "مافیا" && linkedRoleId !== "mafiaBoss");
+                    if (chainApplies) {
+                      const chainWasAlive = draw.players[linkedIdx].alive !== false;
+                      if (chainWasAlive) {
+                        try { setPlayerLife(linkedIdx, { alive: false, reason: "researcher_chain" }); } catch {}
+                      }
+                      rec.chainKilled = linkedIdx;
+                      rec.chainPrevAlive = chainWasAlive;
+                    }
+                  }
+                }
+              } catch {}
             } else {
               rec.killed = null;
               rec.prevAlive = null;
@@ -683,6 +754,8 @@
                 const tr = (draw.players[tIdx] && draw.players[tIdx].roleId) ? draw.players[tIdx].roleId : "citizen";
                 const teamFa = (roles[tr] && roles[tr].teamFa) ? roles[tr].teamFa : "شهر";
                 if (tr === "zodiac") return { killIdx: null, result: "no_effect", shooter: sniperIdx, target: tIdx };
+                // bazras special rule: shooting mafiaBoss kills nobody
+                if (tr === "mafiaBoss" && getDrawScenarioForFlow() === "bazras") return { killIdx: null, result: "no_effect_boss", shooter: sniperIdx, target: tIdx };
                 if (teamFa === "مافیا") return { killIdx: tIdx, result: "killed_mafia", shooter: sniperIdx, target: tIdx };
                 // Shot a citizen/independent → sniper dies
                 return { killIdx: sniperIdx, result: "killed_self", shooter: sniperIdx, target: tIdx };
@@ -924,6 +997,190 @@
           }
         }
 
+        // Store investigator's two nightly targets (bazras scenario).
+        // No kills here — just records for status display.
+        function applyNightInvestigatorFromPayload(f, payload) {
+          try {
+            if (!f || !payload) return false;
+            const draw = appState.draw;
+            if (!draw || !draw.players) return false;
+            const dayKey = String(f.day || 1);
+            if (!f.draft || typeof f.draft !== "object") f.draft = {};
+            if (!f.draft.investigatorTargetsByNight || typeof f.draft.investigatorTargetsByNight !== "object") f.draft.investigatorTargetsByNight = {};
+            const t1Raw = (payload.investigatorT1 === null || payload.investigatorT1 === undefined) ? null : parseInt(payload.investigatorT1, 10);
+            const t2Raw = (payload.investigatorT2 === null || payload.investigatorT2 === undefined) ? null : parseInt(payload.investigatorT2, 10);
+            const t1 = (Number.isFinite(t1Raw) && t1Raw >= 0 && t1Raw < draw.players.length) ? t1Raw : null;
+            const t2 = (Number.isFinite(t2Raw) && t2Raw >= 0 && t2Raw < draw.players.length) ? t2Raw : null;
+            if (t1 === null && t2 === null) {
+              f.draft.investigatorTargetsByNight[dayKey] = null;
+              return false;
+            }
+            f.draft.investigatorTargetsByNight[dayKey] = { t1, t2 };
+            saveState(appState);
+            return true;
+          } catch {
+            return false;
+          }
+        }
+
+        // Apply sodagari (bazras mafiaBoss trade): converts an eligible citizen/invulnerable to mafia
+        // and eliminates the mafia-member sacrifice. Reversible via back-nav.
+        function applyNightSodagariFromPayload(f, payload) {
+          try {
+            if (!f || !payload) return false;
+            const draw = appState.draw;
+            if (!draw || !draw.players) return false;
+            const scenario = getDrawScenarioForFlow();
+            if (scenario !== "bazras") return false;
+            const dayKey = String(f.day || 1);
+            if (!f.draft || typeof f.draft !== "object") f.draft = {};
+            if (!f.draft.nightSodagariAppliedByDay || typeof f.draft.nightSodagariAppliedByDay !== "object") f.draft.nightSodagariAppliedByDay = {};
+            const rec = (f.draft.nightSodagariAppliedByDay[dayKey] && typeof f.draft.nightSodagariAppliedByDay[dayKey] === "object")
+              ? f.draft.nightSodagariAppliedByDay[dayKey]
+              : { converted: null, prevRoleId: null, sacrifice: null, prevAlive: null, succeeded: false };
+
+            const sacRaw = (payload.sodagariSacrifice === null || payload.sodagariSacrifice === undefined) ? null : parseInt(payload.sodagariSacrifice, 10);
+            const tgtRaw = (payload.sodagariTarget === null || payload.sodagariTarget === undefined) ? null : parseInt(payload.sodagariTarget, 10);
+            const desiredSac = (Number.isFinite(sacRaw) && sacRaw >= 0 && sacRaw < draw.players.length) ? sacRaw : null;
+            const desiredTgt = (Number.isFinite(tgtRaw) && tgtRaw >= 0 && tgtRaw < draw.players.length) ? tgtRaw : null;
+
+            // no change
+            if (rec.sacrifice === desiredSac && rec.converted === desiredTgt) return false;
+
+            // revert previous conversion
+            if (Number.isFinite(Number(rec.converted)) && rec.prevRoleId !== null) {
+              const prevIdx = parseInt(rec.converted, 10);
+              const p = draw.players[prevIdx];
+              if (p) p.roleId = rec.prevRoleId;
+            }
+            // revert previous sacrifice kill
+            if (Number.isFinite(Number(rec.sacrifice)) && rec.prevAlive === true) {
+              const prevSacIdx = parseInt(rec.sacrifice, 10);
+              try { setPlayerLife(prevSacIdx, { alive: true }); } catch {}
+            }
+            rec.converted = null; rec.prevRoleId = null; rec.sacrifice = null; rec.prevAlive = null; rec.succeeded = false;
+
+            if (desiredSac !== null || desiredTgt !== null) {
+              // Apply sacrifice elimination
+              if (desiredSac !== null) {
+                const sp = draw.players[desiredSac];
+                rec.sacrifice = desiredSac;
+                rec.prevAlive = (sp && sp.alive !== false) ? true : false;
+                if (sp && sp.alive !== false) {
+                  try { setPlayerLife(desiredSac, { alive: false }); } catch {}
+                }
+              }
+              // Apply conversion
+              if (desiredTgt !== null) {
+                const tp = draw.players[desiredTgt];
+                const targetRole = (tp && tp.roleId) ? tp.roleId : "citizen";
+                const isEligible = (targetRole === "citizen") || (targetRole === "invulnerable");
+                if (isEligible && tp) {
+                  rec.prevRoleId = targetRole;
+                  tp.roleId = "mafia";
+                  rec.converted = desiredTgt;
+                  rec.succeeded = true;
+                } else {
+                  rec.converted = desiredTgt;
+                  rec.prevRoleId = null;
+                  rec.succeeded = false;
+                }
+              }
+              f.draft.sodagariUsed = true;
+            }
+
+            f.draft.nightSodagariAppliedByDay[dayKey] = rec;
+            saveState(appState);
+            return true;
+          } catch {
+            return false;
+          }
+        }
+
+        // Apply Soldier night bullet: if given to mafia → soldier dies;
+        // if given to citizen and citizen fired → apply gun-shot kill rule.
+        function applyNightSoldierFromPayload(f, payload) {
+          try {
+            if (!f || !payload) return false;
+            const draw = appState.draw;
+            if (!draw || !draw.players) return false;
+            if (getDrawScenarioForFlow() !== "namayande") return false;
+            const dayKey = String(f.day || 1);
+            if (!f.draft || typeof f.draft !== "object") f.draft = {};
+            if (!f.draft.nightSoldierAppliedByDay || typeof f.draft.nightSoldierAppliedByDay !== "object") f.draft.nightSoldierAppliedByDay = {};
+            const rec = (f.draft.nightSoldierAppliedByDay[dayKey] && typeof f.draft.nightSoldierAppliedByDay[dayKey] === "object")
+              ? f.draft.nightSoldierAppliedByDay[dayKey]
+              : { soldierKilled: null, soldierPrevAlive: null, gunShotKilled: null, gunShotPrevAlive: null };
+
+            const tgtRaw = (payload.soldierTarget === null || payload.soldierTarget === undefined) ? null : parseInt(payload.soldierTarget, 10);
+            const gsRaw = (payload.soldierGunShot === null || payload.soldierGunShot === undefined) ? null : parseInt(payload.soldierGunShot, 10);
+            const desiredTgt = (Number.isFinite(tgtRaw) && tgtRaw >= 0 && tgtRaw < draw.players.length) ? tgtRaw : null;
+            const desiredGs = (Number.isFinite(gsRaw) && gsRaw >= 0 && gsRaw < draw.players.length) ? gsRaw : null;
+
+            // no change
+            if (rec.soldierTgt === desiredTgt && rec.gunShotTgt === desiredGs) return false;
+
+            // revert previous kills
+            if (Number.isFinite(Number(rec.soldierKilled)) && rec.soldierPrevAlive === true) {
+              try { setPlayerLife(parseInt(rec.soldierKilled, 10), { alive: true }); } catch {}
+            }
+            if (Number.isFinite(Number(rec.gunShotKilled)) && rec.gunShotPrevAlive === true) {
+              try { setPlayerLife(parseInt(rec.gunShotKilled, 10), { alive: true }); } catch {}
+            }
+            rec.soldierKilled = null; rec.soldierPrevAlive = null;
+            rec.gunShotKilled = null; rec.gunShotPrevAlive = null;
+            rec.soldierTgt = desiredTgt; rec.gunShotTgt = desiredGs;
+
+            if (desiredTgt !== null) {
+              const tp = draw.players[desiredTgt];
+              const tgtRoleId = (tp && tp.roleId) ? tp.roleId : "citizen";
+              const tgtTeamFa = (roles[tgtRoleId] && roles[tgtRoleId].teamFa) ? roles[tgtRoleId].teamFa : "شهر";
+              if (tgtTeamFa === "مافیا") {
+                // bullet given to mafia → soldier dies
+                const soldierIdx = (() => {
+                  for (let i = 0; i < draw.players.length; i++) {
+                    if (draw.players[i] && draw.players[i].roleId === "soldier" && draw.players[i].alive !== false) return i;
+                  }
+                  return null;
+                })();
+                if (soldierIdx !== null) {
+                  const wasAlive = draw.players[soldierIdx].alive !== false;
+                  if (wasAlive) { try { setPlayerLife(soldierIdx, { alive: false, reason: "soldier_gave_mafia" }); } catch {} }
+                  rec.soldierKilled = soldierIdx;
+                  rec.soldierPrevAlive = wasAlive;
+                }
+              } else if (desiredGs !== null) {
+                // bullet given to citizen; citizen shot
+                const gsp = draw.players[desiredGs];
+                const gsRoleId = (gsp && gsp.roleId) ? gsp.roleId : "citizen";
+                const gsTeamFa = (roles[gsRoleId] && roles[gsRoleId].teamFa) ? roles[gsRoleId].teamFa : "شهر";
+                if (gsRoleId === "don") {
+                  // shot at Don → nobody dies
+                } else if (gsTeamFa === "مافیا") {
+                  // shot at mafia → mafia dies
+                  const wasAlive = gsp ? gsp.alive !== false : false;
+                  if (wasAlive) { try { setPlayerLife(desiredGs, { alive: false, reason: "soldier_gun_shot" }); } catch {} }
+                  rec.gunShotKilled = desiredGs;
+                  rec.gunShotPrevAlive = wasAlive;
+                } else {
+                  // shot at citizen → recipient (bullet holder = desiredTgt) dies
+                  const rp = draw.players[desiredTgt];
+                  const wasAlive = rp ? rp.alive !== false : false;
+                  if (wasAlive) { try { setPlayerLife(desiredTgt, { alive: false, reason: "soldier_gun_citizen" }); } catch {} }
+                  rec.gunShotKilled = desiredTgt;
+                  rec.gunShotPrevAlive = wasAlive;
+                }
+              }
+            }
+
+            f.draft.nightSoldierAppliedByDay[dayKey] = rec;
+            saveState(appState);
+            return true;
+          } catch {
+            return false;
+          }
+        }
+
         // Apply day elimination (vote-out) immediately (with reversible preview).
         function applyDayElimFromPayload(f, payload) {
           try {
@@ -985,7 +1242,7 @@
                 rec.out = desiredOut;
                 rec.prevAlive = wasAlive === true;
 
-                // researcher chain kill: if voted-out player is Researcher linked to non-boss Mafia
+                // researcher chain kill: if voted-out player is Researcher linked to eligible role
                 try {
                   if ((draw.players[desiredOut] || {}).roleId === "researcher") {
                     const prevNightKey = String((f.day || 1) - 1);
@@ -995,7 +1252,11 @@
                     if (linkedIdx !== null && draw.players[linkedIdx]) {
                       const linkedRoleId = draw.players[linkedIdx].roleId || "citizen";
                       const linkedTeamFa = (roles[linkedRoleId] && roles[linkedRoleId].teamFa) ? roles[linkedRoleId].teamFa : "شهر";
-                      if (linkedTeamFa === "مافیا" && linkedRoleId !== "mafiaBoss") {
+                      const scenario = getDrawScenarioForFlow();
+                      const chainApplies = scenario === "bazras"
+                        ? (linkedRoleId === "nato" || linkedRoleId === "swindler")
+                        : (linkedTeamFa === "مافیا" && linkedRoleId !== "mafiaBoss");
+                      if (chainApplies) {
                         const chainWasAlive = draw.players[linkedIdx].alive !== false;
                         if (chainWasAlive) {
                           try { setPlayerLife(linkedIdx, { alive: false, reason: "researcher_chain" }); } catch {}
@@ -1247,6 +1508,12 @@
                 try { applyNightZodiacFromPayload(f, payload0); } catch {}
                 // Negotiator converts a citizen/armored to mafia (role conversion, not a kill).
                 try { applyNightNegotiatorFromPayload(f, payload0); } catch {}
+                // Investigator records 2 targets (bazras scenario).
+                try { applyNightInvestigatorFromPayload(f, payload0); } catch {}
+                // Sodagari (bazras): mafiaBoss sacrifice + citizen conversion.
+                try { applyNightSodagariFromPayload(f, payload0); } catch {}
+                // Soldier (namayande): gives bullet to a player.
+                try { applyNightSoldierFromPayload(f, payload0); } catch {}
                 // Apply mafia last (uses doctorSave + lecterSave, possibly cleared by disable).
                 try { applyNightMafiaFromPayload(f, payload0); } catch {}
                 try { renderCast(); } catch {}

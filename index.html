@@ -1035,38 +1035,47 @@
             if (xs.length === 2) return `${xs[0]} and ${xs[1]}`;
             return xs.slice(0, -1).join(", ") + " and " + xs[xs.length - 1];
           };
+          // Colored number spans: total=amber, mafia=red, citizen=teal, indep=purple
+          const numH = (val, type) => {
+            const color = type === "mafia" ? "rgba(255,90,70,1)"
+              : type === "citizen" ? "rgba(60,210,160,1)"
+              : type === "indep" ? "rgba(190,140,255,1)"
+              : "rgba(255,215,55,1)"; // total
+            return `<span style="color:${color}; font-weight:1100">${fmtNum(val)}</span>`;
+          };
           const teamParts = () => {
             if (appLang === "fa") {
               return [
-                m ? `${fmtNum(m)} مافیا` : "",
-                c ? `${fmtNum(c)} شهروند` : "",
-                i ? `${fmtNum(i)} مستقل` : "",
+                m ? `${numH(m, "mafia")} مافیا` : "",
+                c ? `${numH(c, "citizen")} شهروند` : "",
+                i ? `${numH(i, "indep")} مستقل` : "",
               ].filter(Boolean);
             }
             const citizenLabel = (n) => n === 1 ? "Citizen" : "Citizens";
             const indepLabel = (n) => n === 1 ? "Independent" : "Independents";
             return [
-              m ? `${fmtNum(m)} Mafia` : "",
-              c ? `${fmtNum(c)} ${citizenLabel(c)}` : "",
-              i ? `${fmtNum(i)} ${indepLabel(i)}` : "",
+              m ? `${numH(m, "mafia")} Mafia` : "",
+              c ? `${numH(c, "citizen")} ${citizenLabel(c)}` : "",
+              i ? `${numH(i, "indep")} ${indepLabel(i)}` : "",
             ].filter(Boolean);
           };
           const aliveParts = () => {
             if (appLang === "fa") {
               return [
-                mA ? `${fmtNum(mA)} مافیا` : "",
-                cA ? `${fmtNum(cA)} شهروند` : "",
-                iA ? `${fmtNum(iA)} مستقل` : "",
+                mA ? `${numH(mA, "mafia")} مافیا` : "",
+                cA ? `${numH(cA, "citizen")} شهروند` : "",
+                iA ? `${numH(iA, "indep")} مستقل` : "",
               ].filter(Boolean);
             }
             const citizenLabel = (n) => n === 1 ? "Citizen" : "Citizens";
             const indepLabel = (n) => n === 1 ? "Independent" : "Independents";
             return [
-              mA ? `${fmtNum(mA)} Mafia` : "",
-              cA ? `${fmtNum(cA)} ${citizenLabel(cA)}` : "",
-              iA ? `${fmtNum(iA)} ${indepLabel(iA)}` : "",
+              mA ? `${numH(mA, "mafia")} Mafia` : "",
+              cA ? `${numH(cA, "citizen")} ${citizenLabel(cA)}` : "",
+              iA ? `${numH(iA, "indep")} ${indepLabel(iA)}` : "",
             ].filter(Boolean);
           };
+          // summaryText and aliveLine are HTML strings (numbers wrapped in colored spans)
           const summaryText = (() => {
             const total = out || 0;
             const parts = teamParts();
@@ -1076,36 +1085,28 @@
                 : "From your game no one is out yet.";
             }
             if (parts.length === 1) {
-              // only one team has any out
+              // only one team has any out — extract team label without number
+              const teamOnlyFa = m ? "مافیا" : c ? "شهروند" : "مستقل";
+              const teamOnlyEn = m ? "Mafia" : c ? (total === 1 ? "Citizen" : "Citizens") : (total === 1 ? "Independent" : "Independents");
               if (appLang === "fa") {
-                // parts[0] is like "3 مافیا" -> strip leading number
-                const teamOnly = parts[0].replace(/^\S+\s*/, "");
-                if (total === 1) return `از بازی شما ${fmtNum(total)} نفر خارج شده است؛ او ${teamOnly} بوده است.`;
-                return `از بازی شما ${fmtNum(total)} نفر خارج شده‌اند؛ همهٔ آن‌ها ${teamOnly} بوده‌اند.`;
+                if (total === 1) return `از بازی شما ${numH(total, "total")} نفر خارج شده است؛ او ${teamOnlyFa} بوده است.`;
+                return `از بازی شما ${numH(total, "total")} نفر خارج شده‌اند؛ همهٔ آن‌ها ${teamOnlyFa} بوده‌اند.`;
               }
-              // English
               const isOne = total === 1;
-              const head = isOne ? `From your game ${fmtNum(total)} person is out` : `From your game ${fmtNum(total)} people are out`;
-              // Convert "3 Citizens" -> "Citizens", "2 Mafia" -> "Mafia"
-              const teamOnly = parts[0].replace(/^\S+\s*/, "");
+              const head = isOne ? `From your game ${numH(total, "total")} person is out` : `From your game ${numH(total, "total")} people are out`;
               if (isOne) {
-                // add article for Citizen/Independent
-                const lower = teamOnly.toLowerCase();
-                const withArticle =
-                  (lower === "citizen") ? "a Citizen" :
-                  (lower === "independent") ? "an Independent" :
-                  teamOnly;
+                const withArticle = (teamOnlyEn === "Citizen") ? "a Citizen" : (teamOnlyEn === "Independent") ? "an Independent" : teamOnlyEn;
                 return `${head}, they were ${withArticle}.`;
               }
-              return `${head}, all of them were ${teamOnly}.`;
+              return `${head}, all of them were ${teamOnlyEn}.`;
             }
             // multiple teams
             if (appLang === "fa") {
-              return `از بازی شما ${fmtNum(total)} نفر خارج شده‌اند؛ ${joinList(parts)}.`;
+              return `از بازی شما ${numH(total, "total")} نفر خارج شده‌اند؛ ${joinList(parts)}.`;
             }
             const head = (total === 1)
-              ? `From your game ${fmtNum(total)} person is out`
-              : `From your game ${fmtNum(total)} people are out`;
+              ? `From your game ${numH(total, "total")} person is out`
+              : `From your game ${numH(total, "total")} people are out`;
             return `${head}. ${joinList(parts)}.`;
           })();
           const aliveLine = (() => {
@@ -1117,11 +1118,11 @@
                 : "No one is alive in your game.";
             }
             if (appLang === "fa") {
-              return `در بازی شما ${fmtNum(total)} نفر داخل بازی هستند؛ ${joinList(parts)}.`;
+              return `در بازی شما ${numH(total, "total")} نفر داخل بازی هستند؛ ${joinList(parts)}.`;
             }
             const head = (total === 1)
-              ? `In your game ${fmtNum(total)} person is still in`
-              : `In your game ${fmtNum(total)} people are still in`;
+              ? `In your game ${numH(total, "total")} person is still in`
+              : `In your game ${numH(total, "total")} people are still in`;
             return `${head}. ${joinList(parts)}.`;
           })();
 
@@ -1249,6 +1250,16 @@
                       : `${nameOf(mafiaIdx)} shot ${nameOf(mafiaShot)}.`);
                   }
                 }
+                // Researcher chain kill (night shot)
+                try {
+                  const mafRec = f && f.draft && f.draft.nightMafiaAppliedByDay && f.draft.nightMafiaAppliedByDay[String(eventDay)];
+                  const chainKilledIdx = (mafRec && mafRec.chainKilled != null && Number.isFinite(parseInt(mafRec.chainKilled, 10))) ? parseInt(mafRec.chainKilled, 10) : null;
+                  if (chainKilledIdx !== null) {
+                    out.push((appLang === "fa")
+                      ? `↳ ${nameOf(chainKilledIdx)} (لینک‌شده به محقق) نیز از بازی خارج شد.`
+                      : `↳ ${nameOf(chainKilledIdx)} (linked to Researcher) also eliminated.`);
+                  }
+                } catch {}
                 const doctorIdx = findIdxByRole(["doctor", "watson"]);
                 if (doctorSave !== null && (mafiaShot === null || doctorSave !== mafiaShot) && doctorIdx !== null) {
                   out.push((appLang === "fa")
@@ -1539,6 +1550,89 @@
                     ? `${plainNameOf(natoIdx)} (ناتو) نقش ${nameOf(natoTarget)} را «${natoGuessLabel}» حدس زد.`
                     : `${plainNameOf(natoIdx)} (NATO) guessed ${nameOf(natoTarget)}'s role as "${natoGuessLabel}".`);
                 }
+                const investigatorIdx = findIdxByRole(["investigator"]);
+                const invT1 = idxFrom(payload.investigatorT1);
+                const invT2 = idxFrom(payload.investigatorT2);
+                if ((invT1 !== null || invT2 !== null) && investigatorIdx !== null) {
+                  const t1Str = invT1 !== null ? nameOf(invT1) : "—";
+                  const t2Str = invT2 !== null ? nameOf(invT2) : "—";
+                  out.push((appLang === "fa")
+                    ? `${plainNameOf(investigatorIdx)} (بازپرس) دو نفر را برای بازپرسی انتخاب کرد: ${t1Str} و ${t2Str}.`
+                    : `${plainNameOf(investigatorIdx)} (Inspector) selected two for interrogation: ${t1Str} and ${t2Str}.`);
+                }
+                const sodagariSacrifice = idxFrom(payload.sodagariSacrifice);
+                const sodagariTarget = idxFrom(payload.sodagariTarget);
+                const mafiaBossIdx = findIdxByRole(["mafiaBoss"]);
+                if ((sodagariSacrifice !== null || sodagariTarget !== null) && mafiaBossIdx !== null) {
+                  try {
+                    const sodRec = f && f.draft && f.draft.nightSodagariAppliedByDay
+                      && f.draft.nightSodagariAppliedByDay[String(eventDay)];
+                    const sodSucceeded = sodRec ? sodRec.succeeded : null;
+                    const sacStr = sodagariSacrifice !== null ? nameOf(sodagariSacrifice) : "—";
+                    const tgtStr = sodagariTarget !== null ? nameOf(sodagariTarget) : "—";
+                    if (sodSucceeded === true) {
+                      out.push((appLang === "fa")
+                        ? `سوداگری: ${sacStr} فدا شد (حذف) + ${tgtStr} به مافیا تبدیل شد.`
+                        : `Trade: ${sacStr} sacrificed (eliminated) + ${tgtStr} converted to Mafia.`);
+                    } else if (sodSucceeded === false) {
+                      out.push((appLang === "fa")
+                        ? `سوداگری: ${sacStr} فدا شد + تبدیل ${tgtStr} شکست خورد (نقش واجد شرایط نیست).`
+                        : `Trade: ${sacStr} sacrificed + converting ${tgtStr} failed (ineligible role).`);
+                    } else {
+                      out.push((appLang === "fa")
+                        ? `سوداگری انتخاب شد: فدایی=${sacStr}، هدف=${tgtStr}.`
+                        : `Trade selected: sacrifice=${sacStr}, target=${tgtStr}.`);
+                    }
+                  } catch {
+                    out.push((appLang === "fa")
+                      ? `سوداگری: فدایی=${sodagariSacrifice !== null ? nameOf(sodagariSacrifice) : "—"}.`
+                      : `Trade: sacrifice=${sodagariSacrifice !== null ? nameOf(sodagariSacrifice) : "—"}.`);
+                  }
+                }
+                // Soldier (namayande)
+                const soldierIdx = findIdxByRole(["soldier"]);
+                const soldierTarget = idxFrom(payload.soldierTarget);
+                const soldierGunShot = idxFrom(payload.soldierGunShot);
+                if (soldierTarget !== null && soldierIdx !== null) {
+                  try {
+                    const solRec = f && f.draft && f.draft.nightSoldierAppliedByDay
+                      && f.draft.nightSoldierAppliedByDay[String(eventDay)];
+                    const tRoleId = (draw.players[soldierTarget] && draw.players[soldierTarget].roleId) ? draw.players[soldierTarget].roleId : "citizen";
+                    const tTeamFa = (roles[tRoleId] && roles[tRoleId].teamFa) ? roles[tRoleId].teamFa : "شهر";
+                    if (tTeamFa === "مافیا") {
+                      out.push((appLang === "fa")
+                        ? `${plainNameOf(soldierIdx)} (سرباز) تیر به ${nameOf(soldierTarget)} (مافیا) داد — سرباز خارج شد.`
+                        : `${plainNameOf(soldierIdx)} (Soldier) gave bullet to ${nameOf(soldierTarget)} (Mafia) — Soldier eliminated.`);
+                    } else {
+                      out.push((appLang === "fa")
+                        ? `${plainNameOf(soldierIdx)} (سرباز) تیر به ${nameOf(soldierTarget)} (شهروند) داد.`
+                        : `${plainNameOf(soldierIdx)} (Soldier) gave bullet to ${nameOf(soldierTarget)} (Citizen).`);
+                      if (soldierGunShot !== null) {
+                        const gsRoleId = (draw.players[soldierGunShot] && draw.players[soldierGunShot].roleId) ? draw.players[soldierGunShot].roleId : "citizen";
+                        const gsTeamFa = (roles[gsRoleId] && roles[gsRoleId].teamFa) ? roles[gsRoleId].teamFa : "شهر";
+                        if (gsRoleId === "don") {
+                          out.push((appLang === "fa")
+                            ? `↳ ${nameOf(soldierTarget)} به ${nameOf(soldierGunShot)} (دون مافیا) شلیک کرد — بدون اثر.`
+                            : `↳ ${nameOf(soldierTarget)} shot ${nameOf(soldierGunShot)} (Don Mafia) — no effect.`);
+                        } else if (gsTeamFa === "مافیا") {
+                          out.push((appLang === "fa")
+                            ? `↳ ${nameOf(soldierTarget)} به ${nameOf(soldierGunShot)} (مافیا) شلیک کرد — مافیا خارج شد.`
+                            : `↳ ${nameOf(soldierTarget)} shot ${nameOf(soldierGunShot)} (Mafia) — Mafia eliminated.`);
+                        } else {
+                          out.push((appLang === "fa")
+                            ? `↳ ${nameOf(soldierTarget)} به ${nameOf(soldierGunShot)} (شهروند) شلیک کرد — خودش خارج شد.`
+                            : `↳ ${nameOf(soldierTarget)} shot ${nameOf(soldierGunShot)} (Citizen) — recipient eliminated.`);
+                        }
+                      }
+                    }
+                  } catch {}
+                }
+                // Neutralized shot flag (namayande)
+                if (payload.neutralizedShot === true) {
+                  out.push((appLang === "fa")
+                    ? "مافیا از شات خنثی استفاده کرد (مین فعال نمی‌شود برای مافیا)."
+                    : "Mafia used neutralized shot (mine trap bypassed for mafia).");
+                }
                 return out;
               };
 
@@ -1655,11 +1749,65 @@
                   if (!clean.length || clean[clean.length - 1] !== s) clean.push(s);
                 }
                 if (!clean.length) return "";
+
+                // Build eliminated list for this phase from draft records
+                const eliminated = [];
+                const seenElim = new Set();
+                const addElim = (idx) => {
+                  if (idx == null) return;
+                  const i = parseInt(idx, 10);
+                  if (!Number.isFinite(i) || i < 0 || seenElim.has(i)) return;
+                  seenElim.add(i);
+                  eliminated.push(i);
+                };
+                try {
+                  if (f && f.draft) {
+                    const dk = String(g.day);
+                    if (g.phase === "day" || g.phase === "midday") {
+                      const er = f.draft.dayElimAppliedByDay && f.draft.dayElimAppliedByDay[dk];
+                      if (er && !er.armoredAbsorbed && er.prevAlive === true && er.out != null) addElim(er.out);
+                      if (er && er.chainPrevAlive === true && er.chainOut != null) addElim(er.chainOut);
+                      const gr = f.draft.gunShotAppliedByDay && f.draft.gunShotAppliedByDay[dk];
+                      if (gr && Array.isArray(gr.shots)) {
+                        for (const s of gr.shots) {
+                          if (s && s.type === "real" && s.targetPrevAlive && s.target != null) addElim(s.target);
+                        }
+                      }
+                      const br = f.draft.bombAppliedByDay && f.draft.bombAppliedByDay[dk];
+                      if (br && br.prevAlive === true && br.killed != null) addElim(br.killed);
+                    } else if (g.phase === "night") {
+                      const mr = f.draft.nightMafiaAppliedByDay && f.draft.nightMafiaAppliedByDay[dk];
+                      if (mr && mr.prevAlive === true && mr.killed != null) addElim(mr.killed);
+                      if (mr && mr.chainPrevAlive === true && mr.chainKilled != null) addElim(mr.chainKilled);
+                      const zr = f.draft.nightZodiacAppliedByDay && f.draft.nightZodiacAppliedByDay[dk];
+                      if (zr && zr.prevAlive === true && zr.killed != null) addElim(zr.killed);
+                      const pr = f.draft.nightProAppliedByDay && f.draft.nightProAppliedByDay[dk];
+                      if (pr && pr.prevAlive === true && pr.killed != null) addElim(pr.killed);
+                      const sr = f.draft.nightSniperAppliedByDay && f.draft.nightSniperAppliedByDay[dk];
+                      if (sr && sr.prevAlive === true && sr.killed != null) addElim(sr.killed);
+                      const ocr = f.draft.nightOceanAppliedByDay && f.draft.nightOceanAppliedByDay[dk];
+                      if (ocr && ocr.killedOcean === true && ocr.prevAlive === true && ocr.oceanIdx != null) addElim(ocr.oceanIdx);
+                      const hr = f.draft.nightHerbalistAppliedByDay && f.draft.nightHerbalistAppliedByDay[dk];
+                      if (hr && hr.prevAlive === true && hr.killed != null) addElim(hr.killed);
+                      const sod = f.draft.nightSodagariAppliedByDay && f.draft.nightSodagariAppliedByDay[dk];
+                      if (sod && sod.prevAlive === true && sod.sacrifice != null) addElim(sod.sacrifice);
+                    }
+                  }
+                } catch {}
+
+                const elimLabel = appLang === "fa" ? "خارج‌شدگان:" : "Eliminated:";
+                const elimRow = eliminated.length
+                  ? `<li style="list-style:none; margin-top:8px; padding-top:7px; border-top:1px solid rgba(255,255,255,.18); color:rgba(255,110,70,.95); font-weight:1000">
+                      ${escapeHtml(elimLabel)} ${eliminated.map(plainNameOf).map(escapeHtml).join("،\u200f ")}
+                    </li>`
+                  : "";
+
                 return `
                   <div class="toolBox" style="margin-top:12px">
                     <div style="font-weight:1100; margin-bottom:6px">${escapeHtml(phaseTitle(g.day, g.phase))}</div>
                     <ul style="margin:0; padding-${appLang === "fa" ? "right" : "left"}:18px; line-height:1.9">
                       ${clean.map((s) => `<li>${escapeHtml(s)}</li>`).join("")}
+                      ${elimRow}
                     </ul>
                   </div>
                 `;
@@ -1679,8 +1827,8 @@
 
           openToolModal(t("tool.status.title"), `
             <div class="toolBox" style="font-weight:950; line-height:1.9">
-              <div>${escapeHtml(summaryText)}</div>
-              <div class="note" style="margin-top:10px">${escapeHtml(aliveLine)}</div>
+              <div>${summaryText}</div>
+              <div class="note" style="margin-top:10px">${aliveLine}</div>
             </div>
             ${timelineHtml}
           `);
