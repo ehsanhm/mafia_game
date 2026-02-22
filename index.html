@@ -1216,7 +1216,17 @@
                 if (!Number.isFinite(day) || !["day", "midday", "night"].includes(phase)) continue;
                 // Skip events from the current phase and any phase after it.
                 if (day > curFlowDay) continue;
-                if (day === curFlowDay && (phaseOrder[phase] ?? 99) >= curFlowPo) continue;
+                if (day === curFlowDay && (phaseOrder[phase] ?? 99) >= curFlowPo) {
+                  // Exception: gun_shot events that have already been applied are shown
+                  // even while still in "day" phase (they occur at an earlier step within the day).
+                  if (e.kind === "gun_shot") {
+                    const _gsRec = f && f.draft && f.draft.gunShotAppliedByDay && f.draft.gunShotAppliedByDay[String(day)];
+                    if (!_gsRec || !_gsRec.applied) continue;
+                    // applied — fall through and include in group
+                  } else {
+                    continue;
+                  }
+                }
                 const key = `${day}:${phase}`;
                 if (!groups.has(key)) groups.set(key, { day, phase, items: [] });
                 groups.get(key).items.push(e);
@@ -1235,6 +1245,21 @@
                     const irecChk = f.draft.bazrasInterrogationByDay[dk];
                     const hasDecision = irecChk && irecChk.decision;
                     if (day === curFlowDay && (phaseOrder["day"] ?? 99) >= curFlowPo && !hasDecision) continue;
+                    const key = `${day}:day`;
+                    if (!groups.has(key)) groups.set(key, { day, phase: "day", items: [] });
+                  }
+                } catch {}
+              }
+              // Gun expiry: ensure a day group exists for any day where players were killed
+              // for not firing their real gun.
+              if (f && f.draft && f.draft.gunExpiryAppliedByDay) {
+                try {
+                  for (const dk of Object.keys(f.draft.gunExpiryAppliedByDay)) {
+                    const day = parseInt(dk, 10);
+                    if (!Number.isFinite(day) || day > curFlowDay) continue;
+                    const er = f.draft.gunExpiryAppliedByDay[dk];
+                    if (!er || !Array.isArray(er.killed) || !er.killed.length) continue;
+                    if (day === curFlowDay && (phaseOrder["day"] ?? 99) >= curFlowPo) continue;
                     const key = `${day}:day`;
                     if (!groups.has(key)) groups.set(key, { day, phase: "day", items: [] });
                   }
@@ -1918,6 +1943,24 @@
                     }
                   } catch {}
                 }
+                // Gun expiry: inject deaths for players who didn't fire their real gun
+                if (f && f.draft && f.draft.gunExpiryAppliedByDay) {
+                  try {
+                    const dk = String(g.day);
+                    if (g.phase === "day") {
+                      const xr = f.draft.gunExpiryAppliedByDay[dk];
+                      if (xr && Array.isArray(xr.killed) && xr.killed.length) {
+                        for (const { idx } of xr.killed) {
+                          if (idx != null && draw.players[idx]) {
+                            clean.push(appLang === "fa"
+                              ? `${nameOf(idx)} تفنگ واقعی خود را شلیک نکرد و از بازی خارج شد.`
+                              : `${nameOf(idx)} did not fire their real gun and was eliminated.`);
+                          }
+                        }
+                      }
+                    }
+                  } catch {}
+                }
                 if (!clean.length) return "";
 
                 // Build eliminated list for this phase from draft records
@@ -1946,6 +1989,12 @@
                       }
                       const br = f.draft.bombAppliedByDay && f.draft.bombAppliedByDay[dk];
                       if (br && br.prevAlive === true && br.killed != null) addElim(br.killed);
+                      const xr = f.draft.gunExpiryAppliedByDay && f.draft.gunExpiryAppliedByDay[dk];
+                      if (xr && Array.isArray(xr.killed)) {
+                        for (const { idx, prevAlive } of xr.killed) {
+                          if (prevAlive && idx != null) addElim(idx);
+                        }
+                      }
                       const irec = f.draft.bazrasInterrogationByDay && f.draft.bazrasInterrogationByDay[dk];
                       if (irec && irec.decision === "continue") {
                         if (irec.prevAlive === true && irec.prevEliminated != null) {

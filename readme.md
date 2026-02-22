@@ -1,4 +1,9 @@
 ## TODO:
 
-we don't need to see "Intro Night" phase if there's no action taken. Usually on this night only Mafia wakes up and knows their teammates. so no need to show the page. But if on that night something else happens too e.g. Heir chooses a player, then we should show that night's page "Intro Night
-Step 1 of 1 • Intro Night"
+Day 2
+Step 1 of 4 • Gun use
+Guns manager
+
+the options can be more user friendly, we shouldn't have to select the shooter and target. instead it's better if we have 2 dropbdown menus for targets: 
+- Player1Name's Target 
+- Player2Name's target
