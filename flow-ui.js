@@ -1,9 +1,12 @@
+        /* Taurus Model 85 revolver silhouette — OpenClipart, public domain (JollyRager) */
+        const gunSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 431.81 290.32" fill="currentColor" style="width:1.3em;height:.87em;vertical-align:-.15em;display:inline-block"><g transform="translate(-126.29 -141.21)"><path d="m496.24 431.17c-28.264-0.59012-31.429-1.0232-36.868-5.0448-3.9076-2.889-5.1287-6.5306-5.1434-15.338-0.0205-12.279-2.5004-18.993-10.887-29.478l-5.1011-6.3775v-9.335c0-10.527-1.9694-17.307-7.0736-24.353-8.8995-12.285-25.369-14.375-39.165-4.9696-6.4443 4.3935-6.9945 4.5413-8.8016 2.364-1.1291-1.3605-1.7814-1.0632-5.3724 2.4492-10.813 10.577-29.218 13.407-56.033 8.6184-17.755-3.1708-39.107-12.214-47.603-20.162-6.9586-6.5089-9.8298-12.502-11.024-23.008-1.5705-13.822-4.992-19.505-14.427-23.966-4.1875-1.9796-6.5884-2.3653-14.775-2.3735-9.5686-0.01-9.7953-0.0639-10.75-2.5749-0.53639-1.4108-0.98625-9.6233-0.9997-18.25-0.0278-17.832-0.73699-21.996-4.9677-29.172-1.6543-2.8057-3.0078-6.2013-3.0078-7.5458v-2.4445l-39.632-0.26148-39.632-0.26147-4.3119-15c-4.2426-14.759-4.3128-15.253-4.3675-30.719-0.0502-14.189 0.19018-16.472 2.4702-23.457 1.3892-4.2558 3.0768-8.0879 3.75-8.5156 3.2566-2.069 14.912 0.16633 21.989 4.2168 2.6717 1.5293 60.735 2.6145 60.735 1.1351 0-0.7663 2.3028-1.1603 6.7821-1.1603 3.7301 0 9.2426-0.66053 12.25-1.4678 4.7321-1.2703 14.013-1.3283 68.968-0.43078 34.925 0.57039 69.8 1.3434 77.5 1.7178l14 0.68078 3.6809 7c2.0245 3.85 4.4995 8.5643 5.5 10.476 3.1167 5.9562 8.7861 5.8298 14.637-0.32618 5.4104-5.6922 19.646-9.7913 21.075-6.0683 1.047 2.7285 0.68371 4.6616-0.77115 4.1033-0.75798-0.29086-1.7705-0.16837-2.25 0.27221-0.47953 0.44058-2.5973 1.3528-4.7062 2.0272-4.0727 1.3024-15.558 12.188-18.293 17.337-1.6793 3.1621-1.5631 3.4169 4.526 9.9282 1.9288 2.0625 4.1055 3.75 4.8372 3.75 2.3071 0 11.184 4.9356 15.05 8.3676 4.1932 3.7228 11.781 6.1006 22.714 7.1183 12.92 1.2026 22.13 4.4103 23.575 8.2109 0.76679 2.0168 1.5558 2.3032 6.3447 2.3032 8.2402 0 9.9775 1.9911 13.524 15.5 5.8254 22.19 11.076 33.579 27.017 58.602 18.011 28.272 25.706 51.864 26.712 81.898 0.43459 12.973 0.17009 17.518-1.6225 27.88-2.34 13.526-4.3446 18.507-9.0357 22.455-4.8248 4.0598-10.821 4.4888-51.014 3.6496zm-132.95-89.62c10.081-4.598 16.459-13.384 17.594-24.237 0.81487-7.7963-0.90345-14.501-5.8543-22.842-5.4752-9.2248-6.1634-9.6735-9.7287-6.343-1.7592 1.6433-5.8827 3.5688-10.542 4.9226l-7.6524 2.2235 0.67368 5.392c0.52239 4.181 0.18361 6.909-1.5084 12.146-3.5633 11.03-9.5383 17.787-19.327 21.859-4.2451 1.7657-14.813 1.7044-15.408-0.0894-0.20133-0.60689 2.4468-2.129 5.8847-3.3826 8.5442-3.1154 12.018-5.5894 15.958-11.366 3.2329-4.7395 3.3567-5.2715 3.2668-14.037-0.0778-7.5856-0.66372-10.785-3.5-19.111l-3.4066-10-12.5 0.26185c-23.441 0.49104-33.518 3.3521-40.489 11.496-8.4816 9.9089-7.7733 26.219 1.5442 35.556 4.4307 4.44 10.101 7.653 19.671 11.145 17.895 6.531 31.615 9.0052 48.273 8.7053 10.196-0.18353 13.339-0.60762 17.051-2.3006zm-2.0508-109.69c0-7.7064-0.24244-13.769-0.53876-13.473-0.29632 0.29631-0.94251 6.5594-1.436 13.918-0.49348 7.3586-1.2273 14.279-1.6308 15.378-0.72354 1.9713-0.7039 1.9725 1.436 0.0936 2.0322-1.7844 2.1696-2.792 2.1696-15.917zm-103.8 0.57165-0.30011-15.25h-2.4499c-2.4131 0-2.4531 0.14271-2.6614 9.5-0.47361 21.27-0.65288 19.911 2.7115 20.553 1.65 0.31512 3 0.54454 3 0.50982 0-0.0347-0.13505-6.9256-0.30011-15.313zm104.71-58.5c0.18262-12.249 0.0231-13.75-1.4618-13.75-1.1091 0-1.4637 0.52929-1.0598 1.5818 0.33385 0.86998 0.63862 7.9575 0.67728 15.75 0.0886 17.862 1.5675 14.99 1.8443-3.5818z"/></g></svg>`;
+
         function detectiveInquiryIsMafia(roleId) {
           const rid = String(roleId || "citizen");
           // citizen-but-positive roles
           if (rid === "suspect") return true;
-          // mafia-leader-but-negative roles
-          if (rid === "godfather" || rid === "mafiaBoss" || rid === "danMafia" || rid === "alcapone") return false;
+          // mafia-leader-but-negative roles (appear as citizen to detective)
+          if (rid === "godfather" || rid === "mafiaBoss" || rid === "danMafia" || rid === "alcapone" || rid === "informant") return false;
           const teamFa = (roles[rid] && roles[rid].teamFa) ? roles[rid].teamFa : "شهر";
           return teamFa === "مافیا";
         }
@@ -95,7 +98,64 @@
 
           // step-specific body
           let body = "";
-          if (cur.id === "day_bomb") {
+          if (cur.id === "intro_day_run") {
+            body = `
+              <div class="note" style="margin-top:8px">
+                ${escapeHtml(appLang === "fa"
+                  ? "فاز معارفه روز: بازیکنان خود را معرفی می‌کنند و مظنونان خود را مطرح می‌کنند. در این فاز رأی‌گیری انجام نمی‌شود."
+                  : "Intro Day: Players introduce themselves and point out their suspects. No voting takes place.")}
+              </div>
+            `;
+          } else if (cur.id === "intro_night_run") {
+            const d = f.draft || {};
+            if (!d.nightActionsByNight) d.nightActionsByNight = {};
+            const introNight = d.nightActionsByNight["0"] || {};
+            const savedHeirPick = introNight.heirPick;
+
+            // Mafia team list
+            const mafiaPlayers = (draw.players || []).map((p, idx) => ({ p, idx })).filter(({ p }) => {
+              if (!p) return false;
+              const role = roles[p.roleId];
+              return role && role.teamFa === "مافیا";
+            });
+            const mafiaListHtml = mafiaPlayers.length
+              ? mafiaPlayers.map(({ p, idx }) => {
+                  const nm = names[idx] || t("common.playerN", { n: idx + 1 });
+                  const r = roles[p.roleId];
+                  const roleLabel = r ? ((appLang === "fa" && r.faName) ? r.faName : (ROLE_I18N && ROLE_I18N[p.roleId] && ROLE_I18N[p.roleId].name) ? ROLE_I18N[p.roleId].name : p.roleId) : p.roleId;
+                  return `<div style="padding:4px 0">${escapeHtml(nm)} — ${escapeHtml(roleLabel)}</div>`;
+                }).join("")
+              : `<div class="note">${escapeHtml(appLang === "fa" ? "مافیایی در بازی نیست." : "No mafia players.")}</div>`;
+
+            // Heir pick (only if a Heir role exists in the game)
+            const heirIdx = (draw.players || []).findIndex((p) => p && p.roleId === "heir");
+            const heirSection = heirIdx === -1 ? "" : (() => {
+              const heirName = names[heirIdx] || t("common.playerN", { n: heirIdx + 1 });
+              const sIdx = (savedHeirPick === null || savedHeirPick === undefined || savedHeirPick === "") ? null : parseInt(savedHeirPick, 10);
+              const s = (sIdx === null || !Number.isFinite(sIdx)) ? "" : String(sIdx);
+              const optsHeirPick = [`<option value="" ${s === "" ? "selected" : ""}>—</option>`].concat(
+                (draw.players || []).map((_, idx) => {
+                  const v = String(idx);
+                  return `<option value="${v}" ${v === s ? "selected" : ""}>${escapeHtml(names[idx] || t("common.playerN", { n: idx + 1 }))}</option>`;
+                })
+              ).join("");
+              return `
+                <div style="margin-top:14px; border-top:1px solid rgba(255,255,255,.1); padding-top:12px">
+                  <label>${escapeHtml(appLang === "fa" ? `وارث (${heirName}) — انتخاب جانشین:` : `Heir (${heirName}) — pick successor:`)}
+                    <select id="fl_intro_heir_pick">${optsHeirPick}</select>
+                  </label>
+                </div>
+              `;
+            })();
+
+            body = `
+              <div style="margin-top:8px">
+                <div style="font-weight:950; margin-bottom:8px">${escapeHtml(appLang === "fa" ? "اعضای مافیا:" : "Mafia team:")}</div>
+                ${mafiaListHtml}
+              </div>
+              ${heirSection}
+            `;
+          } else if (cur.id === "day_bomb") {
             const d = f.draft || {};
             if (!d.bombByDay || typeof d.bombByDay !== "object") d.bombByDay = {};
             if (!d.bombResolveByDay || typeof d.bombResolveByDay !== "object") d.bombResolveByDay = {};
@@ -212,7 +272,7 @@
                   <select id="fl_bomb_target_guess">${mkCodeOpts(r0.targetGuess)}</select>
                 </label>
               `}
-              ${outcomeLine ? `<div class="note" style="margin-top:10px; font-weight:950">${escapeHtml(outcomeLine)}</div>` : ``}
+              ${outcomeLine ? `<div class="note warn" style="margin-top:10px">${escapeHtml(outcomeLine)}</div>` : ``}
               <div class="note" style="margin-top:10px">${escapeHtml(appLang === "fa" ? "با انتخاب حدس، نتیجه بلافاصله اعمال می‌شود؛ «بعدی» برای ادامه." : "Your choice applies immediately. Press \"Next\" to continue.")}</div>
             `;
           } else if (cur.id === "day_kane_reveal") {
@@ -229,6 +289,138 @@
                 <div class="note" style="margin-top:14px">${escapeHtml(t("tool.flow.kane.revealBody"))}</div>
               </div>
             `;
+          } else if (cur.id === "bazras_interrogation") {
+            const d = f.draft || {};
+            const prevNightKey = String(Math.max(0, (f.day || 1) - 1));
+            const invTargets = d.investigatorTargetsByNight && d.investigatorTargetsByNight[prevNightKey];
+            const t1Idx = (invTargets && invTargets.t1 != null) ? invTargets.t1 : null;
+            const t2Idx = (invTargets && invTargets.t2 != null) ? invTargets.t2 : null;
+            const t1Name = t1Idx !== null ? escapeHtml(names[t1Idx] || t("common.playerN", { n: t1Idx + 1 })) : "?";
+            const t2Name = t2Idx !== null ? escapeHtml(names[t2Idx] || t("common.playerN", { n: t2Idx + 1 })) : "?";
+            const invIdx = draw.players.findIndex((p) => p && p.roleId === "investigator");
+            const invAlive = invIdx >= 0 && draw.players[invIdx].alive !== false;
+            const invName = invIdx >= 0 ? escapeHtml(names[invIdx] || t("common.playerN", { n: invIdx + 1 })) : "؟";
+            ensureTimers();
+            const _tmrV = appState.god.timers;
+            body = `
+              <div class="note" style="margin-bottom:8px; font-size:15px; font-weight:1100">${escapeHtml(appLang === "fa"
+                ? `بازپرسی: ${t1Name} و ${t2Name}`
+                : `Interrogation: ${t1Name} and ${t2Name}`)}</div>
+              <div class="note" style="margin-bottom:10px">${escapeHtml(appLang === "fa"
+                ? "هر کدام دو نوبت صحبت می‌کنند. در حین بازپرسی لایک/دیسلایک ممنوع است."
+                : "Each speaks twice. No liking/disliking during interrogation.")}</div>
+              ${!invAlive ? `<div class="note warn" style="margin-bottom:10px">${escapeHtml(appLang === "fa"
+                ? `بازپرس (${invName}) از بازی خارج شده — روند بدون حضور او ادامه دارد.`
+                : `Inspector (${invName}) is eliminated — process continues without them.`)}</div>` : ""}
+              <div class="timerRow" style="margin-top:10px">
+                <div class="timerCard">
+                  <div class="tname">${escapeHtml(t("tool.timer.turn"))}</div>
+                  <div class="tval clickable" id="tm_talk">${formatMMSS(_tmrV.remaining.talk ?? _tmrV.talk)}</div>
+                  <div style="display:flex; gap:6px; justify-content:center; align-items:center">
+                    <button class="tbtn" id="tm_btn_talk" type="button" aria-label="Play/Pause"></button>
+                    <button class="tbtn reset" id="tm_rst_talk" type="button" aria-label="Reset"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 5V1L7 6l5 5V7c3.31 0 6 2.69 6 6s-2.69 6-6 6-6-2.69-6-6H4c0 4.42 3.58 8 8 8s8-3.58 8-8-3.58-8-8-8z"/></svg></button>
+                  </div>
+                </div>
+              </div>
+            `;
+
+          } else if (cur.id === "bazras_midday") {
+            const d = f.draft || {};
+            const dayKey = String(f.day || 1);
+            const rec = (d.bazrasInterrogationByDay && d.bazrasInterrogationByDay[dayKey]) || {};
+            const decision = rec.decision || null;
+            const cancelSel  = decision === "cancel";
+            const continueSel = decision === "continue";
+            const cancelStyle   = cancelSel
+              ? "background:rgba(239,68,68,.22);  border:2px solid rgba(239,68,68,.85);  color:#fff;"
+              : "background:rgba(255,255,255,.06); border:2px solid rgba(255,255,255,.18); color:rgba(255,255,255,.6);";
+            const continueStyle = continueSel
+              ? "background:rgba(99,179,237,.22);  border:2px solid #63b3ed;              color:#fff;"
+              : "background:rgba(255,255,255,.06); border:2px solid rgba(255,255,255,.18); color:rgba(255,255,255,.6);";
+            body = `
+              <div class="note" style="margin-bottom:14px">${escapeHtml(appLang === "fa"
+                ? "همه می‌خوابند. بازپرس باید تصمیم بگیرد."
+                : "Everyone sleeps. The Inspector must decide.")}</div>
+              <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px">
+                <button id="fl_bazras_cancel" type="button"
+                  style="padding:22px 10px; border-radius:14px; cursor:pointer; font-size:14px; font-weight:1100; line-height:1.35; ${cancelStyle}">
+                  ${escapeHtml(appLang === "fa" ? "لغو بازپرسی" : "Cancel")}
+                </button>
+                <button id="fl_bazras_continue" type="button"
+                  style="padding:22px 10px; border-radius:14px; cursor:pointer; font-size:14px; font-weight:1100; line-height:1.35; ${continueStyle}">
+                  ${escapeHtml(appLang === "fa" ? "ادامه — رأی اجباری" : "Continue")}
+                </button>
+              </div>
+            `;
+
+          } else if (cur.id === "bazras_forced_vote") {
+            const d = f.draft || {};
+            const dayKey = String(f.day || 1);
+            const prevNightKey = String(Math.max(0, (f.day || 1) - 1));
+            const invTargets = d.investigatorTargetsByNight && d.investigatorTargetsByNight[prevNightKey];
+            const t1Idx = (invTargets && invTargets.t1 != null) ? invTargets.t1 : null;
+            const t2Idx = (invTargets && invTargets.t2 != null) ? invTargets.t2 : null;
+            const t1Name = t1Idx !== null ? escapeHtml(names[t1Idx] || t("common.playerN", { n: t1Idx + 1 })) : "?";
+            const t2Name = t2Idx !== null ? escapeHtml(names[t2Idx] || t("common.playerN", { n: t2Idx + 1 })) : "?";
+            const rec = (d.bazrasInterrogationByDay && d.bazrasInterrogationByDay[dayKey]) || {};
+            const decision = rec.decision || null;
+            if (decision === "cancel") {
+              body = `
+                <div class="note" style="margin-bottom:10px">${escapeHtml(appLang === "fa"
+                  ? "بازپرسی لغو شد — رأی‌گیری اجباری انجام نمی‌شود."
+                  : "Interrogation cancelled — no forced vote.")}</div>
+                <div class="note" style="color:var(--muted)">${escapeHtml(appLang === "fa"
+                  ? "برای رفتن به رأی‌گیری روزانه، «بعدی» را بزنید."
+                  : "Press Next to proceed to the regular day vote.")}</div>
+              `;
+            } else {
+              const fvVotes = (rec.votes && typeof rec.votes === "object") ? rec.votes : {};
+              const v1 = Math.max(0, parseInt(fvVotes[t1Idx] || 0, 10));
+              const v2 = Math.max(0, parseInt(fvVotes[t2Idx] || 0, 10));
+              const hasVotes = v1 > 0 || v2 > 0;
+              const winner = !hasVotes ? null : (v1 > v2 ? t1Idx : v2 > v1 ? t2Idx : "tie");
+              const _minusSvg = `<svg viewBox="0 0 20 20" width="14" height="14" fill="currentColor"><rect x="3" y="9" width="14" height="2" rx="1"/></svg>`;
+              const _plusSvg  = `<svg viewBox="0 0 20 20" width="14" height="14" fill="currentColor"><rect x="3" y="9" width="14" height="2" rx="1"/><rect x="9" y="3" width="2" height="14" rx="1"/></svg>`;
+              const mkFVCard = (idx, nm, v) => {
+                const isWinner = winner !== null && winner !== "tie" && winner === idx;
+                const cs = isWinner
+                  ? "background:rgba(239,68,68,.22); border:2px solid rgba(239,68,68,.85);"
+                  : "background:rgba(255,255,255,.05); border:2px solid rgba(255,255,255,.10);";
+                return `
+                  <div style="border-radius:14px; padding:8px 6px; ${cs} display:flex; flex-direction:column; align-items:center; justify-content:center; gap:6px; box-shadow:0 2px 8px rgba(0,0,0,.2); aspect-ratio:1/1; overflow:hidden">
+                    <div style="font-weight:1100; font-size:12px; text-align:center; line-height:1.2; word-break:break-word">${nm}</div>
+                    <div style="display:flex; align-items:center; gap:8px">
+                      <button class="bazras_fv_minus" data-idx="${idx}" type="button" style="width:32px;height:32px;border-radius:9px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.18);color:rgba(255,255,255,.85);cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0">${_minusSvg}</button>
+                      <span style="min-width:24px;text-align:center;font-size:18px;font-weight:1200">${v}</span>
+                      <button class="bazras_fv_plus" data-idx="${idx}" type="button" style="width:32px;height:32px;border-radius:9px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.18);color:rgba(255,255,255,.85);cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0">${_plusSvg}</button>
+                    </div>
+                  </div>`;
+              };
+              const resultNote = (() => {
+                if (winner === null) return "";
+                if (winner === "tie") return `<div class="note result" style="margin-top:10px">${escapeHtml(appLang === "fa" ? "تساوی — کسی از بازی خارج نمی‌شود." : "Tie — no one is eliminated.")}</div>`;
+                const winIdx = winner === t1Idx ? t1Idx : t2Idx;
+                const winName = winner === t1Idx ? t1Name : t2Name;
+                const winPlayer = draw.players[winIdx];
+                const winTeamFa = (winPlayer && roles[winPlayer.roleId] && roles[winPlayer.roleId].teamFa) ? roles[winPlayer.roleId].teamFa : "شهر";
+                const winSide = appLang === "fa"
+                  ? (winTeamFa === "مافیا" ? "مافیا" : "شهروند")
+                  : (winTeamFa === "مافیا" ? "Mafia" : "Citizen");
+                const sideStyle = winTeamFa === "مافیا" ? "color:rgba(239,68,68,.9); font-weight:1100" : "color:rgba(99,179,237,.9); font-weight:1100";
+                return `<div class="note result" style="margin-top:10px">${winName} ${escapeHtml(appLang === "fa" ? "از بازی خارج می‌شود" : "is eliminated")} — <span style="${sideStyle}">${escapeHtml(winSide)}</span></div>`;
+              })();
+              body = `
+                <div class="note" style="margin-bottom:12px">${escapeHtml(appLang === "fa"
+                  ? "بازیکن با بیشترین رأی، آخرین سخنانش را می‌گوید و از بازی خارج می‌شود."
+                  : "The player with most votes says their last words and exits.")}</div>
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px; max-width:300px; margin:0 auto">
+                  ${t1Idx !== null ? mkFVCard(t1Idx, t1Name, v1) : ""}
+                  ${t2Idx !== null ? mkFVCard(t2Idx, t2Name, v2) : ""}
+                </div>
+                ${resultNote}
+              `;
+            }
+
           } else if (cur.id === "day_vote") {
             const d = f.draft || {};
             if (!d.voteCandidatesByDay || typeof d.voteCandidatesByDay !== "object") d.voteCandidatesByDay = {};
@@ -275,7 +467,7 @@
             body = `
               <div class="note" style="margin-top:6px">${escapeHtml(appLang === "fa" ? "برای دفاع، بازیکنان نامزدشده را انتخاب کنید." : "Tap the players who have been nominated to defend themselves.")}</div>
               <div class="note" style="margin-top:4px">${escapeHtml(appLang === "fa" ? "اگر چالش خود را استفاده کرده‌اند، آیکون «چالش» را بزنید." : "Tap the \"Challenge\" icon if they've already used their challenge.")}</div>
-              ${showBombWarn ? `<div class="note" style="margin-top:10px; font-weight:950">${escapeHtml(t("tool.flow.bomb.active"))}</div>` : ``}
+              ${showBombWarn ? `<div class="note warn" style="margin-top:10px">${escapeHtml(t("tool.flow.bomb.active"))}</div>` : ``}
               <div class="timerRow" style="margin-top:10px; padding-bottom:10px; border-bottom:1px solid rgba(255,255,255,.08)">
                 <div class="timerCard">
                   <div class="tname">${escapeHtml(t("tool.timer.turn"))}</div>
@@ -548,7 +740,7 @@
                 }
                 const nm = names[pickedOutIdx] || t("common.playerN", { n: pickedOutIdx + 1 });
                 const cardLabel = labelFor(rec.cardId);
-                return `<div class="note" style="margin-top:10px; font-weight:950">${escapeHtml(t("tool.flow.endCards.for", { name: nm, card: cardLabel }))}</div>`;
+                return `<div class="note result" style="margin-top:10px">${escapeHtml(t("tool.flow.endCards.for", { name: nm, card: cardLabel }))}</div>`;
               } catch {
                 return "";
               }
@@ -641,7 +833,7 @@
                 const msg = appLang === "fa"
                   ? `⚠ ${linkedName} (که محقق با او لینک داشت) نیز از بازی خارج می‌شود.`
                   : `⚠ ${linkedName} (linked to Researcher) is also eliminated.`;
-                return `<div class="note" style="margin-top:8px; font-weight:950">${escapeHtml(msg)}</div>`;
+                return `<div class="note result" style="margin-top:8px">${escapeHtml(msg)}</div>`;
               } catch {
                 return "";
               }
@@ -679,17 +871,311 @@
               </div>
               <div style="margin-top:14px; padding-top:12px; border-top:1px solid rgba(255,255,255,.08)">
                 ${pickedOutIdx !== null
-                  ? `<div id="fl_elim_result_line" class="note" style="font-weight:950">${escapeHtml(t("tool.flow.outcome.votedOut"))} <b>${escapeHtml(names[pickedOutIdx] || t("common.playerN", { n: pickedOutIdx + 1 }))}</b></div>`
+                  ? `<div id="fl_elim_result_line" class="note result">${escapeHtml(t("tool.flow.outcome.votedOut"))} <b>${escapeHtml(names[pickedOutIdx] || t("common.playerN", { n: pickedOutIdx + 1 }))}</b></div>`
                   : (tieLine
-                      ? `<div id="fl_elim_result_line" class="note" style="font-weight:950">${escapeHtml(tieLine)}</div>`
+                      ? `<div id="fl_elim_result_line" class="note result">${escapeHtml(tieLine)}</div>`
                       : (singleLine
-                          ? `<div id="fl_elim_result_line" class="note" style="font-weight:950">${escapeHtml(singleLine)}</div>`
-                          : `<div id="fl_elim_result_line" class="note" style="font-weight:950">${escapeHtml(t("tool.flow.outcome.none"))}</div>`))}
+                          ? `<div id="fl_elim_result_line" class="note result">${escapeHtml(singleLine)}</div>`
+                          : `<div id="fl_elim_result_line" class="note result">${escapeHtml(t("tool.flow.outcome.none"))}</div>`))}
                 ${endCardLine}
                 ${researcherChainLine}
                 ${lastMoveUi}
               </div>
             `;
+          } else if (cur.id === "kabo_trust_vote") {
+            const d = f.draft || {};
+            const dayKey = String(f.day || 1);
+            if (!d.kaboTrustVotesByDay || typeof d.kaboTrustVotesByDay !== "object") d.kaboTrustVotesByDay = {};
+            const votes = (typeof d.kaboTrustVotesByDay[dayKey] === "object" && d.kaboTrustVotesByDay[dayKey]) ? d.kaboTrustVotesByDay[dayKey] : {};
+            // Auto-derive trusted person from max votes
+            let maxVotes = 0; let trustedIdxAuto = null; let tieCount = 0;
+            for (const idx of aliveIdxs) {
+              const v = Math.max(0, parseInt(votes[idx] || 0, 10));
+              if (v > maxVotes) { maxVotes = v; trustedIdxAuto = idx; tieCount = 1; }
+              else if (v === maxVotes && maxVotes > 0) tieCount++;
+            }
+            const isTie = tieCount > 1;
+            if (!d.kaboTrustedByDay || typeof d.kaboTrustedByDay !== "object") d.kaboTrustedByDay = {};
+            if (isTie) {
+              // Clear any stale trusted person — tie means no trusted person today.
+              if (d.kaboTrustedByDay[dayKey] != null) {
+                d.kaboTrustedByDay[dayKey] = null;
+                f.draft = d; try { saveState(appState); } catch {}
+              }
+            } else if (maxVotes > 0 && trustedIdxAuto !== null) {
+              d.kaboTrustedByDay[dayKey] = trustedIdxAuto;
+              f.draft = d; try { saveState(appState); } catch {}
+            }
+            const trustedIdx = (!isTie && maxVotes > 0) ? trustedIdxAuto : null;
+            const _minusSvg = `<svg viewBox="0 0 20 20" width="14" height="14" fill="currentColor"><rect x="3" y="9" width="14" height="2" rx="1"/></svg>`;
+            const _plusSvg  = `<svg viewBox="0 0 20 20" width="14" height="14" fill="currentColor"><rect x="3" y="9" width="14" height="2" rx="1"/><rect x="9" y="3" width="2" height="14" rx="1"/></svg>`;
+            const mkTrustCard = (idx) => {
+              const nm = escapeHtml(names[idx] || t("common.playerN", { n: idx + 1 }));
+              const v = Math.max(0, parseInt(votes[idx] || 0, 10));
+              const isTrusted = trustedIdx === idx;
+              const cs = isTrusted
+                ? "background:rgba(255,200,0,.18); border:2px solid rgba(255,200,0,.7);"
+                : "background:rgba(255,255,255,.05); border:2px solid rgba(255,255,255,.10);";
+              return `
+                <div class="kabo_trust_card" data-idx="${idx}"
+                  style="border-radius:14px; padding:8px 6px; ${cs} display:flex; flex-direction:column; align-items:center; justify-content:center; gap:6px; box-shadow:0 2px 8px rgba(0,0,0,.2); aspect-ratio:1/1; overflow:hidden">
+                  <div style="font-weight:1100; font-size:12px; text-align:center; line-height:1.2; word-break:break-word">${nm}</div>
+                  <div style="font-size:10px; font-weight:1100; visibility:${isTrusted ? "visible" : "hidden"}; color:rgba(255,200,0,.9)">${escapeHtml(appLang === "fa" ? "معتمد" : "Trusted")}</div>
+                  <div style="display:flex; align-items:center; gap:8px">
+                    <button class="kabo_trust_minus" data-idx="${idx}" type="button" style="width:32px;height:32px;border-radius:9px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.18);color:rgba(255,255,255,.85);cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0">${_minusSvg}</button>
+                    <span class="kabo_trust_count" data-idx="${idx}" style="min-width:24px;text-align:center;font-size:18px;font-weight:1200">${v}</span>
+                    <button class="kabo_trust_plus" data-idx="${idx}" type="button" style="width:32px;height:32px;border-radius:9px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.18);color:rgba(255,255,255,.85);cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0">${_plusSvg}</button>
+                  </div>
+                </div>`;
+            };
+            body = `<div class="toolBox">
+              <div class="note" style="margin-bottom:10px">${escapeHtml(appLang === "fa"
+                ? "هر بازیکن رأی اعتماد می‌دهد. بیشترین رأی = معتمد. معتمد ۲ مظنون انتخاب خواهد کرد."
+                : "Each player votes. Most votes = Trusted person. The Trusted person will pick 2 suspects.")}</div>
+              <div style="display:grid; grid-template-columns:repeat(3,1fr); gap:8px; margin-bottom:10px">
+                ${aliveIdxs.map(mkTrustCard).join("")}
+              </div>
+              <div style="font-weight:1100">${escapeHtml(appLang === "fa" ? "معتمد: " : "Trusted: ")}${
+                trustedIdx !== null
+                  ? escapeHtml(names[trustedIdx] || t("common.playerN", { n: trustedIdx + 1 }))
+                  : isTie && maxVotes > 0
+                    ? `<span style="color:rgba(255,200,0,.9)">${escapeHtml(appLang === "fa" ? "⚠ تساوی" : "⚠ Tie")}</span>`
+                    : "__"
+              }</div>
+            </div>`;
+          } else if (cur.id === "kabo_suspect_select") {
+            const d = f.draft || {};
+            const dayKey = String(f.day || 1);
+            const trustedIdx = (d.kaboTrustedByDay && d.kaboTrustedByDay[dayKey] != null) ? d.kaboTrustedByDay[dayKey] : null;
+            const trustedName = trustedIdx !== null ? (names[trustedIdx] || t("common.playerN", { n: trustedIdx + 1 })) : null;
+            const savedSuspects = (d.kaboSuspectsByDay && Array.isArray(d.kaboSuspectsByDay[dayKey])) ? d.kaboSuspectsByDay[dayKey].map(Number) : [];
+            const suspectSet = new Set(savedSuspects);
+            const mkSuspectCard = (idx) => {
+              const nm = escapeHtml(names[idx] || t("common.playerN", { n: idx + 1 }));
+              const isSel = suspectSet.has(idx);
+              const isTrusted = trustedIdx === idx;
+              const cs = isTrusted
+                ? "background:rgba(255,200,0,.08); border:2px solid rgba(255,200,0,.3); opacity:.55;"
+                : isSel
+                  ? "background:rgba(239,68,68,.18); border:2px solid rgba(239,68,68,.7);"
+                  : "background:rgba(255,255,255,.05); border:2px solid rgba(255,255,255,.10);";
+              return `
+                <button class="kabo_suspect_btn" data-idx="${idx}" type="button" ${isTrusted ? "disabled" : ""}
+                  style="border-radius:14px; padding:8px 6px; font-size:12px; font-weight:${isSel ? "1100" : "950"};
+                         display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center;
+                         cursor:${isTrusted ? "default" : "pointer"}; ${cs}; color:#fff; width:100%;
+                         box-shadow:0 2px 8px rgba(0,0,0,.2); line-height:1.2; gap:4px;
+                         aspect-ratio:1/1; overflow:hidden; word-break:break-word">
+                  ${nm}
+                  ${isSel ? `<span style="font-size:11px; color:rgba(239,68,68,.9)">${escapeHtml(appLang === "fa" ? "مظنون" : "Suspect")}</span>` : ""}
+                  ${isTrusted ? `<span style="font-size:11px; color:rgba(255,200,0,.7)">${escapeHtml(appLang === "fa" ? "معتمد" : "Trusted")}</span>` : ""}
+                </button>`;
+            };
+            body = `<div class="toolBox">
+              <div class="note" style="margin-bottom:10px">${escapeHtml(appLang === "fa"
+                ? "معتمد ۲ نفر را به عنوان مظنون انتخاب می‌کند."
+                : "The Trusted person picks 2 suspects.")}</div>
+              ${trustedName ? `<div style="margin-bottom:10px"><span style="font-weight:1100">${escapeHtml(appLang === "fa" ? "معتمد: " : "Trusted: ")}</span>${escapeHtml(trustedName)}</div>` : `<div class="note warn" style="margin-bottom:10px">${escapeHtml(appLang === "fa" ? "⚠ ابتدا معتمد را در مرحله رأی اعتماد مشخص کنید." : "⚠ Set the Trusted person in the Trust Vote step first.")}</div>`}
+              ${savedSuspects.length >= 2
+                ? `<div class="note result" style="margin-bottom:10px">${escapeHtml(appLang === "fa" ? "✓ ۲ مظنون انتخاب شدند." : "✓ 2 suspects selected.")}</div>`
+                : `<div class="note warn" style="margin-bottom:10px">${escapeHtml(appLang === "fa" ? `${savedSuspects.length}/۲ مظنون انتخاب شده.` : `${savedSuspects.length}/2 suspects selected.`)}</div>`}
+              <div style="display:grid; grid-template-columns:repeat(3,1fr); gap:8px">
+                ${aliveIdxs.map(mkSuspectCard).join("")}
+              </div>
+            </div>`;
+          } else if (cur.id === "kabo_midday") {
+            const d = f.draft || {};
+            const dayKey = String(f.day || 1);
+            if (!d.kaboGunByDay || typeof d.kaboGunByDay !== "object") d.kaboGunByDay = {};
+            const saved = d.kaboGunByDay[dayKey] || "";
+            const gun1Real = saved === "gun1";
+            const gun2Real = saved === "gun2";
+            const gStyle = (real) => real
+              ? "background:rgba(239,68,68,.22); border:2px solid rgba(239,68,68,.85); color:#fff;"
+              : "background:rgba(255,255,255,.06); border:2px solid rgba(255,255,255,.18); color:rgba(255,255,255,.6);";
+            body = `<div class="toolBox">
+              <div class="note" style="margin-bottom:14px">${escapeHtml(appLang === "fa"
+                ? "همه خوابیده‌اند. تیم مافیا بیدار می‌شود. کاپو مشخص می‌کند کدام گلوله واقعی است."
+                : "Everyone is asleep. Mafia team wakes up. Capo picks which bullet is real.")}</div>
+              <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px">
+                <button id="kabo_midday_gun1" type="button"
+                  style="padding:20px 8px; border-radius:14px; cursor:pointer; font-size:14px; font-weight:1100; ${gStyle(gun1Real)}">
+                  ${gunSvg} ${escapeHtml(appLang === "fa" ? "گلوله ۱" : "Gun 1")}
+                </button>
+                <button id="kabo_midday_gun2" type="button"
+                  style="padding:20px 8px; border-radius:14px; cursor:pointer; font-size:14px; font-weight:1100; ${gStyle(gun2Real)}">
+                  ${gunSvg} ${escapeHtml(appLang === "fa" ? "گلوله ۲" : "Gun 2")}
+                </button>
+              </div>
+              <div style="margin-top:12px; font-weight:1100">${escapeHtml(appLang === "fa" ? "گلوله واقعی: " : "Real bullet: ")}${
+                saved ? escapeHtml(saved === "gun1" ? (appLang === "fa" ? "گلوله ۱" : "Gun 1") : (appLang === "fa" ? "گلوله ۲" : "Gun 2")) : "__"
+              }</div>
+            </div>`;
+          } else if (cur.id === "kabo_shoot") {
+            const d = f.draft || {};
+            const dayKey = String(f.day || 1);
+            const realGun = (d.kaboGunByDay && d.kaboGunByDay[dayKey]) ? d.kaboGunByDay[dayKey] : null; // "gun1" | "gun2"
+            const suspects = (d.kaboSuspectsByDay && Array.isArray(d.kaboSuspectsByDay[dayKey]) && d.kaboSuspectsByDay[dayKey].length) ? d.kaboSuspectsByDay[dayKey].slice(0, 2) : null;
+            const s0 = suspects ? suspects[0] : null;
+            const s1 = suspects ? suspects[1] : null;
+            const s0Name = s0 != null ? (names[s0] || t("common.playerN", { n: s0 + 1 })) : null;
+            const s1Name = s1 != null ? (names[s1] || t("common.playerN", { n: s1 + 1 })) : null;
+            ensureTimers();
+            const _tmrD = appState.god.timers;
+            const rstSvg = `<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 5V1L7 6l5 5V7c3.31 0 6 2.69 6 6s-2.69 6-6 6-6-2.69-6-6H4c0 4.42 3.58 8 8 8s8-3.58 8-8-3.58-8-8-8z"/></svg>`;
+            const savedShoot = (d.kaboShootByDay && d.kaboShootByDay[String(f.day)]) ? d.kaboShootByDay[String(f.day)] : {};
+            const gun1Target = (savedShoot.gun1 !== undefined && savedShoot.gun1 !== null) ? savedShoot.gun1 : null;
+            const gun2Target = (savedShoot.gun2 !== undefined && savedShoot.gun2 !== null) ? savedShoot.gun2 : null;
+            const dayKey2 = String(f.day || 1);
+            const trustedIdx2 = (d.kaboTrustedByDay && d.kaboTrustedByDay[dayKey2] != null) ? d.kaboTrustedByDay[dayKey2] : null;
+            const trustedName2 = trustedIdx2 !== null ? (names[trustedIdx2] || t("common.playerN", { n: trustedIdx2 + 1 })) : null;
+            const mkGunOpts = (savedT) => {
+              const s = savedT !== null ? String(savedT) : "";
+              const opts = [`<option value="" ${s === "" ? "selected" : ""}>${escapeHtml(appLang === "fa" ? "↑ شلیک به هوا" : "↑ Shoot into air")}</option>`];
+              const pool = suspects || aliveIdxs;
+              for (const si of pool) {
+                const v = String(si);
+                const nm = names[si] || t("common.playerN", { n: si + 1 });
+                const isAlive = (draw.players[si] || {}).alive !== false;
+                opts.push(`<option value="${v}" ${v === s ? "selected" : ""} ${!isAlive ? "disabled" : ""}>${escapeHtml(nm + (!isAlive ? (appLang === "fa" ? " (خارج شد)" : " (out)") : ""))}</option>`);
+              }
+              return opts.join("");
+            };
+            const resultLine = (() => {
+              if (!realGun) return "";
+              const realTarget = realGun === "gun1" ? gun1Target : gun2Target;
+              if (realTarget === null || realTarget === undefined) return "";
+              const nm = names[realTarget] || t("common.playerN", { n: realTarget + 1 });
+              return appLang === "fa" ? `${escapeHtml(nm)} از بازی خارج می‌شود.` : `${escapeHtml(nm)} is eliminated.`;
+            })();
+            const gun1CardStyle = realGun === "gun1" ? "border:2px solid rgba(239,68,68,.6); background:rgba(239,68,68,.06);" : "border:2px solid rgba(255,255,255,.15); background:rgba(255,255,255,.04);";
+            const gun2CardStyle = realGun === "gun2" ? "border:2px solid rgba(239,68,68,.6); background:rgba(239,68,68,.06);" : "border:2px solid rgba(255,255,255,.15); background:rgba(255,255,255,.04);";
+            body = `<div class="toolBox">
+              <div class="note" style="margin-bottom:10px">${escapeHtml(appLang === "fa" ? "هر مظنون از خود دفاع می‌کند." : "Each suspect defends themselves.")}</div>
+              <div style="margin-bottom:12px; line-height:2">
+                <div><span style="color:var(--muted)">${escapeHtml(appLang === "fa" ? "مظنون ۱: " : "Suspect 1: ")}</span>${escapeHtml(s0Name || "—")}</div>
+                <div><span style="color:var(--muted)">${escapeHtml(appLang === "fa" ? "مظنون ۲: " : "Suspect 2: ")}</span>${escapeHtml(s1Name || "—")}</div>
+              </div>
+              <div class="timerRow" style="grid-template-columns:1fr; margin-bottom:14px; padding-bottom:14px; border-bottom:1px solid rgba(255,255,255,.08)">
+                <div class="timerCard">
+                  <div class="tname">${escapeHtml(appLang === "fa" ? "زمان دفاع" : "Defense")}</div>
+                  <div class="tval clickable" id="tm_defense">${formatMMSS(_tmrD.remaining.defense ?? _tmrD.defense)}</div>
+                  <div style="display:flex; gap:6px; justify-content:center; align-items:center">
+                    <button class="tbtn" id="tm_btn_defense" type="button" aria-label="Play/Pause"></button>
+                    <button class="tbtn reset" id="tm_rst_defense" type="button" aria-label="Reset">${rstSvg}</button>
+                  </div>
+                </div>
+              </div>
+              <div class="note" style="margin-bottom:10px">${escapeHtml(appLang === "fa"
+                ? "معتمد باید هر دو تفنگ را شلیک کند. نمی‌داند کدام گلوله واقعی است."
+                : "Trusted person fires both guns — they don't know which has the real bullet.")}</div>
+              ${trustedName2 ? `<div style="margin-bottom:10px"><span style="font-weight:1100">${escapeHtml(appLang === "fa" ? "معتمد: " : "Trusted: ")}</span>${escapeHtml(trustedName2)}</div>` : ""}
+              ${!realGun ? `<div class="note warn" style="margin-bottom:10px">${escapeHtml(appLang === "fa" ? "⚠ گلوله واقعی توسط کاپو انتخاب نشده." : "⚠ Capo has not set the real bullet.")}</div>` : ""}
+              <div style="border-radius:14px; padding:12px; margin-bottom:10px; ${gun1CardStyle}">
+                <div style="font-weight:1100; margin-bottom:8px">${gunSvg} ${escapeHtml(appLang === "fa" ? "گلوله ۱" : "Gun 1")}</div>
+                <label>${escapeHtml(appLang === "fa" ? "هدف" : "Target")}
+                  <select id="fl_kabo_gun1_target">${mkGunOpts(gun1Target)}</select>
+                </label>
+              </div>
+              <div style="border-radius:14px; padding:12px; ${gun2CardStyle}">
+                <div style="font-weight:1100; margin-bottom:8px">${gunSvg} ${escapeHtml(appLang === "fa" ? "گلوله ۲" : "Gun 2")}</div>
+                <label>${escapeHtml(appLang === "fa" ? "هدف" : "Target")}
+                  <select id="fl_kabo_gun2_target">${mkGunOpts(gun2Target)}</select>
+                </label>
+              </div>
+              ${resultLine ? `<div class="note result" style="margin-top:10px">${resultLine}</div>` : ""}
+            </div>`;
+          } else if (cur.id === "chaos_run") {
+            const d = f.draft || {};
+            if (!d.chaosPicks || typeof d.chaosPicks !== "object") d.chaosPicks = {};
+            const chaosPicks = d.chaosPicks;
+            const rstSvg = `<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 5V1L7 6l5 5V7c3.31 0 6 2.69 6 6s-2.69 6-6 6-6-2.69-6-6H4c0 4.42 3.58 8 8 8s8-3.58 8-8-3.58-8-8-8z"/></svg>`;
+            ensureTimers();
+            const _tmrCh = appState.god.timers;
+            if (!_tmrCh.chaos) _tmrCh.chaos = 120;
+            if (_tmrCh.remaining.chaos == null) _tmrCh.remaining.chaos = _tmrCh.chaos;
+            const aliveIdxs = (draw.players || []).map((p, i) => ({ p, i })).filter(({ p }) => p && p.alive !== false);
+            const getTeam = (p) => { const r = roles[p.roleId]; return r ? r.teamFa : "شهر"; };
+            const aliveMafia = aliveIdxs.filter(({ p }) => getTeam(p) === "مافیا");
+            const aliveCitizens = aliveIdxs.filter(({ p }) => getTeam(p) === "شهر");
+            const aliveIndep = aliveIdxs.filter(({ p }) => getTeam(p) === "مستقل");
+            const parts = [];
+            if (aliveMafia.length) parts.push(`${aliveMafia.length} ${appLang === "fa" ? "مافیا" : "Mafia"}`);
+            if (aliveCitizens.length) parts.push(`${aliveCitizens.length} ${appLang === "fa" ? "شهروند" : "Citizen"}`);
+            if (aliveIndep.length) parts.push(`${aliveIndep.length} ${appLang === "fa" ? "مستقل" : "Independent"}`);
+            const computedWinner = (() => {
+              const allPicked = aliveIdxs.every(({ i }) => chaosPicks[String(i)] !== undefined && chaosPicks[String(i)] !== null && chaosPicks[String(i)] !== "");
+              if (!allPicked) return null;
+              if (aliveMafia.length === 1 && aliveCitizens.length === 2 && aliveIndep.length === 0) {
+                const mafI = String(aliveMafia[0].i);
+                return aliveCitizens.some(({ i }) => String(chaosPicks[String(i)]) === mafI) ? "mafia" : "citizens";
+              }
+              if (aliveMafia.length === 1 && aliveCitizens.length === 1 && aliveIndep.length === 1) {
+                const mafI = String(aliveMafia[0].i);
+                return String(chaosPicks[String(aliveCitizens[0].i)]) === mafI ? "mafia" : "independent";
+              }
+              return null;
+            })();
+            const winnerLabel = computedWinner === "mafia" ? (appLang === "fa" ? "مافیا برنده است" : "Mafia wins")
+              : computedWinner === "citizens" ? (appLang === "fa" ? "شهروندان برنده‌اند" : "Citizens win")
+              : computedWinner === "independent" ? (appLang === "fa" ? "مستقل برنده است" : "Independent wins")
+              : null;
+            const picksHtml = aliveIdxs.map(({ p, i }) => {
+              const nm = names[i] || t("common.playerN", { n: i + 1 });
+              const rLabel = (() => { const r = roles[p.roleId]; if (!r) return p.roleId; return (appLang === "fa" && r.faName) ? r.faName : (ROLE_I18N[p.roleId] && ROLE_I18N[p.roleId].name) ? ROLE_I18N[p.roleId].name : p.roleId; })();
+              const pickVal = chaosPicks[String(i)] !== undefined ? String(chaosPicks[String(i)]) : "";
+              const opts = [`<option value="" ${pickVal === "" ? "selected" : ""}>—</option>`].concat(
+                aliveIdxs.filter(({ i: j }) => j !== i).map(({ i: j }) => {
+                  const nm2 = names[j] || t("common.playerN", { n: j + 1 });
+                  return `<option value="${j}" ${String(j) === pickVal ? "selected" : ""}>${escapeHtml(nm2)}</option>`;
+                })
+              ).join("");
+              return `<label style="margin-top:8px">${escapeHtml(nm)} (${escapeHtml(rLabel)}) ${escapeHtml(appLang === "fa" ? "انتخاب می‌کند:" : "picks:")}
+                <select id="fl_chaos_pick_${i}" data-chaos-idx="${i}">${opts}</select>
+              </label>`;
+            }).join("");
+            body = `<div class="toolBox">
+              <div class="note" style="margin-bottom:10px">${escapeHtml(appLang === "fa" ? `هرج و مرج — ${parts.join("، ")}. هر بازیکن یک نفر دیگر را انتخاب می‌کند.` : `Chaos — ${parts.join(", ")}. Each player picks one other.`)}</div>
+              <div class="timerRow" style="grid-template-columns:1fr; margin-bottom:14px; padding-bottom:14px; border-bottom:1px solid rgba(255,255,255,.08)">
+                <div class="timerCard">
+                  <div class="tname">${escapeHtml(appLang === "fa" ? "زمان صحبت" : "Talk time")}</div>
+                  <div class="tval clickable" id="tm_chaos">${formatMMSS(_tmrCh.remaining.chaos)}</div>
+                  <div style="display:flex; gap:6px; justify-content:center; align-items:center">
+                    <button class="tbtn" id="tm_btn_chaos" type="button" aria-label="Play/Pause"></button>
+                    <button class="tbtn reset" id="tm_rst_chaos" type="button" aria-label="Reset">${rstSvg}</button>
+                  </div>
+                </div>
+              </div>
+              ${picksHtml}
+              ${winnerLabel ? `<div style="margin-top:14px; padding:12px; border-radius:10px; background:rgba(255,255,255,.06); text-align:center; font-weight:1100; font-size:1.1em">${escapeHtml(winnerLabel)}</div>` : ""}
+            </div>`;
+          } else if (cur.id === "winner_run") {
+            const d = f.draft || {};
+            const winnerTeam = d.winnerTeam || null;
+            const winnerLabelMap = {
+              mafia: appLang === "fa" ? "مافیا" : "Mafia",
+              citizens: appLang === "fa" ? "شهروندان" : "Citizens",
+              independent: appLang === "fa" ? "مستقل" : "Independent",
+            };
+            const winnerPlayers = (() => {
+              if (!winnerTeam) return [];
+              return (draw.players || []).map((p, i) => ({ p, i })).filter(({ p }) => {
+                if (!p) return false;
+                const team = (roles[p.roleId] && roles[p.roleId].teamFa) || "شهر";
+                if (winnerTeam === "mafia") return team === "مافیا";
+                if (winnerTeam === "citizens") return team === "شهر";
+                if (winnerTeam === "independent") return team === "مستقل";
+                return false;
+              });
+            })();
+            body = `<div class="toolBox">
+              ${winnerTeam ? `
+              <div style="text-align:center; margin:16px 0">
+                <div style="font-size:2.4em; margin-bottom:6px">🏆</div>
+                <div style="font-size:1.5em; font-weight:1200; color:rgba(255,215,0,1)">${escapeHtml(((winnerLabelMap[winnerTeam] || winnerTeam)) + " " + (appLang === "fa" ? "برنده شد!" : "Win!"))}</div>
+                ${winnerPlayers.length ? `<div style="margin-top:10px; font-size:.95em; color:var(--muted)">${winnerPlayers.map(({ p, i }) => escapeHtml(names[i] || t("common.playerN", { n: i + 1 }))).join("،\u200f ")}</div>` : ""}
+              </div>` : ""}
+            </div>`;
           } else if (cur.id === "namayande_rep_election") {
             const d = f.draft || {};
             const savedRep1 = (d.representatives && d.representatives[0] != null) ? d.representatives[0] : null;
@@ -708,7 +1194,7 @@
               <div class="note" style="margin-bottom:12px">${escapeHtml(appLang === "fa"
                 ? "هر بازیکن یک نماینده معرفی می‌کند. بیشترین رأی = نماینده."
                 : "Each player nominates a representative. Most votes wins.")}</div>
-              <div class="note" style="margin-bottom:12px; color:rgba(255,200,0,.9)">${escapeHtml(appLang === "fa"
+              <div class="note warn" style="margin-bottom:12px">${escapeHtml(appLang === "fa"
                 ? "⚠ اگر دقیقاً ۲ نفر مساوی → هر دو نماینده می‌شوند. اگر ≥۳ نفر مساوی → مجدد رأی‌گیری بین آن‌ها."
                 : "⚠ Exactly 2 tied → both become reps. 3 or more tied → re-vote among them.")}</div>
               <label style="margin-bottom:12px">${escapeHtml(appLang === "fa" ? "نماینده اول (دور رو به جلو)" : "Representative 1 (forward round)")}
@@ -745,13 +1231,13 @@
               const dirText = bDir === "more"
                 ? (appLang === "fa" ? "رأی بیشتر شود" : "more votes")
                 : (appLang === "fa" ? "رأی کمتر شود" : "fewer votes");
-              return `<div class="note" style="margin-bottom:12px; padding:8px 10px; background:rgba(255,100,80,.12); border-radius:8px; border:1px solid rgba(255,100,80,.25)">
+              return `<div class="note warn" style="margin-bottom:12px">
                 🔒 ${escapeHtml(appLang === "fa"
                   ? `رأی خیانت (شب ${prevNightKey}): نماینده ${bRep} — ${repName} → ${dirText}`
                   : `Betrayal vote (Night ${prevNightKey}): Rep ${bRep} — ${repName} → ${dirText}`)}
               </div>`;
             })() : "";
-            const noRepsWarn = reps.length < 2 ? `<div class="note" style="color:rgba(255,200,0,.9); margin-bottom:12px">${escapeHtml(appLang === "fa" ? "⚠ نمایندگان هنوز ثبت نشده‌اند." : "⚠ Representatives not yet recorded.")}</div>` : "";
+            const noRepsWarn = reps.length < 2 ? `<div class="note warn" style="margin-bottom:12px">${escapeHtml(appLang === "fa" ? "⚠ نمایندگان هنوز ثبت نشده‌اند." : "⚠ Representatives not yet recorded.")}</div>` : "";
             body = `<div class="toolBox">
               ${noRepsWarn}
               ${betrayalMemo}
@@ -801,8 +1287,7 @@
             const t2Idx = savedTargets[2] != null ? savedTargets[2] : null;
             const t1Name = t1Idx !== null ? (names[t1Idx] || t("common.playerN", { n: t1Idx + 1 })) : null;
             const t2Name = t2Idx !== null ? (names[t2Idx] || t("common.playerN", { n: t2Idx + 1 })) : null;
-            const rec = (d.dayElimAppliedByDay && d.dayElimAppliedByDay[String(f.day)]) ? d.dayElimAppliedByDay[String(f.day)] : {};
-            const savedOut = rec.out != null ? rec.out : null;
+            const savedOut = (d.namayandePick && d.namayandePick[String(f.day)] != null) ? d.namayandePick[String(f.day)] : null;
             const mkVoteOutOpts = () => {
               const s = savedOut !== null ? String(savedOut) : "";
               const base = [`<option value="" ${s === "" ? "selected" : ""}>— ${escapeHtml(appLang === "fa" ? "(هیچ‌کس)" : "(nobody)")}</option>`];
@@ -825,7 +1310,6 @@
             const resultLine = (() => {
               if (savedOut === null) return "";
               const nm = names[savedOut] || t("common.playerN", { n: savedOut + 1 });
-              if (rec.armoredAbsorbed) return appLang === "fa" ? `${escapeHtml(nm)} — زره جلوی رأی را گرفت.` : `${escapeHtml(nm)} — armor absorbed the vote.`;
               return appLang === "fa" ? `${escapeHtml(nm)} از بازی خارج می‌شود.` : `${escapeHtml(nm)} is eliminated.`;
             })();
             body = `<div class="toolBox">
@@ -836,7 +1320,7 @@
               <label>${escapeHtml(appLang === "fa" ? "خارج‌شده" : "Eliminated")}
                 <select id="fl_namayande_out">${mkVoteOutOpts()}</select>
               </label>
-              ${resultLine ? `<div class="note" style="margin-top:10px; font-weight:1100; color:rgba(255,150,80,1)">${resultLine}</div>` : ""}
+              ${resultLine ? `<div class="note result" style="margin-top:10px">${resultLine}</div>` : ""}
             </div>`;
           } else if (cur.id === "night_run") {
             const d = f.draft || {};
@@ -987,7 +1471,7 @@
                 const natoBlock = natoPlayerIdx !== null ? `
                   <div style="height:10px"></div>
                   <div style="font-weight:1100; border-top:1px solid rgba(255,255,255,.15); padding-top:10px">${escapeHtml(appLang === "fa" ? "ناتو — حدس نقش (یک‌بار در کل بازی)" : "NATO — Role Guess (once per game)")}</div>
-                  ${natoUsedNow ? `<div class="note" style="margin-top:6px; color:rgba(255,200,0,.9)">${escapeHtml(appLang === "fa" ? "ناتو قبلاً از قابلیت حدس نقش استفاده کرده است." : "NATO already used the role-guess ability.")}</div>` : `
+                  ${natoUsedNow ? `<div class="note warn" style="margin-top:6px">${escapeHtml(appLang === "fa" ? "ناتو قبلاً از قابلیت حدس نقش استفاده کرده است." : "NATO already used the role-guess ability.")}</div>` : `
                   <div class="note" style="margin-top:6px">${escapeHtml(appLang === "fa" ? "می‌تواند به‌جای شلیک، نقش دقیق یک نفر را حدس بزند. درست → خارج / غلط → هیچ." : "Can guess one player's exact role instead of shooting. Correct → out / Wrong → nothing.")}</div>
                   <div style="height:6px"></div>
                   <label>${escapeHtml(appLang === "fa" ? "هدف حدس ناتو" : "NATO guess target")}
@@ -1025,7 +1509,7 @@
                     return `
                       <div style="height:10px"></div>
                       <div style="font-weight:1100; border-top:1px solid rgba(255,255,255,.15); padding-top:10px">${escapeHtml(appLang === "fa" ? "سوداگری (رئیس مافیا — یک‌بار در کل بازی)" : "Sodagari / Trade (Mafia Boss — once per game)")}</div>
-                      <div class="note" style="margin-top:6px; color:rgba(255,200,0,.9)">${escapeHtml(appLang === "fa" ? "سوداگری قبلاً انجام شده است." : "Trade already used.")}</div>
+                      <div class="note warn" style="margin-top:6px">${escapeHtml(appLang === "fa" ? "سوداگری قبلاً انجام شده است." : "Trade already used.")}</div>
                     `;
                   }
                   return `
@@ -1053,7 +1537,7 @@
                     return `
                       <div style="height:10px"></div>
                       <div style="font-weight:1100; border-top:1px solid rgba(255,255,255,.15); padding-top:10px">${escapeHtml(appLang === "fa" ? "شات خنثی (یک‌بار در کل بازی)" : "Neutralized Shot (once per game)")}</div>
-                      <div class="note" style="margin-top:6px; color:rgba(255,200,0,.9)">${escapeHtml(appLang === "fa" ? "شات خنثی قبلاً استفاده شده است." : "Neutralized shot already used.")}</div>
+                      <div class="note warn" style="margin-top:6px">${escapeHtml(appLang === "fa" ? "شات خنثی قبلاً استفاده شده است." : "Neutralized shot already used.")}</div>
                     `;
                   }
                   const isChecked = !!(d && d.neutralizedShotUsedOnNight != null && Number(d.neutralizedShotUsedOnNight) === Number(currentNk2));
@@ -1079,7 +1563,7 @@
                     <div class="note" style="margin-top:4px">${escapeHtml(appLang === "fa" ? "قبل از انتخاب هدف نماینده‌ها. دون روی یکی از نمایندگان رأی خیانت می‌گذارد." : "Before reps pick targets. Don places a betrayal vote on one representative.")}</div>
                   `;
                   if (!reps) {
-                    return header + `<div class="note" style="color:rgba(255,200,0,.9)">${escapeHtml(appLang === "fa" ? "نمایندگان هنوز انتخاب نشده‌اند." : "Representatives not yet elected.")}</div>`;
+                    return header + `<div class="note warn">${escapeHtml(appLang === "fa" ? "نمایندگان هنوز انتخاب نشده‌اند." : "Representatives not yet elected.")}</div>`;
                   }
                   const rep1Name = names[reps[0]] || t("common.playerN", { n: reps[0] + 1 });
                   const rep2Name = reps[1] !== undefined ? (names[reps[1]] || t("common.playerN", { n: reps[1] + 1 })) : null;
@@ -1119,7 +1603,7 @@
                   <label>${escapeHtml(t("tool.flow.action.professionalShot"))}
                     <select id="fl_pro_shot" style="${sectionDisabledStyle}">${mkAliveOptsSel(savedNight.professionalShot)}</select>
                   </label>
-                  ${sectionDisabled ? `<div class="note" style="margin-top:6px; color:rgba(255,200,0,.9)">${escapeHtml(disabledNote)}</div>` : ""}
+                  ${sectionDisabled ? `<div class="note warn" style="margin-top:6px">${escapeHtml(disabledNote)}</div>` : ""}
                 `;
               }
               if (k === "detective") {
@@ -1149,7 +1633,7 @@
                     <select id="fl_det_query" style="${sectionDisabledStyle}">${mkAliveOptsSel(savedNight.detectiveQuery)}</select>
                   </label>
                   <div id="fl_det_result" class="note" style="margin-top:6px; ${resultLine ? "" : "display:none"}">${escapeHtml(resultLine || "")}</div>
-                  ${detDisabled ? `<div class="note" style="margin-top:6px; color:rgba(255,200,0,.9)">${escapeHtml(disabledNote)}</div>` : ""}
+                  ${detDisabled ? `<div class="note warn" style="margin-top:6px">${escapeHtml(disabledNote)}</div>` : ""}
                 `;
               }
               if (k === "doctor") {
@@ -1157,7 +1641,7 @@
                   <label>${escapeHtml(t("tool.flow.action.doctorSave"))}
                     <select id="fl_doctor_save" style="${sectionDisabledStyle}">${mkAliveOptsSel(savedNight.doctorSave)}</select>
                   </label>
-                  ${sectionDisabled ? `<div class="note" style="margin-top:6px; color:rgba(255,200,0,.9)">${escapeHtml(disabledNote)}</div>` : ""}
+                  ${sectionDisabled ? `<div class="note warn" style="margin-top:6px">${escapeHtml(disabledNote)}</div>` : ""}
                 `;
               }
               if (k === "bomber") {
@@ -1177,8 +1661,8 @@
                   <label>${escapeHtml(t("tool.flow.action.bombCode"))}
                     <select id="fl_bomb_code" style="${sectionDisabledStyle}">${mkCodeOpts((savedNight.bombCode != null ? savedNight.bombCode : d.bombCode) || "")}</select>
                   </label>
-                  <div class="note" id="fl_bomb_code_note" style="display:none; margin-top:6px; color: rgba(255,92,116,.95); font-weight:950"></div>
-                  ${sectionDisabled ? `<div class="note" style="margin-top:6px; color:rgba(255,200,0,.9)">${escapeHtml(disabledNote)}</div>` : ""}
+                  <div class="note alert" id="fl_bomb_code_note" style="display:none; margin-top:6px"></div>
+                  ${sectionDisabled ? `<div class="note warn" style="margin-top:6px">${escapeHtml(disabledNote)}</div>` : ""}
                 `;
               }
               if (k === "magician") {
@@ -1194,7 +1678,7 @@
                   <label>${escapeHtml(t("tool.flow.action.zodiacShot"))} ${evenNight ? "" : `<span style="color:var(--muted); font-weight:900">(even nights only)</span>`}
                     <select id="fl_zodiac_shot" ${evenNight ? "" : "disabled"} style="${sectionDisabledStyle}">${mkAliveOptsSel(savedNight.zodiacShot)}</select>
                   </label>
-                  ${sectionDisabled ? `<div class="note" style="margin-top:6px; color:rgba(255,200,0,.9)">${escapeHtml(disabledNote)}</div>` : ""}
+                  ${sectionDisabled ? `<div class="note warn" style="margin-top:6px">${escapeHtml(disabledNote)}</div>` : ""}
                 `;
               }
               if (k === "ocean") {
@@ -1243,7 +1727,7 @@
                 // Payload carries only this night's new picks for the bad-pick check.
                 const oceanHidden = thisNightAdds.map(String).join(",");
                 return `
-                  ${sectionDisabled ? `<div class="note" style="margin-top:6px; color:rgba(255,200,0,.9)">${escapeHtml(disabledNote)}</div>` : ""}
+                  ${sectionDisabled ? `<div class="note warn" style="margin-top:6px">${escapeHtml(disabledNote)}</div>` : ""}
                   <div style="${sectionDisabledStyle}">
                     <div style="font-weight:1100">${escapeHtml(t("tool.flow.ocean.team"))} <span style="color:var(--muted); font-size:12px; font-weight:800">${escapeHtml(quotaText)}</span></div>
                     <div style="height:6px"></div>
@@ -1347,26 +1831,8 @@
                 `;
               }
               if (k === "heir") {
-                const allIdxs = (draw.players || []).map((_, i) => i);
-                const optsAllSel = (sel) => {
-                  const sIdx = (sel === null || sel === undefined || sel === "") ? null : parseInt(sel, 10);
-                  const s = (sIdx === null || !Number.isFinite(sIdx)) ? "" : String(sIdx);
-                  const base = [`<option value="" ${s === "" ? "selected" : ""}>—</option>`];
-                  for (const idx of allIdxs) {
-                    const p = draw.players[idx];
-                    const nm = names[idx] || t("common.playerN", { n: idx + 1 });
-                    const alive = p && p.alive !== false;
-                    const outTxt = alive ? "" : (appLang === "fa" ? " (خارج شد)" : " (out)");
-                    const v = String(idx);
-                    base.push(`<option value="${v}" ${v === s ? "selected" : ""}>${escapeHtml(nm + outTxt)}</option>`);
-                  }
-                  return base.join("");
-                };
-                return `
-                  <label>${escapeHtml(t("tool.flow.action.heirPick"))} ${f.day === 1 ? `` : `<span style="color:var(--muted); font-weight:900">(${escapeHtml(t("tool.flow.action.heirIntroOnly"))})</span>`}
-                    <select id="fl_heir_pick" ${f.day === 1 ? "" : "disabled"}>${optsAllSel(savedNight.heirPick)}</select>
-                  </label>
-                `;
+                // Heir picks successor during Intro Night only (intro_night_run).
+                return null;
               }
               if (k === "herbalist") {
                 // Two-night mechanic: poison on Night X, antidote decision on Night X+1.
@@ -1382,8 +1848,8 @@
                   const poisonedName = names[herbPrevPoison] || t("common.playerN", { n: herbPrevPoison + 1 });
                   const savedAnt = (savedNight.herbalistAntidote === null || savedNight.herbalistAntidote === undefined) ? null : parseInt(savedNight.herbalistAntidote, 10);
                   const antOpts = [
-                    `<option value="" ${savedAnt === null ? "selected" : ""}>— (${escapeHtml(appLang === "fa" ? "بدون پادزهر — بازیکن حذف می‌شود" : "no antidote — player eliminated")})</option>`,
-                    `<option value="${herbPrevPoison}" ${savedAnt === herbPrevPoison ? "selected" : ""}>${escapeHtml(poisonedName + (appLang === "fa" ? " — پادزهر بده" : " — give antidote"))}</option>`,
+                    `<option value="" ${savedAnt === null ? "selected" : ""}>${escapeHtml(appLang === "fa" ? `بدون پادزهر: ${poisonedName} حذف می‌شود` : `No antidote: ${poisonedName} will be eliminated`)}</option>`,
+                    `<option value="${herbPrevPoison}" ${savedAnt === herbPrevPoison ? "selected" : ""}>${escapeHtml(appLang === "fa" ? `پادزهر را به ${poisonedName} بده` : `Give antidote to ${poisonedName}`)}</option>`,
                   ].join("");
                   return `
                     <div class="note" style="margin-bottom:8px">${escapeHtml(appLang === "fa" ? `مسموم شده (شب قبل): ${poisonedName}` : `Poisoned last night: ${poisonedName}`)}</div>
@@ -1457,7 +1923,7 @@
                     <select id="fl_joker_target">${mkAliveOptsSel(savedNight.jokerTarget)}</select>
                   </label>
                   <div class="note" style="margin-top:6px">${escapeHtml(appLang === "fa" ? "استعلام کارآگاه از این نفر، همان شب برعکس می‌شود." : "Detective inquiry on this player is flipped this night.")}</div>
-                  ` : `<div class="note" style="margin-top:6px; color:rgba(255,200,0,.9)">${escapeHtml(appLang === "fa" ? "جوکر مافیا هر دو بار را استفاده کرده است — دیگر قابلیت ندارد." : "Joker Mafia used both flips — no more uses.")}</div>`}
+                  ` : `<div class="note warn" style="margin-top:6px">${escapeHtml(appLang === "fa" ? "جوکر مافیا هر دو بار را استفاده کرده است — دیگر قابلیت ندارد." : "Joker Mafia used both flips — no more uses.")}</div>`}
                 `;
               }
               if (k === "swindler") {
@@ -1469,7 +1935,7 @@
                 `;
               }
               if (k === "researcher") {
-                const isIntroNight = (f.day || 1) === 1;
+                const isIntroNight = f.phase === "intro_night";
                 return `
                   <label>${escapeHtml(appLang === "fa" ? "گره محقق (لینک)" : "Researcher link")} ${isIntroNight ? `<span style="color:var(--muted); font-weight:900">(${escapeHtml(appLang === "fa" ? "شب معارفه — محقق لینک نمی‌زند" : "intro night — no link")})</span>` : ""}
                     <select id="fl_researcher_link" ${isIntroNight ? "disabled" : ""}>${mkAliveOptsSel(savedNight.researcherLink)}</select>
@@ -1535,7 +2001,7 @@
                     <select id="fl_kadkhoda_target">${mkAliveOptsSel(savedNight.kadkhodaTarget)}</select>
                   </label>
                   <div class="note" style="margin-top:6px">${escapeHtml(appLang === "fa" ? "اگر کدخدا یک مافیا (غیر خبرچین) را بیدار کند، کدخدا از بازی خارج می‌شود." : "If Kadkhoda wakes a Mafia (except Informant), Kadkhoda is eliminated.")}</div>
-                  ` : `<div class="note" style="margin-top:6px; color:rgba(255,200,0,.9)">${escapeHtml(appLang === "fa" ? "کدخدا هر دو لینک را استفاده کرده است." : "Kadkhoda has used both links.")}</div>`}
+                  ` : `<div class="note warn" style="margin-top:6px">${escapeHtml(appLang === "fa" ? "کدخدا هر دو لینک را استفاده کرده است." : "Kadkhoda has used both links.")}</div>`}
                 `;
               }
               if (k === "reporter") {
@@ -1550,7 +2016,7 @@
                 })();
                 if (reporterUsed && !reporterRes) {
                   return `
-                    <div class="note" style="color:rgba(255,200,0,.9)">${escapeHtml(appLang === "fa" ? "خبرنگار استعلام خود را استفاده کرده است." : "Reporter has used their inquiry.")}</div>
+                    <div class="note warn">${escapeHtml(appLang === "fa" ? "خبرنگار استعلام خود را استفاده کرده است." : "Reporter has used their inquiry.")}</div>
                   `;
                 }
                 return `
@@ -1561,10 +2027,14 @@
                 `;
               }
               if (k === "investigator") {
+                // Inspector only acts on Night 1.
+                if ((f.day || 1) > 1) {
+                  return `<div class="note">${escapeHtml(appLang === "fa" ? "بازپرس فقط در شب اول عمل می‌کند." : "Inspector only acts on Night 1.")}</div>`;
+                }
                 const nkStr = String(f.day || 1);
                 const invSaved = (d && d.nightActionsByNight && d.nightActionsByNight[nkStr]) ? d.nightActionsByNight[nkStr] : {};
                 return `
-                  <div class="note">${escapeHtml(appLang === "fa" ? "بازپرس هر شب دو نفر را برای بازپرسی انتخاب می‌کند. اگر هر دو فردا زنده باشند، بازپرسی روز آغاز می‌شود." : "Inspector picks two players each night. If both survive to morning, interrogation begins the next day.")}</div>
+                  <div class="note">${escapeHtml(appLang === "fa" ? "بازپرس دو نفر را برای بازپرسی انتخاب می‌کند. اگر هر دو فردا زنده باشند، بازپرسی روز آغاز می‌شود." : "Inspector picks two players. If both survive to morning, interrogation begins the next day.")}</div>
                   <div style="height:6px"></div>
                   <label>${escapeHtml(appLang === "fa" ? "هدف اول بازپرسی" : "Interrogation target 1")}
                     <select id="fl_investigator_t1">${mkAliveOptsSel(invSaved.investigatorT1 != null ? invSaved.investigatorT1 : null)}</select>
@@ -1601,7 +2071,7 @@
                   return opts.join("");
                 };
                 return `
-                  ${natoUsed2 ? `<div class="note" style="color:rgba(255,200,0,.9)">${escapeHtml(appLang === "fa" ? "ناتو قبلاً از قابلیت حدس نقش استفاده کرده است." : "NATO already used the role-guess ability.")}</div>` : `
+                  ${natoUsed2 ? `<div class="note warn">${escapeHtml(appLang === "fa" ? "ناتو قبلاً از قابلیت حدس نقش استفاده کرده است." : "NATO already used the role-guess ability.")}</div>` : `
                   <div class="note" style="margin-bottom:6px">${escapeHtml(appLang === "fa" ? "می‌تواند نقش دقیق یک نفر را حدس بزند. درست → خارج / غلط → هیچ." : "Can guess one player's exact role. Correct → eliminated / Wrong → nothing.")}</div>
                   <label>${escapeHtml(appLang === "fa" ? "هدف حدس ناتو" : "NATO guess target")}
                     <select id="fl_nato_target">${mkAliveOptsSel(savedNight.natoTarget)}</select>
@@ -1649,7 +2119,7 @@
                 const guideTargetIsMafia = guideTargetIdx !== null
                   ? detectiveInquiryIsMafia((draw.players[guideTargetIdx] || {}).roleId || "citizen") : false;
                 const guideRevealWarning = (guideTargetIsMafia && guideTargetName)
-                  ? `<div class="note" style="margin-top:6px; color:rgba(255,120,80,1); font-weight:1100">⚠ ${escapeHtml(appLang === "fa" ? `راهنما برای ${guideTargetName} لو رفت.` : `Guide is revealed to ${guideTargetName}.`)}</div>` : "";
+                  ? `<div class="note alert" style="margin-top:6px; 148168">⚠ ${escapeHtml(appLang === "fa" ? `راهنما برای ${guideTargetName} لو رفت.` : `Guide is revealed to ${guideTargetName}.`)}</div>` : "";
                 // Guided player's inquiry result
                 const guideInqTargetIdx = (savedNight.guideInquiryTarget !== null && savedNight.guideInquiryTarget !== undefined && savedNight.guideInquiryTarget !== "")
                   ? parseInt(savedNight.guideInquiryTarget, 10) : null;
@@ -1691,7 +2161,7 @@
                 const mineTargetName = (currentMineRaw !== null && names[currentMineRaw]) ? names[currentMineRaw] : (currentMineRaw !== null ? t("common.playerN", { n: currentMineRaw + 1 }) : "");
                 return `
                   ${minemakerUsed ? `
-                  <div class="note" style="color:rgba(255,200,0,.9)">${escapeHtml(appLang === "fa" ? `مین‌گذار قابلیتش را استفاده کرده${currentMineRaw !== null ? ` — مین روی: ${mineTargetName}` : ""}.` : `Minemaker has used their mine${currentMineRaw !== null ? ` — mine on: ${mineTargetName}` : ""}.`)}</div>
+                  <div class="note warn">${escapeHtml(appLang === "fa" ? `مین‌گذار قابلیتش را استفاده کرده${currentMineRaw !== null ? ` — مین روی: ${mineTargetName}` : ""}.` : `Minemaker has used their mine${currentMineRaw !== null ? ` — mine on: ${mineTargetName}` : ""}.`)}</div>
                   ` : `
                   <label>${escapeHtml(appLang === "fa" ? "هدف مین (یک‌بار در کل بازی)" : "Mine target (once per game)")}
                     <select id="fl_minemaker_target">${mkAliveOptsSel(savedNight.minemakerTarget)}</select>
@@ -1704,7 +2174,7 @@
                 const lawyerUsed = !!(d && d.lawyerUsed);
                 return `
                   ${lawyerUsed ? `
-                  <div class="note" style="color:rgba(255,200,0,.9)">${escapeHtml(appLang === "fa" ? "وکیل قابلیتش را استفاده کرده است." : "Lawyer has used their protection.")}</div>
+                  <div class="note warn">${escapeHtml(appLang === "fa" ? "وکیل قابلیتش را استفاده کرده است." : "Lawyer has used their protection.")}</div>
                   ` : `
                   <label>${escapeHtml(appLang === "fa" ? "هدف مصونیت (یک‌بار در کل بازی)" : "Immunity target (once per game)")}
                     <select id="fl_lawyer_target">${mkAliveOptsSel(savedNight.lawyerTarget)}</select>
@@ -1745,7 +2215,7 @@
                   : `<div class="note" style="margin-top:6px">${escapeHtml(appLang === "fa" ? "فعلاً کسی تفنگ ندارد." : "No one has a gun yet.")}</div>`;
                 return `
                   <div class="note" style="margin-top:6px">${escapeHtml(t("tool.flow.guns.gunslingerIs", { name: gunnerName }))}</div>
-                  ${sectionDisabled ? `<div class="note" style="margin-top:8px; color:rgba(255,200,0,.9)">${escapeHtml(disabledNote)}</div>` : ""}
+                  ${sectionDisabled ? `<div class="note warn" style="margin-top:8px">${escapeHtml(disabledNote)}</div>` : ""}
                   <div style="${sectionDisabledStyle}">
                     <div class="row one" style="margin-top:8px">
                       <label>${escapeHtml(t("tool.flow.guns.giveTo"))}
@@ -1909,6 +2379,7 @@
                   constantine: ["constantine"],
                   reporter: ["reporter"],
                   representative: ["representative"],
+                  investigator: ["investigator"],
                 };
                 let idxs = [];
                 if (k === "mafia") {
@@ -1982,6 +2453,7 @@
                   constantine: ["constantine"],
                   reporter: ["reporter"],
                   representative: ["representative"],
+                  investigator: ["investigator"],
                   nato: ["nato"],
                   hacker: ["hacker"],
                   guide: ["guide"],
@@ -2007,9 +2479,10 @@
               const a = wakeActors(w);
               // If this role/team doesn't exist in the game at all, hide it.
               if (!a.all.length) return "";
-              // Nostradamus and Heir only wake on intro night (Night 1).
+              // Nostradamus only wakes on Night 1; Heir wakes on Intro Night only (never in night_run).
               const _introOnly = normWake(w);
-              if ((_introOnly === "nostradamus" || _introOnly === "heir") && (f.day || 1) !== 1) return "";
+              if (_introOnly === "heir") return "";
+              if (_introOnly === "nostradamus" && (f.day || 1) !== 1) return "";
               _wakeNum++;
               const isDeadBlock = a.alive.length === 0;
               const deadBadge = isDeadBlock ? ` • ${appLang === "fa" ? "مرده" : "dead"}` : "";
@@ -2044,7 +2517,7 @@
                 const msg = appLang === "fa"
                   ? `⚠ محقق هدف شلیک مافیاست — ${linkedName} (که محقق با او لینک داشت) نیز از بازی خارج می‌شود.`
                   : `⚠ Researcher is the mafia shot target — ${linkedName} (linked to Researcher) is also eliminated.`;
-                return `<div class="note" style="margin-top:8px; font-weight:950; color:rgba(255,180,60,.95)">${escapeHtml(msg)}</div>`;
+                return `<div class="note result" style="margin-top:8px">${escapeHtml(msg)}</div>`;
               } catch {
                 return "";
               }
@@ -2159,7 +2632,7 @@
                   const targetName = escapeHtml(names[s.target] || t("common.playerN", { n: s.target + 1 }));
                   const typeLabel = s.type === "real" ? (appLang === "fa" ? "واقعی" : "real") : (appLang === "fa" ? "جعلی" : "fake");
                   return `<div style="display:flex; align-items:center; justify-content:space-between; gap:8px; padding:4px 0">
-                    <div style="color:var(--bad); font-weight:950">${shooterName} → ${targetName} <span style="color:var(--muted); font-weight:900">(${escapeHtml(typeLabel)})</span></div>
+                    <div style="color:rgba(255,160,80,1); font-weight:1000">${shooterName} → ${targetName} <span style="color:var(--muted); font-weight:900">(${escapeHtml(typeLabel)})</span></div>
                     <button class="smallbtn" data-gun-shot-rm="${s.shooter}" type="button" style="padding:6px 10px; font-size:12px; flex:0 0 auto">${escapeHtml(appLang === "fa" ? "حذف" : "Undo")}</button>
                   </div>`;
                 }).join("")}
@@ -2268,7 +2741,7 @@
                       <select id="fl_bomb_target_guess">${bmkCodeOpts(br0.targetGuess)}</select>
                     </label>
                   `}
-                  ${boutcomeLine ? `<div class="note" style="margin-top:10px; font-weight:950">${escapeHtml(boutcomeLine)}</div>` : ``}
+                  ${boutcomeLine ? `<div class="note result" style="margin-top:10px">${escapeHtml(boutcomeLine)}</div>` : ``}
                   <div class="note" style="margin-top:10px">${escapeHtml(appLang === "fa" ? "با انتخاب حدس، نتیجه بلافاصله اعمال می‌شود." : "Your choice applies immediately.")}</div>
                 `;
               } catch { return ""; }
@@ -2315,7 +2788,7 @@
               ? `
                 <div class="note" style="margin-top:6px">${escapeHtml(t("tool.flow.day.gunExpiry.desc"))}</div>
                 <div style="height:10px"></div>
-                ${expiryVictims.map((idx) => `<div style="padding:6px 0; font-weight:950; color:var(--bad)">${escapeHtml(names[idx] || t("common.playerN", { n: idx + 1 }))}</div>`).join("")}
+                ${expiryVictims.map((idx) => `<div style="padding:6px 0; font-weight:1000; color:rgba(255,160,80,1)">${escapeHtml(names[idx] || t("common.playerN", { n: idx + 1 }))}</div>`).join("")}
                 <div class="note" style="margin-top:10px">${escapeHtml(appLang === "fa" ? "برای خارج کردن این بازیکنان «بعدی» را بزنید." : "Click Next to eliminate these players.")}</div>
               `
               : `<div class="note" style="margin-top:6px">${escapeHtml(t("tool.flow.day.gunExpiry.none"))}</div>`;
@@ -2410,19 +2883,19 @@
 
               <div style="height:14px"></div>
               <div class="actions">
-                <button class="btn" id="fl_prev" type="button" ${(f.phase === "day" && (f.step || 0) === 0 && (f.day || 1) === 1) ? "disabled" : ""}>${escapeHtml(t("tool.flow.prev"))}</button>
-                <button class="btn primary" id="fl_next" type="button">${escapeHtml(t("tool.flow.next"))}</button>
+                <button class="btn" id="fl_prev" type="button" ${(f.phase === "intro_day" && (f.step || 0) === 0) ? "disabled" : ""}>${escapeHtml(t("tool.flow.prev"))}</button>
+                <button class="btn primary" id="fl_next" type="button" ${f.phase === "winner" ? "disabled" : ""}>${escapeHtml(t("tool.flow.next"))}</button>
               </div>
             </div>
           `, { hideBottom: true });
 
           $("fl_prev").onclick = prevFlowStep;
 
-          // Inline timers embedded in day_vote and day_elim steps.
-          if (cur && (cur.id === "day_vote" || cur.id === "day_elim")) {
+          // Inline timers embedded in day_vote, day_elim, kabo_shoot, chaos_run, and bazras_interrogation steps.
+          if (cur && (cur.id === "day_vote" || cur.id === "day_elim" || cur.id === "kabo_shoot" || cur.id === "chaos_run" || cur.id === "bazras_interrogation")) {
             ensureTimers();
             if (!audioUnlocked) try { unlockAudio(); } catch {}
-            const timerKeys = cur.id === "day_vote" ? ["talk", "challenge"] : ["defense"];
+            const timerKeys = cur.id === "day_vote" ? ["talk", "challenge"] : cur.id === "chaos_run" ? ["chaos"] : cur.id === "bazras_interrogation" ? ["talk"] : ["defense"];
             for (const key of timerKeys) {
               const btn = document.getElementById("tm_btn_" + key);
               if (btn) btn.onclick = () => startOrPauseTimer(key);
@@ -2436,6 +2909,27 @@
               timerInterval = setInterval(tickTimers, 250);
             }
           }
+
+          // Chaos pick changes — save and re-render to update computed winner.
+          if (cur && cur.id === "chaos_run") {
+            try {
+              document.querySelectorAll("[data-chaos-idx]").forEach((sel) => {
+                sel.addEventListener("change", () => {
+                  try {
+                    const idx = String(sel.dataset.chaosIdx);
+                    const val = sel.value;
+                    const d2 = f.draft || {};
+                    if (!d2.chaosPicks) d2.chaosPicks = {};
+                    if (val === "") { delete d2.chaosPicks[idx]; } else { d2.chaosPicks[idx] = parseInt(val, 10); }
+                    f.draft = d2;
+                    saveState(appState);
+                    showFlowTool();
+                  } catch {}
+                });
+              });
+            } catch {}
+          }
+
 
           const commitVoteFromUI = () => {
             try {
@@ -2564,7 +3058,8 @@
                 document.getElementById("fl_soldier_gun_shot") ||
                 document.getElementById("fl_neutralized_shot") ||
                 document.getElementById("fl_betrayal_rep") ||
-                document.getElementById("fl_betrayal_dir");
+                document.getElementById("fl_betrayal_dir") ||
+                document.getElementById("fl_capo_bullet_order");
               if (!hasAny) return false;
 
               const mafiaShot = (document.getElementById("fl_mafia_shot") || {}).value || "";
@@ -3226,6 +3721,14 @@
               showFlowTool();
               return;
             }
+            if (cur && cur.id === "kabo_suspect_select") {
+              const _d = f.draft || {};
+              const _dayKey = String(f.day || 1);
+              const _sels = (_d.kaboSuspectsByDay && Array.isArray(_d.kaboSuspectsByDay[_dayKey])) ? _d.kaboSuspectsByDay[_dayKey] : [];
+              if (_sels.length < 2) return;
+              nextFlowStep();
+              return;
+            }
             if (cur && cur.id === "day_vote") {
               commitVoteFromUI();
               nextFlowStep();
@@ -3249,6 +3752,54 @@
             if (cur && cur.id === "day_elim") {
               const ok = commitElimFromUI();
               if (ok) nextFlowStep();
+              return;
+            }
+            // Deferred-apply steps: apply deaths on Next, not on selection change.
+            if (cur && cur.id === "bazras_forced_vote") {
+              try {
+                const d2 = f.draft || {};
+                const dayKey = String(f.day || 1);
+                const prevNK = String(Math.max(0, (f.day || 1) - 1));
+                const invT = d2.investigatorTargetsByNight && d2.investigatorTargetsByNight[prevNK];
+                const fvT1 = invT && invT.t1 != null ? invT.t1 : null;
+                const fvT2 = invT && invT.t2 != null ? invT.t2 : null;
+                const rec2 = (d2.bazrasInterrogationByDay && d2.bazrasInterrogationByDay[dayKey]) || {};
+                const votes = rec2.votes || {};
+                const nv1 = Math.max(0, parseInt(votes[fvT1] || 0, 10));
+                const nv2 = Math.max(0, parseInt(votes[fvT2] || 0, 10));
+                const hasV = nv1 > 0 || nv2 > 0;
+                const outcome = !hasV ? null : (nv1 > nv2 ? String(fvT1) : nv2 > nv1 ? String(fvT2) : "tie");
+                applyBazrasInterrogationFromPayload(f, { decision: rec2.decision || null, outcome });
+                renderCast();
+              } catch {}
+              nextFlowStep();
+              return;
+            }
+            if (cur && cur.id === "namayande_vote") {
+              try {
+                const d2 = f.draft || {};
+                const dayKey = String(f.day || 1);
+                const pick = (d2.namayandePick && d2.namayandePick[dayKey] != null) ? d2.namayandePick[dayKey] : null;
+                applyDayElimFromPayload(f, { out: pick });
+                renderCast();
+              } catch {}
+              nextFlowStep();
+              return;
+            }
+            if (cur && cur.id === "kabo_shoot") {
+              try {
+                const d2 = f.draft || {};
+                const dayKey = String(f.day || 1);
+                const realGun = d2.kaboGunByDay && d2.kaboGunByDay[dayKey];
+                const savedShoot = d2.kaboShootByDay && d2.kaboShootByDay[dayKey];
+                const realTarget = (savedShoot && realGun) ? (realGun === "gun1" ? savedShoot.gun1 : savedShoot.gun2) : null;
+                applyDayElimFromPayload(f, { out: realTarget != null ? realTarget : null });
+                if (realTarget !== null && realTarget !== undefined) {
+                  try { addFlowEvent("day_elim_out", { out: realTarget, kaboShot: true }); } catch {}
+                }
+                renderCast();
+              } catch {}
+              nextFlowStep();
               return;
             }
             nextFlowStep();
@@ -3335,6 +3886,56 @@
               });
             } catch {}
           }
+          // Bazras mid-day: card buttons save inspector's continue/cancel decision — no kill applied yet.
+          if (cur && cur.id === "bazras_midday") {
+            try {
+              ["cancel", "continue"].forEach((val) => {
+                const btn = document.getElementById("fl_bazras_" + val);
+                if (btn) btn.addEventListener("click", () => {
+                  try {
+                    const d = f.draft || {};
+                    const dayKey = String(f.day || 1);
+                    if (!d.bazrasInterrogationByDay || typeof d.bazrasInterrogationByDay !== "object") d.bazrasInterrogationByDay = {};
+                    const rec = d.bazrasInterrogationByDay[dayKey] || {};
+                    rec.decision = val;
+                    d.bazrasInterrogationByDay[dayKey] = rec;
+                    f.draft = d;
+                    saveState(appState);
+                    showFlowTool();
+                  } catch {}
+                });
+              });
+            } catch {}
+          }
+          // Bazras forced vote: +/- cards update vote counts and derive winner → apply elimination.
+          if (cur && cur.id === "bazras_forced_vote") {
+            try {
+              const d2 = f.draft || {};
+              const dayKey2 = String(f.day || 1);
+              const prevNK2 = String(Math.max(0, (f.day || 1) - 1));
+              const invT2 = d2.investigatorTargetsByNight && d2.investigatorTargetsByNight[prevNK2];
+              const fvT1 = invT2 && invT2.t1 != null ? invT2.t1 : null;
+              const fvT2 = invT2 && invT2.t2 != null ? invT2.t2 : null;
+              const adjustFVVote = (idx, delta) => {
+                try {
+                  if (!d2.bazrasInterrogationByDay || typeof d2.bazrasInterrogationByDay !== "object") d2.bazrasInterrogationByDay = {};
+                  const rec2 = d2.bazrasInterrogationByDay[dayKey2] || {};
+                  if (!rec2.votes || typeof rec2.votes !== "object") rec2.votes = {};
+                  rec2.votes[idx] = Math.max(0, parseInt(rec2.votes[idx] || 0, 10) + delta);
+                  d2.bazrasInterrogationByDay[dayKey2] = rec2;
+                  f.draft = d2;
+                  saveState(appState);
+                  showFlowTool();
+                } catch {}
+              };
+              document.querySelectorAll(".bazras_fv_plus").forEach((btn) => {
+                btn.addEventListener("click", () => adjustFVVote(parseInt(btn.dataset.idx, 10), 1));
+              });
+              document.querySelectorAll(".bazras_fv_minus").forEach((btn) => {
+                btn.addEventListener("click", () => adjustFVVote(parseInt(btn.dataset.idx, 10), -1));
+              });
+            } catch {}
+          }
           // Namayande rep election: save elected representatives on select change.
           if (cur && cur.id === "namayande_rep_election") {
             try {
@@ -3392,11 +3993,124 @@
                 outEl.addEventListener("change", () => {
                   const val = outEl.value;
                   const outIdx = val === "" ? null : parseInt(val, 10);
-                  try { applyDayElimFromPayload(f, { out: outIdx }); } catch {}
-                  try { renderCast(); } catch {}
+                  const d2 = f.draft || {};
+                  if (!d2.namayandePick || typeof d2.namayandePick !== "object") d2.namayandePick = {};
+                  d2.namayandePick[String(f.day)] = outIdx;
+                  f.draft = d2;
+                  try { saveState(appState); } catch {}
                   try { showFlowTool(); } catch {}
                 });
               }
+            } catch {}
+          }
+          // Kabo trust vote: +/- buttons update vote counts, card tap sets trusted manually.
+          if (cur && cur.id === "kabo_trust_vote") {
+            try {
+              const d2 = f.draft || {};
+              const dayKey = String(f.day || 1);
+              if (!d2.kaboTrustVotesByDay || typeof d2.kaboTrustVotesByDay !== "object") d2.kaboTrustVotesByDay = {};
+              if (!d2.kaboTrustedByDay || typeof d2.kaboTrustedByDay !== "object") d2.kaboTrustedByDay = {};
+              const adjustVote = (idx, delta) => {
+                if (!d2.kaboTrustVotesByDay[dayKey] || typeof d2.kaboTrustVotesByDay[dayKey] !== "object") d2.kaboTrustVotesByDay[dayKey] = {};
+                const cur2 = Math.max(0, parseInt(d2.kaboTrustVotesByDay[dayKey][idx] || 0, 10));
+                d2.kaboTrustVotesByDay[dayKey][idx] = Math.max(0, cur2 + delta);
+                // Auto-update trusted from max votes
+                const allVotes = d2.kaboTrustVotesByDay[dayKey];
+                let maxV = 0; let best = null; let tc = 0;
+                for (const i of aliveIdxs) {
+                  const v = Math.max(0, parseInt(allVotes[i] || 0, 10));
+                  if (v > maxV) { maxV = v; best = i; tc = 1; }
+                  else if (v === maxV && maxV > 0) tc++;
+                }
+                d2.kaboTrustedByDay[dayKey] = (tc === 1 && best !== null) ? best : null;
+                f.draft = d2;
+                saveState(appState);
+                showFlowTool();
+              };
+              document.querySelectorAll(".kabo_trust_plus").forEach((btn) => {
+                btn.addEventListener("click", () => adjustVote(parseInt(btn.dataset.idx, 10), 1));
+              });
+              document.querySelectorAll(".kabo_trust_minus").forEach((btn) => {
+                btn.addEventListener("click", () => adjustVote(parseInt(btn.dataset.idx, 10), -1));
+              });
+            } catch {}
+          }
+          // Kabo suspect select: card tap toggles suspect (max 2).
+          if (cur && cur.id === "kabo_suspect_select") {
+            try {
+              const d2 = f.draft || {};
+              const dayKey = String(f.day || 1);
+              const selCount = (d2.kaboSuspectsByDay && Array.isArray(d2.kaboSuspectsByDay[dayKey])) ? d2.kaboSuspectsByDay[dayKey].length : 0;
+              const nextBtn = $("fl_next");
+              if (nextBtn) nextBtn.disabled = selCount < 2;
+              document.querySelectorAll(".kabo_suspect_btn").forEach((btn) => {
+                btn.addEventListener("click", () => {
+                  const idx = parseInt(btn.dataset.idx, 10);
+                  if (!Number.isFinite(idx)) return;
+                  if (!d2.kaboSuspectsByDay || typeof d2.kaboSuspectsByDay !== "object") d2.kaboSuspectsByDay = {};
+                  const cur2 = Array.isArray(d2.kaboSuspectsByDay[dayKey]) ? d2.kaboSuspectsByDay[dayKey].map(Number) : [];
+                  let arr = [...cur2];
+                  const pos = arr.indexOf(idx);
+                  if (pos !== -1) { arr.splice(pos, 1); }
+                  else { if (arr.length >= 2) arr.shift(); arr.push(idx); }
+                  d2.kaboSuspectsByDay[dayKey] = arr;
+                  f.draft = d2;
+                  saveState(appState);
+                  showFlowTool();
+                });
+              });
+            } catch {}
+          }
+          // Kabo mid-day: gun pick buttons.
+          if (cur && cur.id === "kabo_midday") {
+            try {
+              const d2 = f.draft || {};
+              const dayKey = String(f.day || 1);
+              const savedGun = d2.kaboGunByDay && d2.kaboGunByDay[dayKey];
+              const nextBtn = $("fl_next");
+              if (nextBtn) nextBtn.disabled = !savedGun;
+              ["gun1", "gun2"].forEach((gun) => {
+                const btn = document.getElementById("kabo_midday_" + gun);
+                if (btn) btn.onclick = () => {
+                  if (!d2.kaboGunByDay || typeof d2.kaboGunByDay !== "object") d2.kaboGunByDay = {};
+                  d2.kaboGunByDay[dayKey] = gun;
+                  f.draft = d2;
+                  saveState(appState);
+                  showFlowTool();
+                };
+              });
+            } catch {}
+          }
+          // Kabo shoot: two gun selects — apply kill via real gun's target.
+          if (cur && cur.id === "kabo_shoot") {
+            try {
+              const d2 = f.draft || {};
+              const curDK = String(f.day || 1);
+              const realGun2 = (d2.kaboGunByDay && d2.kaboGunByDay[curDK]) ? d2.kaboGunByDay[curDK] : null;
+              const applyKaboShoot = () => {
+                if (!d2.kaboShootByDay || typeof d2.kaboShootByDay !== "object") d2.kaboShootByDay = {};
+                const g1v = (document.getElementById("fl_kabo_gun1_target") || {}).value;
+                const g2v = (document.getElementById("fl_kabo_gun2_target") || {}).value;
+                const g1T = (g1v === undefined || g1v === "") ? null : parseInt(g1v, 10);
+                const g2T = (g2v === undefined || g2v === "") ? null : parseInt(g2v, 10);
+                d2.kaboShootByDay[String(f.day)] = { gun1: g1T, gun2: g2T };
+                f.draft = d2;
+                saveState(appState);
+                try { showFlowTool(); } catch {}
+              };
+              const g1El = document.getElementById("fl_kabo_gun1_target");
+              const g2El = document.getElementById("fl_kabo_gun2_target");
+              if (g1El) g1El.addEventListener("change", () => {
+                // If both guns now point at the same player, clear the OTHER gun.
+                const v1 = g1El.value, v2 = g2El ? g2El.value : "";
+                if (v1 !== "" && v2 !== "" && v1 === v2 && g2El) g2El.value = "";
+                applyKaboShoot();
+              });
+              if (g2El) g2El.addEventListener("change", () => {
+                const v1 = g1El ? g1El.value : "", v2 = g2El.value;
+                if (v1 !== "" && v2 !== "" && v1 === v2 && g1El) g1El.value = "";
+                applyKaboShoot();
+              });
             } catch {}
           }
           if (cur && cur.id === "night_run") {
@@ -3441,6 +4155,7 @@
               "fl_soldier_gun_shot",
               "fl_betrayal_rep",
               "fl_betrayal_dir",
+              "fl_capo_bullet_order",
             ];
             // Helper: enforce mafia-shot ↔ NATO-guess mutual exclusion.
             // Neither side is ever hard-disabled — both remain interactive so the user
@@ -3509,6 +4224,35 @@
             }
             // Apply initial disable state in case saved data has one side already set.
             enforceNatoMafiaMutex();
+            // Kabo gun toggle buttons — select which gun has the real bullet.
+            try {
+              [document.getElementById("kabo_gun1_real_btn"), document.getElementById("kabo_gun2_real_btn")].forEach((btn) => {
+                if (!btn) return;
+                btn.addEventListener("click", () => {
+                  const gun = btn.dataset.gun; // "gun1" | "gun2"
+                  const hiddenEl = document.getElementById("fl_capo_bullet_order");
+                  if (hiddenEl) hiddenEl.value = gun;
+                  snapshotNightActionsFromUI();
+                  showFlowTool();
+                });
+              });
+            } catch {}
+          }
+          // Intro night: save heir pick on change.
+          if (cur && cur.id === "intro_night_run") {
+            try {
+              const d2 = f.draft || {};
+              const el = document.getElementById("fl_intro_heir_pick");
+              if (el) {
+                el.onchange = () => {
+                  if (!d2.nightActionsByNight) d2.nightActionsByNight = {};
+                  if (!d2.nightActionsByNight["0"]) d2.nightActionsByNight["0"] = {};
+                  const val = el.value;
+                  d2.nightActionsByNight["0"].heirPick = val === "" ? null : parseInt(val, 10);
+                  saveState(appState);
+                };
+              }
+            } catch {}
           }
           // mid_vote (legacy midday bomb page) removed
 

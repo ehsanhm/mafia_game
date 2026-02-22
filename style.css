@@ -431,6 +431,10 @@ select:focus, input[type="number"]:focus{
   font-weight:750;
 }
 .note b{ color: var(--text); }
+/* Feedback variants — replaces ad-hoc inline color/weight on .note elements */
+.note.warn   { color:rgba(255,185,50,.9);  font-weight:900; }
+.note.result { font-size:13px; font-weight:1000; color:rgba(255,160,80,1); }
+.note.alert  { font-weight:1000; color:rgba(255,110,80,1); }
 .defaultsBar{
   display:flex;
   align-items:center;
@@ -1346,6 +1350,9 @@ select:focus, input[type="number"]:focus{
   display:grid;
   grid-template-columns: 1fr 1fr;
   gap:10px;
+}
+.timerRow:has(> .timerCard:only-child){
+  grid-template-columns: 1fr;
 }
 .timerCard{
   border-radius: 18px;

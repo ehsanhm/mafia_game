@@ -108,7 +108,7 @@ const SCENARIO_CONFIGS = {
     id: "kabo",
     name: { fa: "کاپو", en: "Capo" },
     defaults: { nPlayers: 10, mafiaCount: 3 },
-    allowedRoles: ["danMafia", "witch", "executioner", "informant", "detective", "kadkhoda", "heir", "herbalist", "armorsmith", "suspect"],
+    allowedRoles: ["danMafia", "witch", "executioner", "detective", "heir", "herbalist", "armorsmith", "suspect", "informant", "kadkhoda"],
     defaultToggles: ["danMafia", "witch", "executioner", "detective", "heir", "herbalist", "armorsmith", "suspect"],
     wakeOrder: {
       fa: ["وارث", "تیم مافیا (جادوگر/دن/جلاد)", "عطار", "کارآگاه", "زره‌ساز", "کدخدا"],
@@ -117,7 +117,9 @@ const SCENARIO_CONFIGS = {
     features: { lastMove: false, endCards: false },
     dayPhaseConfig: { steps: ["day_vote", "day_elim"] },
     eliminationCards: [],
-    roleOverrides: {},
+    roleOverrides: {
+      danMafia: { descFa: "رهبر تیم مافیا در سناریو کاپو. تفنگ کاپو: هر شب ترتیب صف گلوله را بین مظنون‌ها تعیین می‌کند. صبح روز بعد (از روز ۲ به بعد) نفر اول صف یک‌بار دفاع می‌کند، سپس کاپو شلیک می‌کند یا رها می‌کند." },
+    },
   },
   pedarkhande: {
     id: "pedarkhande",

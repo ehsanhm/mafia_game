@@ -3,7 +3,7 @@
           if (!appState.god.flow || typeof appState.god.flow !== "object") {
             appState.god.flow = {
               day: 1,
-              phase: "day", // day | night
+              phase: "intro_day", // intro_day | intro_night | day | night
               step: 0,
               bombActive: false,
               guns: {}, // idx -> { type: "real"|"fake", used: boolean, givenAt }
@@ -19,7 +19,7 @@
             appState.god.flow.phase = "day";
             appState.god.flow.step = 0;
           }
-          if (!["day", "night"].includes(appState.god.flow.phase)) appState.god.flow.phase = "day";
+          if (!["intro_day", "intro_night", "day", "night", "chaos", "winner"].includes(appState.god.flow.phase)) appState.god.flow.phase = "day";
           if (typeof appState.god.flow.step !== "number" || appState.god.flow.step < 0) appState.god.flow.step = 0;
           if (typeof appState.god.flow.bombActive !== "boolean") appState.god.flow.bombActive = false;
           if (!appState.god.flow.draft || typeof appState.god.flow.draft !== "object") appState.god.flow.draft = {};
@@ -125,11 +125,15 @@
               d.armorsmithSelfUsed = false;
               d.armorsmithSelfUsedOnNight = null;
             }
-            // Herbalist cycle complete (set during night→day for the night after poisoning)
+            // Herbalist poison-kill (revive the killed player and reset the record)
             if (d.nightHerbalistAppliedByDay && d.nightHerbalistAppliedByDay[dayKey]) {
               const hRec = d.nightHerbalistAppliedByDay[dayKey];
-              if (hRec && (hRec.killed !== null || hRec.prevAlive !== null)) {
+              if (hRec) {
+                if (Number.isFinite(Number(hRec.killed)) && hRec.prevAlive === true) {
+                  try { setPlayerLife(parseInt(hRec.killed, 10), { alive: true }); } catch {}
+                }
                 d.herbalistCycleComplete = false;
+                d.nightHerbalistAppliedByDay[dayKey] = { killed: null, prevAlive: null };
               }
             }
             // Hard John first-survival flag
@@ -176,6 +180,15 @@
                 try { setPlayerLife(parseInt(rec.gunShotKilled, 10), { alive: true }); } catch {}
               }
               d.nightSoldierAppliedByDay[dayKey] = { soldierKilled: null, soldierPrevAlive: null, gunShotKilled: null, gunShotPrevAlive: null };
+            }
+            // Heir inheritance (role change)
+            if (d.heirInheritedByDay && d.heirInheritedByDay[dayKey]) {
+              const rec = d.heirInheritedByDay[dayKey];
+              if (Number.isFinite(Number(rec.heirIdx)) && rec.prevRole !== null) {
+                const p = appState.draw && appState.draw.players && appState.draw.players[parseInt(rec.heirIdx, 10)];
+                if (p) p.roleId = rec.prevRole;
+              }
+              d.heirInheritedByDay[dayKey] = { heirIdx: null, prevRole: null, newRole: null, pickedIdx: null };
             }
             // Neutralized shot once-per-game flag
             if (d.neutralizedShotUsedOnNight != null && Number(d.neutralizedShotUsedOnNight) === nightDayNum) {
@@ -386,6 +399,10 @@
               const targetRole = (draw.players[desiredKill] && draw.players[desiredKill].roleId) ? draw.players[desiredKill].roleId : "citizen";
               if (targetRole === "zodiac" || targetRole === "invulnerable") {
                 desiredKill = null;
+              } else if (targetRole === "heir") {
+                // Heir is immune to Mafia night shots until they inherit a role
+                // (at which point their roleId changes away from "heir").
+                desiredKill = null;
               } else if (targetRole === "armored" && !f.draft.armoredVoteUsed) {
                 // Armored is immune to night shots until their armor has been spent by a vote-out.
                 desiredKill = null;
@@ -429,8 +446,14 @@
               // Researcher chain kill: if mafia killed the Researcher, also kill their linked player.
               try {
                 if ((draw.players[desiredKill] || {}).roleId === "researcher") {
-                  const nightActions = (f.draft.nightActionsByNight && f.draft.nightActionsByNight[dayKey]) || null;
-                  const linkedIdxRaw = nightActions ? nightActions.researcherLink : null;
+                  // Prefer payload.researcherLink (always present in night_actions event data),
+                  // fall back to nightActionsByNight for older saves.
+                  const linkedIdxRaw = (payload.researcherLink !== null && payload.researcherLink !== undefined)
+                    ? payload.researcherLink
+                    : (() => {
+                        const na = f.draft.nightActionsByNight && f.draft.nightActionsByNight[dayKey];
+                        return na ? na.researcherLink : null;
+                      })();
                   const linkedIdx = (linkedIdxRaw !== null && linkedIdxRaw !== undefined && Number.isFinite(parseInt(linkedIdxRaw, 10))) ? parseInt(linkedIdxRaw, 10) : null;
                   if (linkedIdx !== null && draw.players[linkedIdx]) {
                     const linkedRoleId = draw.players[linkedIdx].roleId || "citizen";
@@ -1023,6 +1046,52 @@
           }
         }
 
+        // Apply Bazras interrogation forced-vote elimination.
+        // payload: { decision: "continue"|"cancel"|null, outcome: idx|"tie"|null }
+        // Passing null as payload reverts any current elimination (used when going backward).
+        function applyBazrasInterrogationFromPayload(f, payload) {
+          try {
+            const draw = appState.draw;
+            if (!draw || !draw.players) return false;
+            if (!f.draft || typeof f.draft !== "object") f.draft = {};
+            const d = f.draft;
+            const dayKey = String(f.day || 1);
+            if (!d.bazrasInterrogationByDay || typeof d.bazrasInterrogationByDay !== "object") d.bazrasInterrogationByDay = {};
+            const rec = (d.bazrasInterrogationByDay[dayKey] && typeof d.bazrasInterrogationByDay[dayKey] === "object")
+              ? d.bazrasInterrogationByDay[dayKey]
+              : { decision: null, outcome: null, prevEliminated: null, prevAlive: null };
+            const newDecision = payload ? (payload.decision || null) : null;
+            const newOutcome = payload ? (payload.outcome !== undefined ? payload.outcome : null) : null;
+            // no change
+            if (rec.decision === newDecision && rec.outcome === newOutcome) return false;
+            // revert previous elimination
+            if (Number.isFinite(Number(rec.prevEliminated))) {
+              if (rec.prevAlive === true) {
+                try { setPlayerLife(parseInt(rec.prevEliminated, 10), { alive: true }); } catch {}
+              }
+            }
+            rec.prevEliminated = null;
+            rec.prevAlive = null;
+            rec.decision = newDecision;
+            rec.outcome = newOutcome;
+            // apply new elimination
+            if (newDecision === "continue" && newOutcome !== null && newOutcome !== "tie" && Number.isFinite(Number(newOutcome))) {
+              const idx = parseInt(newOutcome, 10);
+              const p = draw.players[idx];
+              const wasAlive = p ? (p.alive !== false) : null;
+              if (wasAlive) {
+                try { setPlayerLife(idx, { alive: false, reason: "vote" }); } catch {}
+              }
+              rec.prevEliminated = idx;
+              rec.prevAlive = wasAlive === true;
+            }
+            d.bazrasInterrogationByDay[dayKey] = rec;
+            f.draft = d;
+            saveState(appState);
+            return true;
+          } catch { return false; }
+        }
+
         // Apply sodagari (bazras mafiaBoss trade): converts an eligible citizen/invulnerable to mafia
         // and eliminates the mafia-member sacrifice. Reversible via back-nav.
         function applyNightSodagariFromPayload(f, payload) {
@@ -1282,7 +1351,11 @@
         }
 
         function flowPhaseTitle(f) {
-          if (f.phase === "day") return t("tool.flow.phase.day", { n: f.day });
+          if (f.phase === "intro_day")   return appLang === "fa" ? "روز معارفه" : "Intro Day";
+          if (f.phase === "intro_night") return appLang === "fa" ? "شب معارفه"  : "Intro Night";
+          if (f.phase === "chaos")  return appLang === "fa" ? "هرج و مرج" : "Chaos";
+          if (f.phase === "winner") return appLang === "fa" ? "برنده" : "Winner";
+          if (f.phase === "day")   return t("tool.flow.phase.day",   { n: f.day });
           if (f.phase === "midday") return t("tool.flow.phase.midday", { n: f.day });
           return t("tool.flow.phase.night", { n: f.day });
         }
@@ -1309,6 +1382,10 @@
         }
 
         function getFlowSteps(f) {
+          if (f.phase === "intro_day")   return [{ id: "intro_day_run",   title: appLang === "fa" ? "روز معارفه" : "Intro Day" }];
+          if (f.phase === "intro_night") return [{ id: "intro_night_run", title: appLang === "fa" ? "شب معارفه"  : "Intro Night" }];
+          if (f.phase === "chaos")  return [{ id: "chaos_run",  title: appLang === "fa" ? "هرج و مرج" : "Chaos" }];
+          if (f.phase === "winner") return [{ id: "winner_run", title: appLang === "fa" ? "برنده"     : "Winner" }];
           if (f.phase === "day") {
             // Namayande scenario: unique day steps that depend on the day number.
             if (getDrawScenarioForFlow() === "namayande") {
@@ -1322,6 +1399,60 @@
                   { id: "namayande_vote",        title: appLang === "fa" ? "رأی‌گیری"          : "Vote" },
                 ];
               }
+            }
+            // Kabo scenario: unique day steps that depend on the day number.
+            if (getDrawScenarioForFlow() === "kabo") {
+              if ((f.day || 1) === 1) {
+                // All kabo special steps are in Day 1. Night comes after Capo Shoots.
+                const _hasTrusted = !!(f.draft && f.draft.kaboTrustedByDay && f.draft.kaboTrustedByDay["1"] != null);
+                const _steps = [{ id: "kabo_trust_vote", title: appLang === "fa" ? "رأی اعتماد" : "Trust Vote" }];
+                if (_hasTrusted) {
+                  _steps.push({ id: "kabo_suspect_select", title: appLang === "fa" ? "انتخاب مظنون" : "Select Suspects" });
+                  _steps.push({ id: "kabo_midday",         title: appLang === "fa" ? "چرت روز"      : "Mid-day Sleep" });
+                  _steps.push({ id: "kabo_shoot",          title: appLang === "fa" ? "دفاع و شلیک"  : "Defense & Shoot" });
+                }
+                return _steps;
+              }
+              // Day 2+: fall through to normal voting (day_vote, day_elim).
+            }
+            // Bazras scenario: conditionally include interrogation step at start of day.
+            if (getDrawScenarioForFlow() === "bazras") {
+              // Use snapshot if available — prevents step list from shrinking mid-day
+              // when an interrogation kill eliminates one of the two picked players.
+              const bazrasSnapshot = (f.draft && f.draft.dayStepsByDay && Array.isArray(f.draft.dayStepsByDay[String(f.day)]))
+                ? f.draft.dayStepsByDay[String(f.day)] : null;
+              if (bazrasSnapshot) {
+                const bazrasTitles = {
+                  "bazras_interrogation": appLang === "fa" ? "بازپرسی" : "Interrogation",
+                  "bazras_midday":        appLang === "fa" ? "چرت روز" : "Mid-day",
+                  "bazras_forced_vote":   appLang === "fa" ? "رأی‌گیری اجباری" : "Forced Vote",
+                  "day_vote": t("tool.flow.day.vote"),
+                  "day_elim": t("tool.flow.day.eliminate"),
+                };
+                return bazrasSnapshot.map((id) => ({ id, title: bazrasTitles[id] || id }));
+              }
+              const prevNightKey = String(Math.max(0, (f.day || 1) - 1));
+              const d = f.draft || {};
+              const invTargets = d.investigatorTargetsByNight && d.investigatorTargetsByNight[prevNightKey];
+              const showInterrogation = (() => {
+                try {
+                  if (!invTargets || invTargets.t1 == null || invTargets.t2 == null) return false;
+                  const draw = appState.draw;
+                  if (!draw || !draw.players) return false;
+                  const p1 = draw.players[invTargets.t1];
+                  const p2 = draw.players[invTargets.t2];
+                  return !!(p1 && p1.alive !== false && p2 && p2.alive !== false);
+                } catch { return false; }
+              })();
+              const bazrasSteps = [];
+              if (showInterrogation) {
+                bazrasSteps.push({ id: "bazras_interrogation", title: appLang === "fa" ? "بازپرسی" : "Interrogation" });
+                bazrasSteps.push({ id: "bazras_midday",        title: appLang === "fa" ? "چرت روز" : "Mid-day" });
+                bazrasSteps.push({ id: "bazras_forced_vote",   title: appLang === "fa" ? "رأی‌گیری اجباری" : "Forced Vote" });
+              }
+              bazrasSteps.push({ id: "day_vote", title: t("tool.flow.day.vote") });
+              bazrasSteps.push({ id: "day_elim", title: t("tool.flow.day.eliminate") });
+              return bazrasSteps;
             }
             // If a day-start snapshot exists, use it so mid-day deaths don't shrink the step list.
             const snapshotIds = (f.draft && f.draft.dayStepsByDay && Array.isArray(f.draft.dayStepsByDay[String(f.day)]))
@@ -1393,6 +1524,129 @@
           ];
         }
 
+        // Apply Heir role inheritance at the night→day transition.
+        // Called AFTER all night kills are applied, so we can see who actually died.
+        // If the Heir's picked player is now dead (and Heir hasn't inherited yet),
+        // change the Heir's roleId to the inherited role. Reversible via revertNightDeaths.
+        function applyHeirInheritanceFromPayload(f) {
+          try {
+            const draw = appState.draw;
+            if (!draw || !draw.players) return false;
+            if (!f.draft || typeof f.draft !== "object") f.draft = {};
+            const d = f.draft;
+            const dayKey = String(f.day || 1);
+
+            // Find the alive Heir player.
+            const heirIdx = draw.players.findIndex((p) => p && p.roleId === "heir" && p.alive !== false);
+            if (heirIdx === -1) return false;
+
+            // Find heirPick from any night's saved actions.
+            const heirPick = (() => {
+              if (!d.nightActionsByNight) return null;
+              for (const nk of Object.keys(d.nightActionsByNight)) {
+                const na = d.nightActionsByNight[nk];
+                if (na && na.heirPick !== null && na.heirPick !== undefined) {
+                  const idx = parseInt(na.heirPick, 10);
+                  if (Number.isFinite(idx)) return idx;
+                }
+              }
+              return null;
+            })();
+            if (heirPick === null) return false;
+
+            // Check if inheritance was already applied in a previous night.
+            if (!d.heirInheritedByDay || typeof d.heirInheritedByDay !== "object") d.heirInheritedByDay = {};
+            const alreadyInherited = Object.keys(d.heirInheritedByDay).some((k) => {
+              const r = d.heirInheritedByDay[k];
+              return r && r.heirIdx === heirIdx && r.newRole !== null;
+            });
+            if (alreadyInherited) return false;
+
+            // Check if the picked player is now dead.
+            const pickedPlayer = draw.players[heirPick];
+            if (!pickedPlayer || pickedPlayer.alive !== false) return false;
+
+            // Apply: change Heir's roleId to the picked player's role.
+            const newRole = pickedPlayer.roleId || "citizen";
+            const prevRole = draw.players[heirIdx].roleId;
+            draw.players[heirIdx].roleId = newRole;
+            d.heirInheritedByDay[dayKey] = { heirIdx, prevRole, newRole, pickedIdx: heirPick };
+            saveState(appState);
+            return true;
+          } catch {
+            return false;
+          }
+        }
+
+        // ── End-condition helpers ─────────────────────────────────────────────
+
+        // Encodes a phase+day into a monotonically-increasing integer so we can
+        // compare "before" vs "after" positions in the game timeline.
+        function flowLogicalTime(phase, day) {
+          if (phase === "intro_day")   return 0;
+          if (phase === "intro_night") return 1;
+          const d = Number(day) || 1;
+          if (phase === "day")         return 2 + (d - 1) * 2;
+          if (phase === "night")       return 2 + (d - 1) * 2 + 1;
+          return 999999; // chaos, winner — always kept
+        }
+
+        // Remove events that belong to phases/days "after" the current position.
+        // Called during back-navigation to keep the timeline accurate.
+        function pruneEventsForward(f) {
+          try {
+            const cutoff = flowLogicalTime(f.phase, f.day);
+            f.events = (f.events || []).filter((ev) => {
+              if (!ev) return false;
+              return flowLogicalTime(ev.phase, ev.day) <= cutoff;
+            });
+          } catch {}
+        }
+
+        // After any phase transition, check alive-player counts and auto-redirect
+        // to Chaos or Winner if a game-end condition is detected.
+        // backPhase/backDay/backStep describe where we came from so the user can
+        // press Prev to return there.
+        function checkAndAutoNavigate(f, backPhase, backDay, backStep) {
+          try {
+            if (!["day", "night", "intro_day", "intro_night"].includes(f.phase)) return false;
+            const draw = appState.draw;
+            if (!draw || !draw.players) return false;
+            const alive = draw.players
+              .map((p, i) => ({ p, i }))
+              .filter(({ p }) => p && p.alive !== false);
+            const getTeam = (p) => { const r = roles[p && p.roleId]; return r ? r.teamFa : "شهر"; };
+            const nMafia   = alive.filter(({ p }) => getTeam(p) === "مافیا").length;
+            const nIndep   = alive.filter(({ p }) => getTeam(p) === "مستقل").length;
+            const nCitizen = alive.filter(({ p }) => getTeam(p) === "شهر").length;
+            const total    = alive.length;
+            if (!f.draft || typeof f.draft !== "object") f.draft = {};
+            // Mafia win: mafia ≥ all non-mafia
+            if (nMafia > 0 && nMafia >= nCitizen + nIndep) {
+              f.draft.winnerBack      = { phase: backPhase, day: backDay, step: backStep };
+              f.draft.winnerFromChaos = false;
+              f.draft.winnerTeam      = "mafia";
+              f.phase = "winner"; f.step = 0;
+              return true;
+            }
+            // Citizens win: no mafia and no independents
+            if (nMafia === 0 && nIndep === 0) {
+              f.draft.winnerBack      = { phase: backPhase, day: backDay, step: backStep };
+              f.draft.winnerFromChaos = false;
+              f.draft.winnerTeam      = "citizens";
+              f.phase = "winner"; f.step = 0;
+              return true;
+            }
+            // Chaos: exactly 3 alive, no win condition yet
+            if (total === 3) {
+              f.draft.chaosBack = { phase: backPhase, day: backDay, step: backStep };
+              f.phase = "chaos"; f.step = 0;
+              return true;
+            }
+            return false;
+          } catch { return false; }
+        }
+
         function nextFlowStep() {
           const f = ensureFlow();
           const steps = getFlowSteps(f);
@@ -1406,9 +1660,33 @@
                 const d2 = f.draft || {};
                 const rec = (d2.gunShotAppliedByDay && d2.gunShotAppliedByDay[dayKey]) || null;
                 if (rec && Array.isArray(rec.shots) && rec.shots.length) {
+                  const draw2 = appState.draw;
+                  const prevNightKeyGs = String((f.day || 1) - 1);
+                  const prevNightActionsGs = (f.draft.nightActionsByNight && f.draft.nightActionsByNight[prevNightKeyGs]) || null;
                   for (const shot of rec.shots) {
                     if (shot.type === "real" && shot.targetPrevAlive) {
                       try { setPlayerLife(shot.target, { alive: false, reason: "shot" }); } catch {}
+                      // Researcher chain kill: if the shot target is Researcher, also kill their linked Mafia.
+                      try {
+                        if ((draw2.players[shot.target] || {}).roleId === "researcher") {
+                          const linkedIdxRaw = prevNightActionsGs ? prevNightActionsGs.researcherLink : null;
+                          const linkedIdx = (linkedIdxRaw !== null && linkedIdxRaw !== undefined && Number.isFinite(parseInt(linkedIdxRaw, 10))) ? parseInt(linkedIdxRaw, 10) : null;
+                          if (linkedIdx !== null && draw2.players[linkedIdx]) {
+                            const linkedRoleId = draw2.players[linkedIdx].roleId || "citizen";
+                            const linkedTeamFa = (roles[linkedRoleId] && roles[linkedRoleId].teamFa) ? roles[linkedRoleId].teamFa : "شهر";
+                            const scenarioGs = getDrawScenarioForFlow();
+                            const chainApplies = scenarioGs === "bazras"
+                              ? (linkedRoleId === "nato" || linkedRoleId === "swindler")
+                              : (linkedTeamFa === "مافیا" && linkedRoleId !== "mafiaBoss");
+                            if (chainApplies) {
+                              const chainWasAlive = draw2.players[linkedIdx].alive !== false;
+                              if (chainWasAlive) { try { setPlayerLife(linkedIdx, { alive: false, reason: "researcher_chain" }); } catch {} }
+                              shot.chainKilled = linkedIdx;
+                              shot.chainPrevAlive = chainWasAlive;
+                            }
+                          }
+                        }
+                      } catch {}
                     }
                     // Re-add gun_shot event (upserts by shooter, so no duplicates).
                     try { addFlowEvent("gun_shot", { shooter: shot.shooter, target: shot.target, type: shot.type }); } catch {}
@@ -1430,7 +1708,52 @@
             return;
           }
           // phase transition
-          if (f.phase === "day") {
+          if (f.phase === "winner") {
+            // Terminal phase — Next does nothing.
+            return;
+          }
+          if (f.phase === "chaos") {
+            // Next on chaos: compute winner from picks and transition to winner phase.
+            try {
+              const draw = appState.draw;
+              if (draw && draw.players) {
+                const d2 = f.draft || {};
+                const picks = d2.chaosPicks || {};
+                const aIdxs = draw.players.map((p, i) => ({ p, i })).filter(({ p }) => p && p.alive !== false);
+                const getT = (p) => { const r = roles[p && p.roleId]; return r ? r.teamFa : "شهر"; };
+                const aMaf = aIdxs.filter(({ p }) => getT(p) === "مافیا");
+                const aCit = aIdxs.filter(({ p }) => getT(p) === "شهر");
+                const aInd = aIdxs.filter(({ p }) => getT(p) === "مستقل");
+                let winner = null;
+                if (aMaf.length === 1 && aCit.length === 2 && aInd.length === 0) {
+                  const mafI = String(aMaf[0].i);
+                  winner = aCit.some(({ i }) => String(picks[String(i)]) === mafI) ? "mafia" : "citizens";
+                } else if (aMaf.length === 1 && aCit.length === 1 && aInd.length === 1) {
+                  winner = String(picks[String(aCit[0].i)]) === String(aMaf[0].i) ? "mafia" : "independent";
+                }
+                if (winner) {
+                  if (!f.draft) f.draft = {};
+                  f.draft.winnerTeam = winner;
+                  f.draft.winnerFromChaos = true;
+                  f.phase = "winner";
+                  f.step = 0;
+                  saveState(appState);
+                  showFlowTool();
+                }
+              }
+            } catch {}
+            return;
+          }
+          // Capture position BEFORE transition so back-nav can return here.
+          const _prePhase = f.phase, _preDay = f.day, _preStep = f.step;
+          if (f.phase === "intro_day") {
+            f.phase = "intro_night";
+            f.step = 0;
+          } else if (f.phase === "intro_night") {
+            f.phase = "day";
+            f.day = 1;
+            f.step = 0;
+          } else if (f.phase === "day") {
             // End of all day steps → go to night.
             // Clear guns from the just-finished day — they were only valid for that day.
             f.guns = {};
@@ -1529,6 +1852,8 @@
                 try { applyNightSoldierFromPayload(f, payload0); } catch {}
                 // Apply mafia last (uses doctorSave + lecterSave, possibly cleared by disable).
                 try { applyNightMafiaFromPayload(f, payload0); } catch {}
+                // Heir inheritance: triggers after all kills so we know who actually died.
+                try { applyHeirInheritanceFromPayload(f); } catch {}
                 try { renderCast(); } catch {}
                 try { if (typeof renderNameGrid === "function") renderNameGrid(); } catch {}
                 try { saveState(appState); } catch {}
@@ -1566,6 +1891,8 @@
               f.draft.dayStepsByDay[String(f.day)] = getFlowSteps(f).map((s) => s.id);
             } catch {}
           }
+          // After phase transition: auto-redirect to Chaos/Winner if conditions are met.
+          checkAndAutoNavigate(f, _prePhase, _preDay, _preStep);
           saveState(appState);
           showFlowTool();
         }
@@ -1575,10 +1902,27 @@
           if (f.step > 0) {
             const steps = getFlowSteps(f);
             const leavingStep = steps[Math.min(steps.length - 1, Math.max(0, f.step || 0))] || {};
+            const enteringStep = (f.step || 0) > 0 ? (steps[Math.max(0, (f.step || 0) - 1)] || {}) : {};
             // Revert deaths applied by certain steps when going backward.
+            // Each step now applies deaths only on Next (deferred), so we revert either when:
+            //   (a) leaving that step going backward, OR
+            //   (b) entering that step from a later step going backward.
             if (leavingStep.id === "day_elim" || leavingStep.id === "namayande_vote") {
-              // Revert the voted-out player so they are alive on the previous step.
+              // These use applyDayElimFromPayload. Revert when leaving them going backward.
               try { applyDayElimFromPayload(f, { out: null }); } catch {}
+              try { renderCast(); } catch {}
+            } else if (leavingStep.id === "kabo_shoot" || enteringStep.id === "kabo_shoot") {
+              // kabo_shoot applies death on Next. Also revert when entering it from the next step.
+              try { applyDayElimFromPayload(f, { out: null }); } catch {}
+              try { renderCast(); } catch {}
+            } else if (leavingStep.id === "bazras_forced_vote" || enteringStep.id === "bazras_forced_vote") {
+              // bazras_forced_vote applies death on Next. Also revert when entering it from the next step.
+              try {
+                const d = f.draft || {};
+                const dayKey = String(f.day || 1);
+                const rec = (d.bazrasInterrogationByDay && d.bazrasInterrogationByDay[dayKey]) || {};
+                applyBazrasInterrogationFromPayload(f, { decision: rec.decision || null, outcome: null });
+              } catch {}
               try { renderCast(); } catch {}
             } else if (leavingStep.id === "day_gun_expiry") {
               // Gun expiry deaths are only applied when clicking Next from this step,
@@ -1587,11 +1931,43 @@
               try { renderCast(); } catch {}
             }
             f.step--;
+            try { pruneEventsForward(f); } catch {}
             saveState(appState);
             showFlowTool();
             return;
           }
           // go back to previous phase end
+          if (f.phase === "winner") {
+            if (f.draft && f.draft.winnerFromChaos) {
+              f.phase = "chaos";
+              f.step = 0;
+            } else if (f.draft && f.draft.winnerBack) {
+              const bk = f.draft.winnerBack;
+              f.phase = bk.phase; f.day = bk.day; f.step = bk.step;
+            } else {
+              f.phase = "day"; f.step = 0;
+            }
+            try { pruneEventsForward(f); } catch {}
+            saveState(appState); showFlowTool(); return;
+          }
+          if (f.phase === "chaos") {
+            if (f.draft && f.draft.chaosBack) {
+              const bk = f.draft.chaosBack;
+              f.phase = bk.phase; f.day = bk.day; f.step = bk.step;
+            } else {
+              f.phase = "day"; f.step = 0;
+            }
+            try { pruneEventsForward(f); } catch {}
+            saveState(appState); showFlowTool(); return;
+          }
+          if (f.phase === "intro_night") {
+            f.phase = "intro_day";
+            f.step = 0;
+            try { pruneEventsForward(f); } catch {}
+            saveState(appState);
+            showFlowTool();
+            return;
+          }
           if (f.phase === "night") {
             // Night → last day step (day_elim).
             // Revert day_elim death so it is live-editable when landing back on it.
@@ -1632,8 +2008,13 @@
               f.day = Math.max(1, f.day - 1);
               f.phase = "night";
               f.step = Math.max(0, getFlowSteps({ ...f, phase: "night" }).length - 1);
+            } else {
+              // Day 1 step 0 → go back to intro_night.
+              f.phase = "intro_night";
+              f.step = 0;
             }
           }
+          try { pruneEventsForward(f); } catch {}
           saveState(appState);
           showFlowTool();
         }
