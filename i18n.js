@@ -1,9 +1,19 @@
+        function toFarsiNum(n) {
+          return String(n).replace(/[0-9]/g, (d) => "۰۱۲۳۴۵۶۷۸۹"[parseInt(d, 10)]);
+        }
+        window.toFarsiNum = toFarsiNum;
         function t(key, vars) {
           const dict = STR[appLang] || STR.fa;
           let s = (dict && dict[key]) || (STR.fa && STR.fa[key]) || key;
           if (vars && typeof vars === "object") {
             for (const k of Object.keys(vars)) {
-              s = s.replaceAll("{" + k + "}", String(vars[k]));
+              let v = vars[k];
+              if (appLang === "fa" && (typeof v === "number" || (typeof v === "string" && /^\d+$/.test(v)))) {
+                v = toFarsiNum(v);
+              } else {
+                v = String(v);
+              }
+              s = s.replaceAll("{" + k + "}", v);
             }
           }
           return s;

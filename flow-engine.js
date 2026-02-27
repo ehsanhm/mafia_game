@@ -85,6 +85,11 @@
               if (Number.isFinite(Number(rec.killed)) && rec.prevAlive === true) {
                 try { setPlayerLife(parseInt(rec.killed, 10), { alive: true }); } catch {}
               }
+              // Leon (pedarkhande): revert bullet consumption when reverting a night that had a Pro/Leon shot.
+              if (getDrawScenarioForFlow() === "pedarkhande" && rec.target !== null) {
+                d.leonShotsUsed = Math.max(0, (d.leonShotsUsed || 0) - 1);
+              }
+              if (rec.result === "vest_absorbed") d.godfatherVestUsed = false;
               d.nightProAppliedByDay[dayKey] = { killed: null, prevAlive: null, result: null, shooter: null, target: null };
             }
             // Sniper shot
@@ -141,6 +146,11 @@
               d.hardJohnSurvivedMafiaShotOnce = false;
               d.hardJohnSurvivedOnNight = null;
             }
+            // Leon vest (pedarkhande)
+            if (d.leonVestUsedOnNight != null && Number(d.leonVestUsedOnNight) === nightDayNum) {
+              d.leonVestUsed = false;
+              d.leonVestUsedOnNight = null;
+            }
             // Negotiator conversion
             if (d.nightNegotiatorAppliedByDay && d.nightNegotiatorAppliedByDay[dayKey]) {
               const rec = d.nightNegotiatorAppliedByDay[dayKey];
@@ -170,6 +180,24 @@
               d.sodagariUsed = false;
               d.sodagariUsedOnNight = null;
             }
+            // Saul buy (pedarkhande) conversion revert
+            if (d.nightSaulBuyAppliedByDay && d.nightSaulBuyAppliedByDay[dayKey]) {
+              const rec = d.nightSaulBuyAppliedByDay[dayKey];
+              if (Number.isFinite(Number(rec.converted)) && rec.prevRoleId !== null) {
+                const p = appState.draw && appState.draw.players && appState.draw.players[parseInt(rec.converted, 10)];
+                if (p) p.roleId = rec.prevRoleId;
+              }
+              d.nightSaulBuyAppliedByDay[dayKey] = { converted: null, prevRoleId: null };
+            }
+            if (d.saulBuyUsedOnNight != null && Number(d.saulBuyUsedOnNight) === nightDayNum) {
+              d.saulBuyUsed = false;
+              d.saulBuyUsedOnNight = null;
+            }
+            if (d.kaneInvisibleBulletByNight != null && Number(d.kaneInvisibleBulletByNight) === nightDayNum) {
+              const kaneIdx = appState.draw && appState.draw.players ? appState.draw.players.findIndex((p) => p && p.roleId === "citizenKane") : -1;
+              if (kaneIdx !== -1) try { setPlayerLife(kaneIdx, { alive: true }); } catch {}
+              d.kaneInvisibleBulletByNight = null;
+            }
             // Soldier kills (namayande)
             if (d.nightSoldierAppliedByDay && d.nightSoldierAppliedByDay[dayKey]) {
               const rec = d.nightSoldierAppliedByDay[dayKey];
@@ -180,6 +208,22 @@
                 try { setPlayerLife(parseInt(rec.gunShotKilled, 10), { alive: true }); } catch {}
               }
               d.nightSoldierAppliedByDay[dayKey] = { soldierKilled: null, soldierPrevAlive: null, gunShotKilled: null, gunShotPrevAlive: null };
+            }
+            // Sixth Sense (pedarkhande)
+            if (d.nightSixthSenseAppliedByDay && d.nightSixthSenseAppliedByDay[dayKey]) {
+              const rec = d.nightSixthSenseAppliedByDay[dayKey];
+              if (Number.isFinite(Number(rec.killed)) && rec.prevAlive === true) {
+                try { setPlayerLife(parseInt(rec.killed, 10), { alive: true }); } catch {}
+              }
+              d.nightSixthSenseAppliedByDay[dayKey] = { killed: null, prevAlive: null };
+            }
+            // Constantine revive
+            if (d.nightConstantineAppliedByDay && d.nightConstantineAppliedByDay[dayKey]) {
+              const rec = d.nightConstantineAppliedByDay[dayKey];
+              if (Number.isFinite(Number(rec.revived)) && rec.prevAlive === false) {
+                try { setPlayerLife(parseInt(rec.revived, 10), { alive: false, reason: "eliminated" }); } catch {}
+              }
+              d.nightConstantineAppliedByDay[dayKey] = { revived: null, prevAlive: null };
             }
             // Heir inheritance (role change)
             if (d.heirInheritedByDay && d.heirInheritedByDay[dayKey]) {
@@ -194,6 +238,10 @@
             if (d.neutralizedShotUsedOnNight != null && Number(d.neutralizedShotUsedOnNight) === nightDayNum) {
               d.neutralizedShotUsed = false;
               d.neutralizedShotUsedOnNight = null;
+            }
+            // Joker used (array of night numbers)
+            if (d.jokerUsed && Array.isArray(d.jokerUsed)) {
+              d.jokerUsed = d.jokerUsed.filter((n) => Number(n) !== nightDayNum);
             }
             // Bomb planted that night (stored in bombByDay[nightDayNum+1])
             const nextDayKey = String(nightDayNum + 1);
@@ -270,6 +318,221 @@
           } catch {}
         }
 
+        // Revert deaths applied when leaving day_guns step (gun shots).
+        function revertGunShotsForDay(f) {
+          try {
+            const dayKey = String(f.day || 1);
+            const d = f.draft || {};
+            const rec = (d.gunShotAppliedByDay && d.gunShotAppliedByDay[dayKey]) || null;
+            if (!rec || !rec.applied || !Array.isArray(rec.shots)) return;
+            for (const shot of rec.shots) {
+              if (shot.type === "real" && shot.targetPrevAlive) {
+                try { setPlayerLife(shot.target, { alive: true }); } catch {}
+              }
+              if (Number.isFinite(Number(shot.chainKilled)) && shot.chainPrevAlive === true) {
+                try { setPlayerLife(parseInt(shot.chainKilled, 10), { alive: true }); } catch {}
+              }
+              const shooter = parseInt(shot.shooter, 10);
+              if (Number.isFinite(shooter) && f.guns && f.guns[shooter]) {
+                f.guns[shooter].used = false;
+              }
+            }
+            rec.applied = false;
+            f.draft = d;
+            if (Array.isArray(f.events)) {
+              f.events = f.events.filter((e) => !(e && e.kind === "gun_shot" && e.phase === f.phase && Number(e.day) === Number(f.day)));
+            }
+          } catch {}
+        }
+
+        // Pedarkhande: when advancing from day_kane_reveal, host reveals the marked mafia's role.
+        // The revealed player remains in the game (not eliminated). Kane dies at night by invisible bullet.
+        function applyKaneRevealForDay(f) {
+          try {
+            if (getDrawScenarioForFlow() !== "pedarkhande") return;
+            const draw = appState.draw;
+            if (!draw || !draw.players) return;
+            const prevNightDay = (f.day || 1) - 1;
+            const kaneEv = (f.events || []).slice().reverse().find((e) => e && e.kind === "night_actions" && e.phase === "night" && e.day === prevNightDay && e.data);
+            const kanePayload = kaneEv && kaneEv.data ? kaneEv.data : null;
+            if (!kanePayload) return;
+            const kaneMarkRaw = kanePayload.kaneMark;
+            const kaneMarkIdx = (kaneMarkRaw !== null && kaneMarkRaw !== undefined && Number.isFinite(parseInt(kaneMarkRaw, 10))) ? parseInt(kaneMarkRaw, 10) : null;
+            if (kaneMarkIdx === null) return;
+            const markedPlayer = draw.players[kaneMarkIdx];
+            if (!markedPlayer || markedPlayer.alive === false) return;
+            const markedRid = markedPlayer.roleId || "citizen";
+            const markedTeam = (roles[markedRid] && roles[markedRid].teamFa) ? roles[markedRid].teamFa : "شهر";
+            if (markedTeam !== "مافیا") return;
+            // Reveal only — marked player stays in game. Record for Status Check display.
+            const d = f.draft || {};
+            if (!d.kaneRevealAppliedByDay || typeof d.kaneRevealAppliedByDay !== "object") d.kaneRevealAppliedByDay = {};
+            d.kaneRevealAppliedByDay[String(f.day)] = { idx: kaneMarkIdx, revealed: true };
+            f.draft = d;
+          } catch {}
+        }
+
+        function revertKaneRevealForDay(f) {
+          try {
+            const dayKey = String(f.day || 1);
+            const d = f.draft || {};
+            if (!d.kaneRevealAppliedByDay || !d.kaneRevealAppliedByDay[dayKey]) return;
+            d.kaneRevealAppliedByDay[dayKey] = { idx: null, revealed: null };
+            f.draft = d;
+          } catch {}
+        }
+
+        // Apply end card action effects when advancing from day_end_card_* step.
+        // Reversible via revertEndCardActionForDay.
+        function applyEndCardActionForDay(f) {
+          try {
+            const draw = appState.draw;
+            if (!draw || !draw.players) return;
+            const d = f.draft || {};
+            const dayKey = String(f.day || 1);
+            const byDay = appState.god && appState.god.endCards && appState.god.endCards.byDay ? appState.god.endCards.byDay : {};
+            const rec = byDay[dayKey] && typeof byDay[dayKey] === "object" ? byDay[dayKey] : null;
+            if (!rec || !rec.cardId) return;
+            const outIdx = (rec.out !== null && rec.out !== undefined && Number.isFinite(parseInt(rec.out, 10))) ? parseInt(rec.out, 10) : null;
+            if (outIdx === null) return;
+            const action = (d.endCardActionByDay && d.endCardActionByDay[dayKey]) || {};
+            const cardId = String(rec.cardId || "");
+            if (!d.endCardActionAppliedByDay || typeof d.endCardActionAppliedByDay !== "object") d.endCardActionAppliedByDay = {};
+            const appliedRec = { cardId, out: outIdx, target: null, targets: [], prevState: null };
+            if (cardId === "face_change" || cardId === "handcuffs" || cardId === "beautiful_mind") {
+              const t = (action.target !== null && action.target !== undefined && Number.isFinite(parseInt(action.target, 10))) ? parseInt(action.target, 10) : null;
+              if (t === null) return;
+              appliedRec.target = t;
+              const pOut = draw.players[outIdx];
+              const pTgt = draw.players[t];
+              if (!pOut || !pTgt) return;
+              if (cardId === "face_change") {
+                const prevOutRole = pOut.roleId || "citizen";
+                const prevTgtRole = pTgt.roleId || "citizen";
+                pOut.roleId = prevTgtRole;
+                pTgt.roleId = prevOutRole;
+                appliedRec.prevState = { outRole: prevOutRole, tgtRole: prevTgtRole };
+              } else if (cardId === "handcuffs") {
+                if (!d.handcuffedByDay || typeof d.handcuffedByDay !== "object") d.handcuffedByDay = {};
+                d.handcuffedByDay[dayKey] = t;
+              } else if (cardId === "beautiful_mind") {
+                const isNostradamus = (pTgt.roleId || "") === "nostradamus";
+                if (isNostradamus) {
+                  const prevOutAlive = pOut.alive !== false;
+                  const prevTgtAlive = pTgt.alive !== false;
+                  const prevOutRole = pOut.roleId || "citizen";
+                  const prevTgtRole = pTgt.roleId || "citizen";
+                  // Kill Nostradamus; guesser comes back with their own role (no swap).
+                  try { setPlayerLife(t, { alive: false, reason: "beautiful_mind" }); } catch {}
+                  try { setPlayerLife(outIdx, { alive: true }); } catch {}
+                  // Update day elim record: the "eliminated" for this day is now Nostradamus (t), not voted-out.
+                  const dayKey = String(f.day || 1);
+                  const prevElim = f.draft.dayElimAppliedByDay && f.draft.dayElimAppliedByDay[dayKey];
+                  if (prevElim) {
+                    f.draft.dayElimAppliedByDay[dayKey] = {
+                      out: t,
+                      prevAlive: prevTgtAlive,
+                      chainOut: prevElim.chainOut || null,
+                      chainPrevAlive: prevElim.chainPrevAlive || null,
+                      armoredAbsorbed: prevElim.armoredAbsorbed || false,
+                    };
+                  }
+                  appliedRec.prevState = {
+                    outAlive: prevOutAlive,
+                    tgtAlive: prevTgtAlive,
+                    outRole: prevOutRole,
+                    tgtRole: prevTgtRole,
+                    dayElimOut: outIdx,
+                    dayElimPrevAlive: prevElim ? prevElim.prevAlive : true,
+                    dayElimChainOut: prevElim ? prevElim.chainOut : null,
+                    dayElimChainPrevAlive: prevElim ? prevElim.chainPrevAlive : null,
+                    dayElimArmoredAbsorbed: prevElim ? prevElim.armoredAbsorbed : false,
+                  };
+                }
+              }
+            } else if (cardId === "silence_lambs") {
+              const tgts = Array.isArray(action.targets) ? action.targets.map((x) => parseInt(x, 10)).filter((x) => Number.isFinite(x)) : [];
+              if (tgts.length === 0) return;
+              appliedRec.targets = tgts;
+              // Silence affects the NEXT day (cannot defend when voted)
+              const affectedDay = String((f.day || 1) + 1);
+              appliedRec.silenceAffectedDay = affectedDay;
+              if (!d.silencedByDay || typeof d.silencedByDay !== "object") d.silencedByDay = {};
+              d.silencedByDay[affectedDay] = tgts;
+            }
+            d.endCardActionAppliedByDay[dayKey] = appliedRec;
+            f.draft = d;
+            // Only record event when we applied effects (Beautiful Mind wrong guess has nothing to show)
+            const hasEffects = appliedRec.prevState != null || cardId === "handcuffs" || (cardId === "silence_lambs" && appliedRec.targets.length > 0);
+            if (hasEffects) {
+              addFlowEvent("end_card_action", {
+                out: outIdx,
+                cardId,
+                target: appliedRec.target,
+                targets: appliedRec.targets,
+              });
+            }
+          } catch {}
+        }
+
+        function revertEndCardActionForDay(f) {
+          try {
+            const draw = appState.draw;
+            if (!draw || !draw.players) return;
+            const d = f.draft || {};
+            const dayKey = String(f.day || 1);
+            const rec = (d.endCardActionAppliedByDay && d.endCardActionAppliedByDay[dayKey]) || null;
+            if (!rec) return;
+            const cardId = String(rec.cardId || "");
+            const outIdx = rec.out;
+            const t = rec.target;
+            const tgts = rec.targets || [];
+            const prev = rec.prevState || {};
+            if (cardId === "face_change" && prev.outRole != null && prev.tgtRole != null) {
+              const pOut = draw.players[outIdx];
+              const pTgt = draw.players[t];
+              if (pOut) pOut.roleId = prev.outRole;
+              if (pTgt) pTgt.roleId = prev.tgtRole;
+            } else if (cardId === "handcuffs") {
+              if (d.handcuffedByDay && d.handcuffedByDay[dayKey] != null) delete d.handcuffedByDay[dayKey];
+            } else if (cardId === "beautiful_mind" && prev.outAlive != null && prev.tgtAlive != null) {
+              if (prev.outAlive) try { setPlayerLife(outIdx, { alive: true }); } catch {}
+              else try { setPlayerLife(outIdx, { alive: false }); } catch {}
+              if (prev.tgtAlive) try { setPlayerLife(t, { alive: true }); } catch {}
+              else try { setPlayerLife(t, { alive: false }); } catch {}
+              if (prev.outRole != null && prev.tgtRole != null) {
+                const pOut = draw.players[outIdx];
+                const pTgt = draw.players[t];
+                if (pOut) pOut.roleId = prev.outRole;
+                if (pTgt) pTgt.roleId = prev.tgtRole;
+              }
+              // Restore day elim record.
+              if (prev.dayElimOut != null && prev.dayElimPrevAlive != null) {
+                const dayKey = String(f.day || 1);
+                if (d.dayElimAppliedByDay && d.dayElimAppliedByDay[dayKey]) {
+                  d.dayElimAppliedByDay[dayKey] = {
+                    out: prev.dayElimOut,
+                    prevAlive: prev.dayElimPrevAlive,
+                    chainOut: prev.dayElimChainOut ?? null,
+                    chainPrevAlive: prev.dayElimChainPrevAlive ?? null,
+                    armoredAbsorbed: prev.dayElimArmoredAbsorbed ?? false,
+                  };
+                }
+              }
+            } else if (cardId === "silence_lambs") {
+              const affectedDay = rec.silenceAffectedDay || String((f.day || 1) + 1);
+              if (d.silencedByDay && d.silencedByDay[affectedDay]) delete d.silencedByDay[affectedDay];
+            }
+            d.endCardActionAppliedByDay[dayKey] = null;
+            f.draft = d;
+            // Prune end_card_action event for this day
+            if (Array.isArray(f.events)) {
+              const idx = f.events.findIndex((ev) => ev && ev.kind === "end_card_action" && ev.phase === "day" && ev.day === f.day);
+              if (idx >= 0) f.events.splice(idx, 1);
+            }
+          } catch {}
+        }
+
         // ─────────────────────────────────────────────────────────────────────
 
         function addFlowEvent(kind, data) {
@@ -283,8 +546,12 @@
                   const e = f.events[i];
                   if (!e) continue;
                   if (e.kind === kind && e.phase === f.phase && e.day === f.day) {
+                    const steps = getFlowSteps(f);
+                    const curStep = steps[Math.min(steps.length - 1, Math.max(0, f.step || 0))] || {};
                     e.at = Date.now();
                     e.data = data || null;
+                    e.stepIndex = (f.step != null) ? f.step : 0;
+                    e.stepId = curStep.id || null;
                     saveState(appState);
                     return;
                   }
@@ -301,7 +568,8 @@
             kind === "gun_give" ||
             kind === "gun_shot" ||
             kind === "day_elim_draw" ||
-            kind === "day_elim_out";
+            kind === "day_elim_out" ||
+            kind === "end_card_action";
           if (canUpsert) {
             try {
               const match = (e) => {
@@ -312,13 +580,18 @@
                 if (kind === "gun_shot") return a && b && a.shooter === b.shooter;
                 if (kind === "day_elim_draw") return true;
                 if (kind === "day_elim_out") return true;
+                if (kind === "end_card_action") return true;
                 return false;
               };
               for (let i = (f.events || []).length - 1; i >= 0; i--) {
                 const e = f.events[i];
                 if (!match(e)) continue;
+                const steps = getFlowSteps(f);
+                const curStep = steps[Math.min(steps.length - 1, Math.max(0, f.step || 0))] || {};
                 e.at = Date.now();
                 e.data = data || null;
+                e.stepIndex = (f.step != null) ? f.step : 0;
+                e.stepId = curStep.id || null;
                 saveState(appState);
                 return;
               }
@@ -341,12 +614,16 @@
               return;
             }
           } catch {}
+          const steps = getFlowSteps(f);
+          const curStep = steps[Math.min(steps.length - 1, Math.max(0, f.step || 0))] || {};
           f.events.push({
             at: Date.now(),
             phase: f.phase,
             day: f.day,
             kind,
             data: data || null,
+            stepIndex: (f.step != null) ? f.step : 0,
+            stepId: curStep.id || null,
           });
           // keep event log bounded
           try {
@@ -386,6 +663,10 @@
             const natoMadeGuess = Number.isFinite(natoTgt) && natoTgt >= 0 && natoTgt < draw.players.length && natoGuess !== null;
 
             let desiredKill = (Number.isFinite(ms) && ms >= 0 && ms < draw.players.length && ms !== ds && ms !== ls) ? ms : null;
+            // Pedarkhande: no mafia shot when Godfather chose sixth sense or Saul buy (if Saul buy fails, no shot either).
+            const scenarioMafia = getDrawScenarioForFlow();
+            const godfatherAction = (payload.godfatherAction != null && String(payload.godfatherAction)) ? String(payload.godfatherAction) : "shoot";
+            if (scenarioMafia === "pedarkhande" && (godfatherAction === "sixth_sense" || godfatherAction === "saul_buy")) desiredKill = null;
             // NATO blocks the mafia shot entirely when a guess was made.
             if (natoMadeGuess) desiredKill = null;
 
@@ -412,6 +693,15 @@
                   f.draft.hardJohnSurvivedOnNight = f.day || 1;
                   desiredKill = null;
                 }
+              } else if (targetRole === "leon" && scenarioMafia === "pedarkhande") {
+                if (!f.draft.leonVestUsed) {
+                  f.draft.leonVestUsed = true;
+                  f.draft.leonVestUsedOnNight = f.day || 1;
+                  desiredKill = null;
+                }
+              } else if (targetRole === "nostradamus" && scenarioMafia === "pedarkhande") {
+                // Nostradamus has unlimited shields — never dies of night shots.
+                desiredKill = null;
               }
             }
 
@@ -479,6 +769,44 @@
             }
 
             f.draft.nightMafiaAppliedByDay[dayKey] = rec;
+            saveState(appState);
+            return true;
+          } catch {
+            return false;
+          }
+        }
+
+        // Pedarkhande: Sixth Sense — if Godfather guessed correctly, target is eliminated at dawn (end of that night).
+        function applyNightSixthSenseFromPayload(f, payload) {
+          try {
+            if (getDrawScenarioForFlow() !== "pedarkhande") return false;
+            if (!f || !payload) return false;
+            const draw = appState.draw;
+            if (!draw || !draw.players) return false;
+            const godfatherAction = (payload.godfatherAction != null) ? String(payload.godfatherAction) : "shoot";
+            if (godfatherAction !== "sixth_sense") return false;
+            const targetRaw = payload.sixthSenseTarget;
+            const targetIdx = (targetRaw !== null && targetRaw !== undefined && Number.isFinite(parseInt(targetRaw, 10))) ? parseInt(targetRaw, 10) : null;
+            if (targetIdx === null) return false;
+            const guessedRole = (payload.sixthSenseRole != null && String(payload.sixthSenseRole).trim()) ? String(payload.sixthSenseRole).trim() : null;
+            if (!guessedRole) return false;
+            const targetPlayer = draw.players[targetIdx];
+            if (!targetPlayer || targetPlayer.alive === false) return false;
+            const actualRole = targetPlayer.roleId || "citizen";
+            const correct = (guessedRole === actualRole) ||
+              (guessedRole === "citizen" && actualRole === "nostradamus") ||
+              (guessedRole === "mafia" && actualRole === "citizenKane");
+            if (!correct) return false;
+            const dayKey = String(f.day || 1);
+            if (!f.draft || typeof f.draft !== "object") f.draft = {};
+            if (!f.draft.nightSixthSenseAppliedByDay || typeof f.draft.nightSixthSenseAppliedByDay !== "object") f.draft.nightSixthSenseAppliedByDay = {};
+            const rec = (f.draft.nightSixthSenseAppliedByDay[dayKey] && typeof f.draft.nightSixthSenseAppliedByDay[dayKey] === "object")
+              ? f.draft.nightSixthSenseAppliedByDay[dayKey]
+              : { killed: null, prevAlive: null };
+            if (rec.killed !== null) return false;
+            const prevAlive = targetPlayer.alive !== false;
+            setPlayerLife(targetIdx, { alive: false, reason: "sixth_sense" });
+            f.draft.nightSixthSenseAppliedByDay[dayKey] = { killed: targetIdx, prevAlive };
             saveState(appState);
             return true;
           } catch {
@@ -678,8 +1006,15 @@
               return null;
             })();
 
-            const tIdxRaw = (payload.professionalShot === null || payload.professionalShot === undefined) ? null : parseInt(payload.professionalShot, 10);
-            const tIdx = (Number.isFinite(tIdxRaw) && tIdxRaw >= 0 && tIdxRaw < draw.players.length) ? tIdxRaw : null;
+            let tIdxRaw = (payload.professionalShot === null || payload.professionalShot === undefined) ? null : parseInt(payload.professionalShot, 10);
+            let tIdx = (Number.isFinite(tIdxRaw) && tIdxRaw >= 0 && tIdxRaw < draw.players.length) ? tIdxRaw : null;
+            // Pedarkhande: Leon has only 2 bullets per game
+            const scenarioPro = getDrawScenarioForFlow();
+            if (scenarioPro === "pedarkhande" && proIdx !== null && draw.players[proIdx] && draw.players[proIdx].roleId === "leon") {
+              const d = f.draft || {};
+              const used = (d.leonShotsUsed != null && Number.isFinite(Number(d.leonShotsUsed))) ? Number(d.leonShotsUsed) : 0;
+              if (used >= 2 && tIdx !== null) tIdx = null;
+            }
 
             const desired = (() => {
               try {
@@ -687,6 +1022,17 @@
                 const tr = (draw.players[tIdx] && draw.players[tIdx].roleId) ? draw.players[tIdx].roleId : "citizen";
                 const teamFa = (roles[tr] && roles[tr].teamFa) ? roles[tr].teamFa : "شهر";
                 if (tr === "zodiac") return { killIdx: null, result: "no_effect", shooter: proIdx, target: tIdx };
+                // Pedarkhande: Nostradamus — shot from opposite side affects them. Leon (city) vs Nostradamus who chose Mafia = Nostradamus dies.
+                if (scenarioPro === "pedarkhande" && tr === "nostradamus") {
+                  const nostSide = (f.draft && (f.draft.nostradamusChosenSide === "mafia" || f.draft.nostradamusChosenSide === "citizen")) ? f.draft.nostradamusChosenSide : null;
+                  if (nostSide === "mafia") return { killIdx: tIdx, result: "killed_mafia", shooter: proIdx, target: tIdx };
+                  if (nostSide === "citizen") return { killIdx: proIdx, result: "killed_self", shooter: proIdx, target: tIdx };
+                }
+                // Pedarkhande: Godfather has one vest — immune to Leon's first shot.
+                if (scenarioPro === "pedarkhande" && (tr === "godfather" || tr === "mafiaBoss") && proIdx !== null && draw.players[proIdx] && draw.players[proIdx].roleId === "leon") {
+                  const vestUsed = !!(f.draft && f.draft.godfatherVestUsed);
+                  if (!vestUsed) return { killIdx: null, result: "vest_absorbed", shooter: proIdx, target: tIdx };
+                }
                 if (teamFa === "مافیا") return { killIdx: tIdx, result: "killed_mafia", shooter: proIdx, target: tIdx };
                 return { killIdx: proIdx, result: "killed_self", shooter: proIdx, target: tIdx };
               } catch {
@@ -727,10 +1073,17 @@
             rec.target = desired.target;
 
             f.draft.nightProAppliedByDay[dayKey] = rec;
+            if (desiredResult === "vest_absorbed") {
+              if (!f.draft.godfatherVestUsed) f.draft.godfatherVestUsed = true;
+            }
+            if ((desiredKill !== null || desiredResult === "vest_absorbed") && scenarioPro === "pedarkhande" && proIdx !== null && draw.players[proIdx] && draw.players[proIdx].roleId === "leon") {
+              if (!f.draft.leonShotsUsed || typeof f.draft.leonShotsUsed !== "number") f.draft.leonShotsUsed = 0;
+              f.draft.leonShotsUsed += 1;
+            }
 
             // log (upsert via snapshot night_actions already; this is a dedicated event)
             try {
-              if (desiredResult === "killed_mafia" || desiredResult === "killed_self") {
+              if (desiredResult === "killed_mafia" || desiredResult === "killed_self" || desiredResult === "vest_absorbed") {
                 addFlowEvent("pro_shot", { shooter: desired.shooter, target: desired.target, result: desiredResult });
               }
             } catch {}
@@ -849,7 +1202,19 @@
               : { revived: null, prevAlive: null };
 
             const cr = (payload.constantineRevive === null || payload.constantineRevive === undefined) ? null : parseInt(payload.constantineRevive, 10);
-            const desiredRevive = (Number.isFinite(cr) && cr >= 0 && cr < draw.players.length) ? cr : null;
+            let desiredRevive = (Number.isFinite(cr) && cr >= 0 && cr < draw.players.length) ? cr : null;
+            // Once per game: if Constantine already revived someone in a previous night, block.
+            if (desiredRevive !== null) {
+              const nc = f.draft.nightConstantineAppliedByDay || {};
+              for (const dk of Object.keys(nc)) {
+                if (dk === dayKey) continue;
+                const r = nc[dk];
+                if (r && r.revived != null && Number.isFinite(parseInt(r.revived, 10))) {
+                  desiredRevive = null;
+                  break;
+                }
+              }
+            }
 
             // no change
             if ((rec.revived === null || rec.revived === undefined) && desiredRevive === null) return false;
@@ -1017,6 +1382,99 @@
             return true;
           } catch {
             return false;
+          }
+        }
+
+        // Saul buy (pedarkhande): Godfather chose "Saul buy"; once per game, convert one simple citizen to mafia.
+        // Only allowed when at least one mafia is dead. Only simple citizen (roleId === "citizen") can be bought;
+        // if target is not simple citizen, buy fails and mafia cannot shoot tonight (handled in applyNightMafiaFromPayload).
+        function applyNightSaulBuyFromPayload(f, payload) {
+          try {
+            if (getDrawScenarioForFlow() !== "pedarkhande" || !f || !payload) return false;
+            const draw = appState.draw;
+            if (!draw || !draw.players) return false;
+            const godfatherAction = (payload.godfatherAction != null && String(payload.godfatherAction)) ? String(payload.godfatherAction) : "shoot";
+            if (godfatherAction !== "saul_buy") return false;
+            const sbRaw = (payload.saulBuyTarget === null || payload.saulBuyTarget === undefined) ? null : parseInt(payload.saulBuyTarget, 10);
+            const desiredTarget = (Number.isFinite(sbRaw) && sbRaw >= 0 && sbRaw < draw.players.length) ? sbRaw : null;
+            if (desiredTarget === null) return false;
+            const d = f.draft || {};
+            const mafiaCount = (draw.players || []).filter((p) => p && (roles[p.roleId || "citizen"] && roles[p.roleId || "citizen"].teamFa === "مافیا")).length;
+            const mafiaAliveCount = (draw.players || []).filter((p) => p && p.alive !== false && (roles[p.roleId || "citizen"] && roles[p.roleId || "citizen"].teamFa === "مافیا")).length;
+            const atLeastOneMafiaDead = mafiaCount > 0 && mafiaAliveCount < mafiaCount;
+            if (!atLeastOneMafiaDead) return false;
+            const p = draw.players[desiredTarget];
+            const targetRole = (p && p.roleId) ? p.roleId : "citizen";
+            if (targetRole !== "citizen") return false;
+            const dayKey = String(f.day || 1);
+            if (!f.draft || typeof f.draft !== "object") f.draft = {};
+            if (!f.draft.nightSaulBuyAppliedByDay || typeof f.draft.nightSaulBuyAppliedByDay !== "object") f.draft.nightSaulBuyAppliedByDay = {};
+            const rec = (f.draft.nightSaulBuyAppliedByDay[dayKey] && typeof f.draft.nightSaulBuyAppliedByDay[dayKey] === "object")
+              ? f.draft.nightSaulBuyAppliedByDay[dayKey]
+              : { converted: null, prevRoleId: null };
+            if (Number.isFinite(Number(rec.converted)) && rec.prevRoleId !== null) {
+              const prevIdx = parseInt(rec.converted, 10);
+              const prevP = draw.players[prevIdx];
+              if (prevP) prevP.roleId = rec.prevRoleId;
+            }
+            rec.converted = desiredTarget;
+            rec.prevRoleId = "citizen";
+            p.roleId = "mafia";
+            f.draft.nightSaulBuyAppliedByDay[dayKey] = rec;
+            f.draft.saulBuyUsed = true;
+            f.draft.saulBuyUsedOnNight = Number(dayKey);
+            saveState(appState);
+            return true;
+          } catch {
+            return false;
+          }
+        }
+
+        /** Returns indices of players that can be shown as Matador disable targets.
+         * Excludes the player disabled last night (cannot disable same twice in a row).
+         * Returns [] when Matador is dead. Used by flow-ui and tests. */
+        function getMatadorDisableTargetIndices(f) {
+          try {
+            if (getDrawScenarioForFlow() !== "pedarkhande") return [];
+            const draw = appState.draw;
+            if (!draw || !draw.players) return [];
+            const matadorIdx = (draw.players || []).findIndex((p) => p && p.roleId === "matador");
+            if (matadorIdx < 0 || !draw.players[matadorIdx] || draw.players[matadorIdx].alive === false) return [];
+            const d = (f && f.draft) ? f.draft : {};
+            const prevNightKey = String(Math.max(0, (f.day || 1) - 1));
+            const prevNight = (d.nightActionsByNight && d.nightActionsByNight[prevNightKey]) ? d.nightActionsByNight[prevNightKey] : null;
+            const prevMatadorIdx = (prevNight && prevNight.matadorDisable != null && Number.isFinite(Number(prevNight.matadorDisable))) ? parseInt(prevNight.matadorDisable, 10) : null;
+            const excludeSet = prevMatadorIdx !== null ? new Set([prevMatadorIdx]) : new Set();
+            return (draw.players || []).map((p, i) => {
+              if (!p || p.alive === false) return null;
+              return excludeSet.has(i) ? null : i;
+            }).filter((x) => x !== null);
+          } catch {
+            return [];
+          }
+        }
+
+        /** Returns indices of players that can be shown as Saul Buy targets (all alive non-mafia).
+         * Moderator sees all options; only simple citizen succeeds. Used by flow-ui and tests. */
+        function getSaulBuyTargetIndices(f) {
+          try {
+            if (getDrawScenarioForFlow() !== "pedarkhande") return [];
+            const draw = appState.draw;
+            if (!draw || !draw.players) return [];
+            const d = (f && f.draft) ? f.draft : {};
+            const saulBuyUsed = !!(d.saulBuyUsed);
+            const mafiaCount = (draw.players || []).filter((p) => p && (roles[p.roleId || "citizen"] && roles[p.roleId || "citizen"].teamFa === "مافیا")).length;
+            const mafiaAliveCount = (draw.players || []).filter((p) => p && p.alive !== false && (roles[p.roleId || "citizen"] && roles[p.roleId || "citizen"].teamFa === "مافیا")).length;
+            const atLeastOneMafiaDead = mafiaCount > 0 && mafiaAliveCount < mafiaCount;
+            if (saulBuyUsed || !atLeastOneMafiaDead) return [];
+            return (draw.players || []).map((p, i) => {
+              if (!p || p.alive === false) return null;
+              const rid = p.roleId || "citizen";
+              const team = (roles[rid] && roles[rid].teamFa) ? roles[rid].teamFa : "شهر";
+              return team === "مافیا" ? null : i;
+            }).filter((x) => x !== null);
+          } catch {
+            return [];
           }
         }
 
@@ -1381,59 +1839,324 @@
           }
         }
 
-        function getFlowSteps(f) {
-          if (f.phase === "intro_day")   return [{ id: "intro_day_run",   title: appLang === "fa" ? "روز معارفه" : "Intro Day" }];
-          if (f.phase === "intro_night") return [{ id: "intro_night_run", title: appLang === "fa" ? "شب معارفه"  : "Intro Night" }];
-          if (f.phase === "chaos")  return [{ id: "chaos_run",  title: appLang === "fa" ? "هرج و مرج" : "Chaos" }];
-          if (f.phase === "winner") return [{ id: "winner_run", title: appLang === "fa" ? "برنده"     : "Winner" }];
-          if (f.phase === "day") {
-            // Namayande scenario: unique day steps that depend on the day number.
-            if (getDrawScenarioForFlow() === "namayande") {
-              if ((f.day || 1) === 1) {
-                return [{ id: "namayande_rep_election", title: appLang === "fa" ? "انتخاب نماینده" : "Representative Election" }];
-              } else {
-                return [
-                  { id: "namayande_rep_action", title: appLang === "fa" ? "صحبت و انتخاب هدف" : "Rep Speeches & Targets" },
-                  { id: "namayande_cover",      title: appLang === "fa" ? "انتخاب کاور"        : "Cover Selection" },
-                  { id: "namayande_defense",    title: appLang === "fa" ? "دفاعیه"             : "Final Defense" },
-                  { id: "namayande_vote",        title: appLang === "fa" ? "رأی‌گیری"          : "Vote" },
-                ];
-              }
+        // End cards that require a separate action sub-step (pick target(s)).
+        // Only cards in the scenario's eliminationCards are valid (e.g. Duel is not in Godfather).
+        const END_CARD_ACTION_IDS = ["face_change", "handcuffs", "beautiful_mind", "silence_lambs"];
+        function getEndCardActionStepForDay(f) {
+          try {
+            const scenario = getDrawScenarioForFlow();
+            const cfg = getScenarioConfig(scenario);
+            if (!cfg.features || !cfg.features.endCards) return null;
+            const endCards = cfg.eliminationCards || [];
+            const dayKey = String(f.day || 1);
+            const byDay = appState.god && appState.god.endCards && appState.god.endCards.byDay ? appState.god.endCards.byDay : {};
+            const rec = byDay[dayKey] && typeof byDay[dayKey] === "object" ? byDay[dayKey] : null;
+            if (!rec || !rec.cardId) return null;
+            // outIdx: prefer day_elim_out event (when committed), else rec.out (card drawn on day_elim before Next)
+            const ev = (f.events || []).slice().reverse().find((e) => e && e.kind === "day_elim_out" && e.phase === "day" && e.day === f.day && e.data);
+            const outFromEv = ev && ev.data && ev.data.out !== null && ev.data.out !== undefined && Number.isFinite(Number(ev.data.out)) ? parseInt(ev.data.out, 10) : null;
+            const outFromRec = rec.out !== null && rec.out !== undefined && Number.isFinite(Number(rec.out)) ? parseInt(rec.out, 10) : null;
+            const outIdx = outFromEv !== null ? outFromEv : outFromRec;
+            if (outIdx === null) return null;
+            if (parseInt(rec.out, 10) !== outIdx) return null;
+            if (!END_CARD_ACTION_IDS.includes(rec.cardId)) return null;
+            // Beautiful Mind: when Nostradamus draws it, no pick step (host does inquiry; Nostradamus loses shield)
+            if (rec.cardId === "beautiful_mind" && scenario === "pedarkhande") {
+              const pOut = (appState.draw && appState.draw.players && appState.draw.players[outIdx]) ? appState.draw.players[outIdx] : null;
+              if (pOut && (pOut.roleId || "") === "nostradamus") return null;
             }
-            // Kabo scenario: unique day steps that depend on the day number.
-            if (getDrawScenarioForFlow() === "kabo") {
-              if ((f.day || 1) === 1) {
-                // All kabo special steps are in Day 1. Night comes after Capo Shoots.
-                const _hasTrusted = !!(f.draft && f.draft.kaboTrustedByDay && f.draft.kaboTrustedByDay["1"] != null);
-                const _steps = [{ id: "kabo_trust_vote", title: appLang === "fa" ? "رأی اعتماد" : "Trust Vote" }];
-                if (_hasTrusted) {
-                  _steps.push({ id: "kabo_suspect_select", title: appLang === "fa" ? "انتخاب مظنون" : "Select Suspects" });
-                  _steps.push({ id: "kabo_midday",         title: appLang === "fa" ? "چرت روز"      : "Mid-day Sleep" });
-                  _steps.push({ id: "kabo_shoot",          title: appLang === "fa" ? "دفاع و شلیک"  : "Defense & Shoot" });
+            const c = endCards.find((x) => x.id === rec.cardId);
+            if (!c) return null; // Card not in scenario's eliminationCards (e.g. Duel removed from Godfather)
+            const label = appLang === "fa" ? c.fa : c.en;
+            return { id: "day_end_card_" + rec.cardId, title: label };
+          } catch { return null; }
+        }
+
+        // Step title lookup (uses t() where available).
+        function getStepTitle(stepId) {
+          const titles = {
+            intro_day_run: appLang === "fa" ? "روز معارفه" : "Intro Day",
+            intro_night_run: appLang === "fa" ? "شب معارفه" : "Intro Night",
+            intro_night_nostradamus: appLang === "fa" ? "۱. نوستراداموس" : "1. Nostradamus",
+            intro_night_mafia: appLang === "fa" ? "۲. تیم مافیا" : "2. Mafia team",
+            intro_night_wake_order: appLang === "fa" ? "۳. واتسون، لئون، کین، کنستانتین" : "3. Watson, Leon, Kane, Constantine",
+            chaos_run: appLang === "fa" ? "هرج و مرج" : "Chaos",
+            winner_run: appLang === "fa" ? "برنده" : "Winner",
+            namayande_rep_election: appLang === "fa" ? "انتخاب نماینده" : "Representative Election",
+            namayande_rep_action: appLang === "fa" ? "صحبت و انتخاب هدف" : "Rep Speeches & Targets",
+            namayande_cover: appLang === "fa" ? "انتخاب کاور" : "Cover Selection",
+            namayande_defense: appLang === "fa" ? "دفاعیه" : "Final Defense",
+            namayande_vote: appLang === "fa" ? "رأی‌گیری" : "Vote",
+            kabo_trust_vote: appLang === "fa" ? "رأی اعتماد" : "Trust Vote",
+            kabo_suspect_select: appLang === "fa" ? "انتخاب مظنون" : "Select Suspects",
+            kabo_midday: appLang === "fa" ? "چرت روز" : "Mid-day Sleep",
+            kabo_shoot: appLang === "fa" ? "دفاع و شلیک" : "Defense & Shoot",
+            bazras_interrogation: appLang === "fa" ? "بازپرسی" : "Interrogation",
+            bazras_midday: appLang === "fa" ? "چرت روز" : "Mid-day",
+            bazras_forced_vote: appLang === "fa" ? "رأی‌گیری اجباری" : "Forced Vote",
+          };
+          if (titles[stepId]) return titles[stepId];
+          const tKeys = {
+            day_bomb: "tool.flow.bomb.active",
+            day_guns: "tool.flow.day.guns",
+            day_gun_expiry: "tool.flow.day.gunExpiry",
+            day_kane_reveal: "tool.flow.kane.revealTitle",
+            nostradamus_choose_side: "tool.flow.pedarkhande.nostradamusChooseSide",
+            day_vote: "tool.flow.day.vote",
+            day_elim: "tool.flow.day.eliminate",
+            // Pedarkhande explicit night step titles
+            night_mafia_team: "tool.flow.pedarkhande.night.mafiaTeam",
+            night_watson: "tool.flow.pedarkhande.night.watson",
+            night_leon: "tool.flow.pedarkhande.night.leon",
+            night_kane: "tool.flow.pedarkhande.night.kane",
+            night_constantine: "tool.flow.pedarkhande.night.constantine",
+            // Common night steps (all scenarios)
+            night_mafia: "tool.flow.night.mafia",
+            night_doctor: "tool.flow.night.doctor",
+            night_detective: "tool.flow.night.detective",
+            night_researcher: "tool.flow.night.researcher",
+            night_swindler: "tool.flow.night.swindler",
+            night_sniper: "tool.flow.night.sniper",
+            night_inspector: "tool.flow.night.inspector",
+            night_negotiator: "tool.flow.night.negotiator",
+            night_reporter: "tool.flow.night.reporter",
+            night_natasha: "tool.flow.night.natasha",
+            night_lecter: "tool.flow.night.lecter",
+            night_joker_mafia: "tool.flow.night.joker_mafia",
+            night_professional: "tool.flow.night.professional",
+            night_magician: "tool.flow.night.magician",
+            night_bomber: "tool.flow.night.bomber",
+            night_gunslinger: "tool.flow.night.gunslinger",
+            night_ocean: "tool.flow.night.ocean",
+            night_zodiac: "tool.flow.night.zodiac",
+            night_heir: "tool.flow.night.heir",
+            night_herbalist: "tool.flow.night.herbalist",
+            night_armorsmith: "tool.flow.night.armorsmith",
+            night_kadkhoda: "tool.flow.night.kadkhoda",
+            night_hacker: "tool.flow.night.hacker",
+            night_guide: "tool.flow.night.guide",
+            night_bodyguard: "tool.flow.night.bodyguard",
+            night_soldier: "tool.flow.night.soldier",
+            night_minemaker: "tool.flow.night.minemaker",
+            night_lawyer: "tool.flow.night.lawyer",
+            night_nostradamus: "tool.flow.night.nostradamus",
+            day_end_card_face_change: "tool.flow.endCard.faceOff",
+            day_end_card_handcuffs: "tool.flow.endCard.handcuffs",
+            day_end_card_beautiful_mind: "tool.flow.endCard.beautifulMind",
+            day_end_card_silence_lambs: "tool.flow.endCard.silenceLambs",
+          };
+          const key = tKeys[stepId];
+          return key && typeof t === "function" ? t(key) : stepId;
+        }
+
+        /** Returns array of eliminated player indices for Status Check for a given day/phase. */
+        function getEliminatedForStatusCheck(f, day, phase) {
+          const eliminated = [];
+          const seenElim = new Set();
+          const addElim = (idx) => {
+            if (idx == null) return;
+            const i = parseInt(idx, 10);
+            if (!Number.isFinite(i) || i < 0 || seenElim.has(i)) return;
+            seenElim.add(i);
+            eliminated.push(i);
+          };
+          const dk = String(day || 1);
+          if (!f || !f.draft) return eliminated;
+          try {
+            if (phase === "day" || phase === "midday") {
+              const er = f.draft.dayElimAppliedByDay && f.draft.dayElimAppliedByDay[dk];
+              if (er && !er.armoredAbsorbed && er.prevAlive === true && er.out != null) addElim(er.out);
+              if (er && er.chainPrevAlive === true && er.chainOut != null) addElim(er.chainOut);
+              const gr = f.draft.gunShotAppliedByDay && f.draft.gunShotAppliedByDay[dk];
+              if (gr && Array.isArray(gr.shots)) {
+                for (const s of gr.shots) {
+                  if (s && s.type === "real" && s.targetPrevAlive && s.target != null) addElim(s.target);
+                  if (s && s.chainPrevAlive && s.chainKilled != null) addElim(s.chainKilled);
                 }
-                return _steps;
               }
-              // Day 2+: fall through to normal voting (day_vote, day_elim).
+              const br = f.draft.bombAppliedByDay && f.draft.bombAppliedByDay[dk];
+              if (br && br.prevAlive === true && br.killed != null) addElim(br.killed);
+              const xr = f.draft.gunExpiryAppliedByDay && f.draft.gunExpiryAppliedByDay[dk];
+              if (xr && Array.isArray(xr.killed)) {
+                for (const item of xr.killed) {
+                  if (item && item.prevAlive && item.idx != null) addElim(item.idx);
+                }
+              }
+              const irec = f.draft.bazrasInterrogationByDay && f.draft.bazrasInterrogationByDay[dk];
+              if (irec && irec.decision === "continue") {
+                if (irec.prevAlive === true && irec.prevEliminated != null) addElim(irec.prevEliminated);
+                else if (irec.prevEliminated == null && irec.votes) {
+                  const prevNK = String(Math.max(0, parseInt(dk, 10) - 1));
+                  const invTfv = f.draft.investigatorTargetsByNight && f.draft.investigatorTargetsByNight[prevNK];
+                  const ft1 = invTfv && invTfv.t1 != null ? invTfv.t1 : null;
+                  const ft2 = invTfv && invTfv.t2 != null ? invTfv.t2 : null;
+                  if (ft1 != null && ft2 != null) {
+                    const pv1 = Math.max(0, parseInt(irec.votes[ft1] || 0, 10));
+                    const pv2 = Math.max(0, parseInt(irec.votes[ft2] || 0, 10));
+                    if (pv1 > pv2) addElim(ft1);
+                    else if (pv2 > pv1) addElim(ft2);
+                  }
+                }
+              }
+              // Kane reveal: role is revealed but player stays in game (not eliminated)
+            } else if (phase === "night") {
+              const mr = f.draft.nightMafiaAppliedByDay && f.draft.nightMafiaAppliedByDay[dk];
+              if (mr && mr.prevAlive === true && mr.killed != null) addElim(mr.killed);
+              if (mr && mr.chainPrevAlive === true && mr.chainKilled != null) addElim(mr.chainKilled);
+              const zr = f.draft.nightZodiacAppliedByDay && f.draft.nightZodiacAppliedByDay[dk];
+              if (zr && zr.prevAlive === true && zr.killed != null) addElim(zr.killed);
+              const pr = f.draft.nightProAppliedByDay && f.draft.nightProAppliedByDay[dk];
+              if (pr && pr.prevAlive === true && pr.killed != null) addElim(pr.killed);
+              const sr = f.draft.nightSniperAppliedByDay && f.draft.nightSniperAppliedByDay[dk];
+              if (sr && sr.prevAlive === true && sr.killed != null) addElim(sr.killed);
+              const ocr = f.draft.nightOceanAppliedByDay && f.draft.nightOceanAppliedByDay[dk];
+              if (ocr && ocr.killedOcean === true && ocr.prevAlive === true && ocr.oceanIdx != null) addElim(ocr.oceanIdx);
+              const hr = f.draft.nightHerbalistAppliedByDay && f.draft.nightHerbalistAppliedByDay[dk];
+              if (hr && hr.prevAlive === true && hr.killed != null) addElim(hr.killed);
+              const sod = f.draft.nightSodagariAppliedByDay && f.draft.nightSodagariAppliedByDay[dk];
+              if (sod && sod.prevAlive === true && sod.sacrifice != null) addElim(sod.sacrifice);
+              const sixthRec = f.draft.nightSixthSenseAppliedByDay && f.draft.nightSixthSenseAppliedByDay[dk];
+              if (sixthRec && sixthRec.prevAlive === true && sixthRec.killed != null) addElim(sixthRec.killed);
+              const solRec = f.draft.nightSoldierAppliedByDay && f.draft.nightSoldierAppliedByDay[dk];
+              if (solRec && solRec.soldierPrevAlive === true && solRec.soldierKilled != null) addElim(solRec.soldierKilled);
+              if (solRec && solRec.gunShotPrevAlive === true && solRec.gunShotKilled != null) addElim(solRec.gunShotKilled);
+              // Pedarkhande: Kane invisible bullet (24h after correct mafia reveal)
+              if (getDrawScenarioForFlow() === "pedarkhande" && f.draft.kaneInvisibleBulletByNight != null && Number(f.draft.kaneInvisibleBulletByNight) === parseInt(dk, 10)) {
+                const kaneIdx = (appState.draw && appState.draw.players) ? appState.draw.players.findIndex((p) => p && p.roleId === "citizenKane") : -1;
+                if (kaneIdx !== -1) addElim(kaneIdx);
+              }
             }
-            // Bazras scenario: conditionally include interrogation step at start of day.
-            if (getDrawScenarioForFlow() === "bazras") {
-              // Use snapshot if available — prevents step list from shrinking mid-day
-              // when an interrogation kill eliminates one of the two picked players.
-              const bazrasSnapshot = (f.draft && f.draft.dayStepsByDay && Array.isArray(f.draft.dayStepsByDay[String(f.day)]))
-                ? f.draft.dayStepsByDay[String(f.day)] : null;
-              if (bazrasSnapshot) {
-                const bazrasTitles = {
-                  "bazras_interrogation": appLang === "fa" ? "بازپرسی" : "Interrogation",
-                  "bazras_midday":        appLang === "fa" ? "چرت روز" : "Mid-day",
-                  "bazras_forced_vote":   appLang === "fa" ? "رأی‌گیری اجباری" : "Forced Vote",
-                  "day_vote": t("tool.flow.day.vote"),
-                  "day_elim": t("tool.flow.day.eliminate"),
-                };
-                return bazrasSnapshot.map((id) => ({ id, title: bazrasTitles[id] || id }));
+          } catch {}
+          return eliminated;
+        }
+
+        /** Returns array of revived player indices for Status Check for a given day/phase. */
+        function getRevivedForStatusCheck(f, day, phase) {
+          const revived = [];
+          const dk = String(day || 1);
+          if (!f || !f.draft) return revived;
+          try {
+            if (phase === "night") {
+              const cr = f.draft.nightConstantineAppliedByDay && f.draft.nightConstantineAppliedByDay[dk];
+              if (cr && cr.revived != null && Number.isFinite(parseInt(cr.revived, 10))) {
+                revived.push(parseInt(cr.revived, 10));
               }
-              const prevNightKey = String(Math.max(0, (f.day || 1) - 1));
-              const d = f.draft || {};
-              const invTargets = d.investigatorTargetsByNight && d.investigatorTargetsByNight[prevNightKey];
+            }
+          } catch {}
+          return revived;
+        }
+
+        /** Returns unified array of role-change entries for Status Check.
+         * Each entry: { type: "face_off", out, target, outRole, tgtRole } or { type: "saul_buy", idx, newRole }.
+         * Face Off: out got tgtRole, target got outRole. Saul Buy: idx became newRole (mafia). */
+        function getChangedRolesForStatusCheck(f, day, phase) {
+          const entries = [];
+          const dk = String(day || 1);
+          if (!f || !f.draft) return entries;
+          try {
+            if (phase === "day" || phase === "midday") {
+              const rec = f.draft.endCardActionAppliedByDay && f.draft.endCardActionAppliedByDay[dk];
+              if (rec && rec.cardId === "face_change" && rec.out != null && rec.target != null && rec.prevState) {
+                const out = parseInt(rec.out, 10);
+                const target = parseInt(rec.target, 10);
+                const outRole = rec.prevState.outRole || "citizen";
+                const tgtRole = rec.prevState.tgtRole || "citizen";
+                if (Number.isFinite(out) && Number.isFinite(target)) {
+                  entries.push({ type: "face_off", out, target, outRole, tgtRole });
+                }
+              }
+            }
+            if (phase === "night") {
+              const sr = f.draft.nightSaulBuyAppliedByDay && f.draft.nightSaulBuyAppliedByDay[dk];
+              if (sr && sr.converted != null && Number.isFinite(parseInt(sr.converted, 10))) {
+                entries.push({ type: "saul_buy", idx: parseInt(sr.converted, 10), newRole: "mafia" });
+              }
+            }
+          } catch {}
+          return entries;
+        }
+
+        /** Returns true if Status Check would show playerIdx in the Eliminated list.
+         * Replicates the group-creation logic: day groups exist from events OR from
+         * sixthSenseAppliedByDay / kaneRevealAppliedByDay (no events yet). */
+        function wouldStatusCheckShowEliminated(f, playerIdx) {
+          if (!f || !Number.isFinite(parseInt(playerIdx, 10))) return false;
+          const idx = parseInt(playerIdx, 10);
+          const curFlowDay = f.day || 1;
+          const d = f.draft || {};
+          try {
+            for (const ev of (f.events || [])) {
+              if (!ev || !ev.phase || ev.day == null) continue;
+              const day = parseInt(ev.day, 10);
+              if (!Number.isFinite(day) || day > curFlowDay) continue;
+              const phase = String(ev.phase);
+              if (!["day", "midday", "night"].includes(phase)) continue;
+              const elim = getEliminatedForStatusCheck(f, day, phase);
+              if (elim.includes(idx)) return true;
+            }
+            // Kane reveal: role revealed but player stays in game (not eliminated)
+          } catch {}
+          return false;
+        }
+
+        function getFlowSteps(f) {
+          const scenario = String(getDrawScenarioForFlow() || "").toLowerCase();
+          const flowCfg = typeof getFlowConfig === "function" ? getFlowConfig(scenario) : null;
+
+          if (f.phase === "intro_day") {
+            const ids = (flowCfg && flowCfg.intro_day) ? flowCfg.intro_day : ["intro_day_run"];
+            return ids.map((id) => ({ id, title: getStepTitle(id) }));
+          }
+          if (f.phase === "intro_night") {
+            let ids = (flowCfg && flowCfg.intro_night) ? flowCfg.intro_night : ["intro_night_run"];
+            // Pedarkhande: nostradamus_choose_side when Nostradamus exists and has picked 3
+            if (scenario === "pedarkhande" && ids.includes("nostradamus_choose_side")) {
+              const d = (f.draft || {});
+              const pick3 = (d.nightActionsByNight && d.nightActionsByNight["0"] && Array.isArray(d.nightActionsByNight["0"].nostPick3)) ? d.nightActionsByNight["0"].nostPick3 : [];
+              const has3Picks = pick3.length >= 3;
+              const hasNostradamus = (appState.draw && appState.draw.players || []).some((p) => p && p.roleId === "nostradamus");
+              if (!hasNostradamus || !has3Picks) {
+                ids = ids.filter((id) => id !== "nostradamus_choose_side");
+              }
+            }
+            return ids.map((id) => ({ id, title: getStepTitle(id) }));
+          }
+          if (f.phase === "chaos")  return [{ id: "chaos_run",  title: getStepTitle("chaos_run") }];
+          if (f.phase === "winner") return [{ id: "winner_run", title: getStepTitle("winner_run") }];
+          if (f.phase === "day") {
+            const dayNum = f.day || 1;
+            const dayCfg = flowCfg && flowCfg.day ? flowCfg.day : { base: ["day_vote", "day_elim"] };
+
+            // Namayande: day1 vs default
+            if (scenario === "namayande") {
+              const ids = (dayNum === 1 && dayCfg.day1) ? dayCfg.day1 : (dayCfg.default || dayCfg.base);
+              return ids.map((id) => ({ id, title: getStepTitle(id) }));
+            }
+            // Kabo: day1 conditional (trust vote → suspect → midday → shoot)
+            if (scenario === "kabo") {
+              if (dayNum === 1) {
+                const hasTrusted = !!(f.draft && f.draft.kaboTrustedByDay && f.draft.kaboTrustedByDay["1"] != null);
+                const ids = hasTrusted && dayCfg.day1
+                  ? dayCfg.day1
+                  : ["kabo_trust_vote"];
+                return ids.map((id) => ({ id, title: getStepTitle(id) }));
+              }
+              // Day 2+: use default
+              const ids = dayCfg.default || dayCfg.base;
+              return ids.map((id) => ({ id, title: getStepTitle(id) }));
+            }
+            // Bazras: optional interrogation at start
+            if (scenario === "bazras") {
+              const snapshotIds = (f.draft && f.draft.dayStepsByDay && Array.isArray(f.draft.dayStepsByDay[String(f.day)]))
+                ? f.draft.dayStepsByDay[String(f.day)] : null;
+              if (snapshotIds) {
+                const endCardStep = getEndCardActionStepForDay(f);
+                const withoutEndCard = snapshotIds.filter((id) => !id || !String(id).startsWith("day_end_card_"));
+                const ids = endCardStep ? [...withoutEndCard, endCardStep.id] : withoutEndCard;
+                return ids.map((id) => ({ id, title: (endCardStep && id === endCardStep.id) ? endCardStep.title : getStepTitle(id) }));
+              }
+              const prevNightKey = String(Math.max(0, dayNum - 1));
+              const invTargets = (f.draft && f.draft.investigatorTargetsByNight && f.draft.investigatorTargetsByNight[prevNightKey]) || null;
               const showInterrogation = (() => {
                 try {
                   if (!invTargets || invTargets.t1 == null || invTargets.t2 == null) return false;
@@ -1444,41 +2167,31 @@
                   return !!(p1 && p1.alive !== false && p2 && p2.alive !== false);
                 } catch { return false; }
               })();
-              const bazrasSteps = [];
-              if (showInterrogation) {
-                bazrasSteps.push({ id: "bazras_interrogation", title: appLang === "fa" ? "بازپرسی" : "Interrogation" });
-                bazrasSteps.push({ id: "bazras_midday",        title: appLang === "fa" ? "چرت روز" : "Mid-day" });
-                bazrasSteps.push({ id: "bazras_forced_vote",   title: appLang === "fa" ? "رأی‌گیری اجباری" : "Forced Vote" });
-              }
-              bazrasSteps.push({ id: "day_vote", title: t("tool.flow.day.vote") });
-              bazrasSteps.push({ id: "day_elim", title: t("tool.flow.day.eliminate") });
-              return bazrasSteps;
-            }
-            // If a day-start snapshot exists, use it so mid-day deaths don't shrink the step list.
-            const snapshotIds = (f.draft && f.draft.dayStepsByDay && Array.isArray(f.draft.dayStepsByDay[String(f.day)]))
-              ? f.draft.dayStepsByDay[String(f.day)]
-              : null;
-            if (snapshotIds) {
-              const stepTitles = {
-                "day_bomb": t("tool.flow.bomb.active"),
-                "day_guns": t("tool.flow.day.guns"),
-                "day_gun_expiry": t("tool.flow.day.gunExpiry"),
-                "day_kane_reveal": t("tool.flow.kane.revealTitle"),
-                "day_vote": t("tool.flow.day.vote"),
-                "day_elim": t("tool.flow.day.eliminate"),
-              };
-              return snapshotIds.map((id) => ({ id, title: stepTitles[id] || id }));
+              let ids = [];
+              if (showInterrogation && dayCfg.interrogation) ids = ids.concat(dayCfg.interrogation);
+              ids = ids.concat(dayCfg.base || ["day_vote", "day_elim"]);
+              const endCardStep = getEndCardActionStepForDay(f);
+              if (endCardStep) ids.push(endCardStep.id);
+              return ids.map((id) => ({ id, title: (endCardStep && id === endCardStep.id) ? endCardStep.title : getStepTitle(id) }));
             }
 
-            // Determine which steps are allowed by the scenario config.
-            const scenario = getDrawScenarioForFlow();
+            // Generic day: use snapshot if available, else compute from config + conditionals
+            const snapshotIds = (f.draft && f.draft.dayStepsByDay && Array.isArray(f.draft.dayStepsByDay[String(f.day)]))
+              ? f.draft.dayStepsByDay[String(f.day)] : null;
+            if (snapshotIds) {
+              const endCardStep = getEndCardActionStepForDay(f);
+              // Replace any day_end_card_* in snapshot with current day's drawn card (avoids duplicate/wrong card).
+              const withoutEndCard = snapshotIds.filter((id) => !id || !String(id).startsWith("day_end_card_"));
+              const ids = endCardStep ? [...withoutEndCard, endCardStep.id] : withoutEndCard;
+              return ids.map((id) => ({ id, title: (endCardStep && id === endCardStep.id) ? endCardStep.title : getStepTitle(id) }));
+            }
+
+            // Compute steps from config + runtime conditionals
             const cfg = getScenarioConfig(scenario);
             const allowed = (cfg.dayPhaseConfig && Array.isArray(cfg.dayPhaseConfig.steps))
               ? cfg.dayPhaseConfig.steps
-              : ["day_guns", "day_vote", "day_elim"]; // legacy default for saves without config
-
+              : ["day_guns", "day_vote", "day_elim"];
             const steps = [];
-            // Guns & Bomb step: combined on one page — shown when there are usable guns or an active bomb.
             const hasBombForStep = (() => {
               try {
                 const d = f.draft || {};
@@ -1486,17 +2199,9 @@
                 return !!(f.bombActive || (rec && rec.target !== null && rec.target !== undefined));
               } catch { return !!f.bombActive; }
             })();
-            if ((allowed.includes("day_guns") || allowed.includes("day_bomb")) && (hasUsableDayGuns() || hasBombForStep)) {
-              steps.push({ id: "day_guns", title: t("tool.flow.day.guns") });
-            }
-            // Gun-expiry step: only when at least one alive player has an unused REAL gun.
-            if (allowed.includes("day_gun_expiry") && hasUnfiredRealGuns()) {
-              steps.push({ id: "day_gun_expiry", title: t("tool.flow.day.gunExpiry") });
-            }
-            // Kane reveal step: shown if Kane marked a Mafia player the previous night.
             const kaneRevealIdx = (() => {
               try {
-                const prevNight = (f.day || 1) - 1;
+                const prevNight = dayNum - 1;
                 const ev = (f.events || []).slice().reverse().find((e) => e && e.kind === "night_actions" && e.phase === "night" && e.day === prevNight && e.data);
                 const payload = ev && ev.data ? ev.data : null;
                 if (!payload) return null;
@@ -1512,16 +2217,108 @@
                 return teamFa === "مافیا" ? idx : null;
               } catch { return null; }
             })();
-            if (kaneRevealIdx !== null) {
-              steps.push({ id: "day_kane_reveal", title: t("tool.flow.kane.revealTitle") });
+            const stepIds = Array.isArray(dayCfg.steps) ? dayCfg.steps : null;
+            if (stepIds) {
+              for (const rawId of stepIds) {
+                const optional = String(rawId).endsWith("?");
+                const id = optional ? String(rawId).slice(0, -1) : String(rawId);
+                if (id === "day_kane_reveal") {
+                  if (kaneRevealIdx !== null) steps.push({ id: "day_kane_reveal", title: getStepTitle("day_kane_reveal") });
+                  continue;
+                }
+                if (id === "end_card_action" || id === "__end_card__") {
+                  const endCardStep = getEndCardActionStepForDay(f) || null;
+                  if (endCardStep) steps.push(endCardStep);
+                  continue;
+                }
+                if (id === "day_guns" && !(allowed.includes("day_guns") || allowed.includes("day_bomb"))) continue;
+                if (id === "day_guns" && !(hasUsableDayGuns() || hasBombForStep)) continue;
+                if (id === "day_gun_expiry" && !allowed.includes("day_gun_expiry")) continue;
+                if (id === "day_gun_expiry" && !hasUnfiredRealGuns()) continue;
+                steps.push({ id, title: getStepTitle(id) });
+              }
+              return steps;
             }
-            steps.push({ id: "day_vote", title: t("tool.flow.day.vote") });
-            steps.push({ id: "day_elim", title: t("tool.flow.day.eliminate") });
+
+            if (dayCfg.kaneReveal && kaneRevealIdx !== null) {
+              steps.push({ id: "day_kane_reveal", title: getStepTitle("day_kane_reveal") });
+            }
+            const baseIds = dayCfg.base || ["day_vote", "day_elim"];
+            for (const id of baseIds) {
+              if (id === "day_guns" && !(allowed.includes("day_guns") || allowed.includes("day_bomb"))) continue;
+              if (id === "day_guns" && !(hasUsableDayGuns() || hasBombForStep)) continue;
+              if (id === "day_gun_expiry" && !allowed.includes("day_gun_expiry")) continue;
+              if (id === "day_gun_expiry" && !hasUnfiredRealGuns()) continue;
+              steps.push({ id, title: getStepTitle(id) });
+            }
+            const endCardStep = (dayCfg.endCards && getEndCardActionStepForDay(f)) || null;
+            if (endCardStep) steps.push(endCardStep);
             return steps;
           }
-          return [
-            { id: "night_run", title: t("tool.flow.night.run") },
-          ];
+          // Per-role night steps: one step per wake order entry (same order as Wake tool).
+          const cfg = getScenarioConfig(scenario);
+          const wakeOrder = cfg.wakeOrder || {};
+          const lang = (typeof appLang !== "undefined" && appLang === "fa") ? "fa" : "en";
+          const wake = (wakeOrder[lang] && wakeOrder[lang].length) ? wakeOrder[lang] : (wakeOrder.en || wakeOrder.fa || []);
+          const evenNight = ((f.day || 1) % 2) === 0;
+          const bombAlreadyUsed = (() => {
+            try {
+              const d = f.draft || {};
+              if (d.bombByDay && typeof d.bombByDay === "object") {
+                for (const day of Object.keys(d.bombByDay)) {
+                  const rec = d.bombByDay[day];
+                  if (rec && (rec.target !== null && rec.target !== undefined)) return true;
+                }
+              }
+              if (Array.isArray(f.events)) {
+                if (f.events.some((e) => e && e.kind === "bomb_resolve")) return true;
+              }
+              return false;
+            } catch { return false; }
+          })();
+          const labelLower = (w) => String(w || "").toLowerCase();
+          const keepZodiac = (w) => {
+            const x = labelLower(w);
+            return evenNight || (!x.includes("zodiac") && !x.includes("زودیاک"));
+          };
+          const keepBomber = (w) => {
+            const x = labelLower(w);
+            const isBomber = x.includes("bomber") || x.includes("بمب");
+            return !isBomber || !bombAlreadyUsed;
+          };
+          const keepNotIntroOnly = (w) => {
+            const x = labelLower(w);
+            return !x.includes("intro night only") && !x.includes("فقط شب معارفه");
+          };
+          // Pedarkhande: skip Kane step when Kane is dead (invisible bullet after revealing mafia)
+          const keepKaneAlive = (w, stepId) => {
+            if (scenario !== "pedarkhande") return true;
+            const isKaneStep = (stepId && String(stepId).includes("kane")) || labelLower(w).includes("kane") || labelLower(w).includes("کین");
+            if (!isKaneStep) return true;
+            const draw = appState.draw;
+            if (!draw || !draw.players) return true;
+            const kaneIdx = draw.players.findIndex((p) => p && p.roleId === "citizenKane");
+            if (kaneIdx === -1) return true;
+            return draw.players[kaneIdx].alive !== false;
+          };
+          // Build kept labels and stepIds in parallel — same filter applied to both so indices stay aligned.
+          // Using wake index i for nightStepIds would misalign when middle entries are filtered
+          // (e.g. bomber already used, zodiac on odd nights): kept[k] must use the k-th kept stepId.
+          const nightStepIds = Array.isArray(flowCfg && flowCfg.night) ? flowCfg.night : null;
+          const keptLabels = [];
+          const keptStepIds = [];
+          for (let i = 0; i < wake.length; i++) {
+            const w = wake[i];
+            const stepId = (nightStepIds && i < nightStepIds.length) ? String(nightStepIds[i]) : "night_step_" + keptStepIds.length;
+            if (keepZodiac(w) && keepBomber(w) && keepNotIntroOnly(w) && keepKaneAlive(w, stepId)) {
+              keptLabels.push(w);
+              keptStepIds.push(stepId);
+            }
+          }
+          return keptLabels.map((label, k) => ({
+            id: keptStepIds[k] || ("night_step_" + k),
+            title: getStepTitle(keptStepIds[k]) || label,
+          }));
         }
 
         // Apply Heir role inheritance at the night→day transition.
@@ -1578,6 +2375,89 @@
           }
         }
 
+        // Resolve all night effects from payload. Used by effect registry and nextFlowStep.
+        // Order: Herbalist → Pro/Sniper/Ocean/Zodiac → Negotiator → Saul → Investigator → Sodagari → Soldier → Mafia → Constantine → SixthSense → Heir.
+        // Constantine runs after Mafia/Pro so he can revive players who died this night (e.g. Leon shooting citizen).
+        function resolveNightFromPayload(f, payload) {
+          try {
+            const draw = appState.draw;
+            if (!payload || !draw || !draw.players) return false;
+            const payload0 = { ...payload };
+            const scenario0 = getDrawScenarioForFlow();
+            const findIdxByRole = (roleIds) => {
+              const ids = Array.isArray(roleIds) ? roleIds : [roleIds];
+              for (let i = 0; i < (draw.players || []).length; i++) {
+                const p = draw.players[i];
+                if (!p) continue;
+                if (ids.includes(p.roleId)) return i;
+              }
+              return null;
+            };
+            // Who is disabled this night? (Matador: disable lasts 24h = current night only; no carry-over to next night)
+            let disabledIdx = null;
+            if (scenario0 === "pedarkhande") {
+              const matadorIdx = findIdxByRole(["matador"]);
+              const matadorAlive = matadorIdx !== null && draw.players[matadorIdx] && draw.players[matadorIdx].alive !== false;
+              const matadorV = payload0.matadorDisable;
+              if (matadorAlive && matadorV !== null && matadorV !== undefined && Number.isFinite(Number(matadorV))) {
+                const prevNightKey = String(Math.max(0, (f.day || 1) - 1));
+                const prevNight = (f.draft && f.draft.nightActionsByNight && f.draft.nightActionsByNight[prevNightKey]) ? f.draft.nightActionsByNight[prevNightKey] : null;
+                const prevMatadorV = (prevNight && prevNight.matadorDisable != null && Number.isFinite(Number(prevNight.matadorDisable))) ? parseInt(prevNight.matadorDisable, 10) : null;
+                const sameAsPrev = prevMatadorV !== null && parseInt(matadorV, 10) === prevMatadorV;
+                if (!sameAsPrev) disabledIdx = parseInt(matadorV, 10);
+              }
+            }
+            if (disabledIdx === null && payload0.magicianDisable !== null && payload0.magicianDisable !== undefined && Number.isFinite(Number(payload0.magicianDisable))) {
+              disabledIdx = parseInt(payload0.magicianDisable, 10);
+            }
+            const doctorIdx = findIdxByRole(["doctor", "watson"]);
+            const lecterIdx = findIdxByRole(["doctorLecter"]);
+            const detIdx = findIdxByRole(["detective"]);
+            const proIdx = findIdxByRole(["professional", "leon"]);
+            const bomberIdx = findIdxByRole(["bomber"]);
+            const oceanIdx = findIdxByRole(["ocean"]);
+            const zodiacIdx = findIdxByRole(["zodiac"]);
+            const sniperIdx2 = findIdxByRole(["sniper"]);
+            const kaneIdx = findIdxByRole(["citizenKane"]);
+            const constantineIdx = findIdxByRole(["constantine"]);
+            if (disabledIdx !== null) {
+              if (doctorIdx !== null && disabledIdx === doctorIdx) payload0.doctorSave = null;
+              if (lecterIdx !== null && disabledIdx === lecterIdx) payload0.lecterSave = null;
+              if (detIdx !== null && disabledIdx === detIdx) payload0.detectiveQuery = null;
+              if (proIdx !== null && disabledIdx === proIdx) payload0.professionalShot = null;
+              if (bomberIdx !== null && disabledIdx === bomberIdx) { payload0.bombTarget = null; payload0.bombCode = null; }
+              if (oceanIdx !== null && disabledIdx === oceanIdx) payload0.oceanWake = null;
+              if (zodiacIdx !== null && disabledIdx === zodiacIdx) payload0.zodiacShot = null;
+              if (sniperIdx2 !== null && disabledIdx === sniperIdx2) payload0.sniperShot = null;
+              if (kaneIdx !== null && disabledIdx === kaneIdx) payload0.kaneMark = null;
+              if (constantineIdx !== null && disabledIdx === constantineIdx) payload0.constantineRevive = null;
+              if (!f.draft || typeof f.draft !== "object") f.draft = {};
+              if (!f.draft.disabledByNight || typeof f.draft.disabledByNight !== "object") f.draft.disabledByNight = {};
+              f.draft.disabledByNight[String(f.day)] = disabledIdx;
+            }
+            try { applyNightHerbalistFromPayload(f, payload0); } catch {}
+            try { applyNightProfessionalFromPayload(f, payload0); } catch {}
+            try { applyNightSniperFromPayload(f, payload0); } catch {}
+            try { applyNightOceanFromPayload(f, payload0); } catch {}
+            try { applyNightZodiacFromPayload(f, payload0); } catch {}
+            try { applyNightNegotiatorFromPayload(f, payload0); } catch {}
+            try { applyNightSaulBuyFromPayload(f, payload0); } catch {}
+            try { applyNightInvestigatorFromPayload(f, payload0); } catch {}
+            try { applyNightSodagariFromPayload(f, payload0); } catch {}
+            try { applyNightSoldierFromPayload(f, payload0); } catch {}
+            try { applyNightMafiaFromPayload(f, payload0); } catch {}
+            try { applyNightConstantineFromPayload(f, payload0); } catch {}
+            try { applyNightSixthSenseFromPayload(f, payload0); } catch {}
+            try { applyHeirInheritanceFromPayload(f); } catch {}
+            try { renderCast(); } catch {}
+            try { if (typeof renderNameGrid === "function") renderNameGrid(); } catch {}
+            try { saveState(appState); } catch {}
+            return true;
+          } catch {
+            return false;
+          }
+        }
+
         // ── End-condition helpers ─────────────────────────────────────────────
 
         // Encodes a phase+day into a monotonically-increasing integer so we can
@@ -1615,7 +2495,14 @@
             const alive = draw.players
               .map((p, i) => ({ p, i }))
               .filter(({ p }) => p && p.alive !== false);
-            const getTeam = (p) => { const r = roles[p && p.roleId]; return r ? r.teamFa : "شهر"; };
+            const nostSide = (f.draft && (f.draft.nostradamusChosenSide === "mafia" || f.draft.nostradamusChosenSide === "citizen")) ? f.draft.nostradamusChosenSide : null;
+            const getTeam = (p) => {
+              if ((p && p.roleId) === "nostradamus" && nostSide && getDrawScenarioForFlow() === "pedarkhande") {
+                return nostSide === "mafia" ? "مافیا" : "شهر";
+              }
+              const r = roles[p && p.roleId];
+              return r ? r.teamFa : "شهر";
+            };
             const nMafia   = alive.filter(({ p }) => getTeam(p) === "مافیا").length;
             const nIndep   = alive.filter(({ p }) => getTeam(p) === "مستقل").length;
             const nCitizen = alive.filter(({ p }) => getTeam(p) === "شهر").length;
@@ -1702,6 +2589,25 @@
               applyGunExpiryForDay(f);
               try { renderCast(); } catch {}
             }
+            if (curStep.id === "day_kane_reveal") {
+              applyKaneRevealForDay(f);
+              try { renderCast(); } catch {}
+            }
+            if (curStep.id && String(curStep.id).startsWith("day_end_card_")) {
+              applyEndCardActionForDay(f);
+              try { renderCast(); } catch {}
+            }
+            // Pedarkhande: apply Saul Buy when leaving mafia step so Back→change selection→Next works.
+            if (curStep.id === "night_mafia_team" && getDrawScenarioForFlow() === "pedarkhande") {
+              try {
+                const ev = (f.events || []).slice().reverse().find((e) => e && e.kind === "night_actions" && e.phase === "night" && e.day === f.day && e.data);
+                const payload = ev && ev.data ? ev.data : (f.draft && f.draft.nightActionsByNight && f.draft.nightActionsByNight[String(f.day)]) || null;
+                if (payload && String(payload.godfatherAction || "") === "saul_buy" && (payload.saulBuyTarget !== null && payload.saulBuyTarget !== undefined)) {
+                  applyNightSaulBuyFromPayload(f, payload);
+                  try { renderCast(); } catch {}
+                }
+              } catch {}
+            }
             f.step++;
             saveState(appState);
             showFlowTool();
@@ -1746,40 +2652,59 @@
           }
           // Capture position BEFORE transition so back-nav can return here.
           const _prePhase = f.phase, _preDay = f.day, _preStep = f.step;
+          // Sync status (alive/dead counts) at end of every phase — no dedicated step.
+          try { if (typeof syncGodStatusFromPlayers === "function") syncGodStatusFromPlayers(); } catch {}
           if (f.phase === "intro_day") {
             f.phase = "intro_night";
-            f.step = 0;
+            f.step = 0;  // Always start at first intro night step (Nostradamus for Pedarkhande)
           } else if (f.phase === "intro_night") {
             f.phase = "day";
             f.day = 1;
             f.step = 0;
           } else if (f.phase === "day") {
-            // End of all day steps → go to night.
+            // Apply end card action if we're on last step (end card) — it's not applied in the inner Next branch.
+            const steps = getFlowSteps(f);
+            const curStep = steps[Math.min(steps.length - 1, Math.max(0, f.step || 0))] || {};
+            if (curStep.id && String(curStep.id).startsWith("day_end_card_")) {
+              try { applyEndCardActionForDay(f); } catch {}
+              try { renderCast(); } catch {}
+            }
+            // Snapshot day steps so back-nav from night lands on the correct last step (e.g. Face Off).
+            try {
+              if (!f.draft || typeof f.draft !== "object") f.draft = {};
+              if (!f.draft.dayStepsByDay || typeof f.draft.dayStepsByDay !== "object") f.draft.dayStepsByDay = {};
+              f.draft.dayStepsByDay[String(f.day)] = getFlowSteps(f).map((s) => s.id);
+            } catch {}
             // Clear guns from the just-finished day — they were only valid for that day.
             f.guns = {};
             f.phase = "night";
             f.step = 0;
-            // Kane auto-death: if Kane successfully identified a Mafia member the previous night,
-            // they are killed by "invisible bullet" (تیر غیب) at the start of this night.
+            // Kane auto-death (pedarkhande): if Kane successfully identified a Mafia member the previous night,
+            // they are eliminated the following night (تیر غیب).
             try {
-              const draw = appState.draw;
-              if (draw && draw.players) {
-                const prevNightDay = (f.day || 1) - 1;
-                const kaneEv = (f.events || []).slice().reverse().find((e) => e && e.kind === "night_actions" && e.phase === "night" && e.day === prevNightDay && e.data);
-                const kanePayload = kaneEv && kaneEv.data ? kaneEv.data : null;
-                if (kanePayload) {
-                  const kaneMarkRaw = kanePayload.kaneMark;
-                  const kaneMarkIdx = (kaneMarkRaw !== null && kaneMarkRaw !== undefined && Number.isFinite(parseInt(kaneMarkRaw, 10))) ? parseInt(kaneMarkRaw, 10) : null;
-                  if (kaneMarkIdx !== null) {
-                    const markedPlayer = draw.players[kaneMarkIdx];
-                    if (markedPlayer) {
-                      const markedRid = markedPlayer.roleId || "citizen";
-                      const markedTeam = (roles[markedRid] && roles[markedRid].teamFa) ? roles[markedRid].teamFa : "شهر";
-                      if (markedTeam === "مافیا") {
-                        const kaneIdx = draw.players.findIndex((p) => p && p.roleId === "citizenKane");
-                        if (kaneIdx !== -1 && draw.players[kaneIdx].alive !== false) {
-                          setPlayerLife(kaneIdx, { alive: false, reason: "invisible_bullet" });
-                          try { renderCast(); } catch {}
+              if (getDrawScenarioForFlow() === "pedarkhande") {
+                const draw = appState.draw;
+                if (draw && draw.players) {
+                  const prevNightDay = (f.day || 1) - 1;
+                  const kaneEv = (f.events || []).slice().reverse().find((e) => e && e.kind === "night_actions" && e.phase === "night" && e.day === prevNightDay && e.data);
+                  const kanePayload = kaneEv && kaneEv.data ? kaneEv.data : null;
+                  if (kanePayload) {
+                    const kaneMarkRaw = kanePayload.kaneMark;
+                    const kaneMarkIdx = (kaneMarkRaw !== null && kaneMarkRaw !== undefined && Number.isFinite(parseInt(kaneMarkRaw, 10))) ? parseInt(kaneMarkRaw, 10) : null;
+                    if (kaneMarkIdx !== null) {
+                      const markedPlayer = draw.players[kaneMarkIdx];
+                      if (markedPlayer) {
+                        const markedRid = markedPlayer.roleId || "citizen";
+                        const markedTeam = (roles[markedRid] && roles[markedRid].teamFa) ? roles[markedRid].teamFa : "شهر";
+                        if (markedTeam === "مافیا") {
+                          const kaneIdx = draw.players.findIndex((p) => p && p.roleId === "citizenKane");
+                          if (kaneIdx !== -1 && draw.players[kaneIdx].alive !== false) {
+                            setPlayerLife(kaneIdx, { alive: false, reason: "invisible_bullet" });
+                            const draft = f.draft || {};
+                            draft.kaneInvisibleBulletByNight = f.day || 1;
+                            f.draft = draft;
+                            try { renderCast(); } catch {}
+                          }
                         }
                       }
                     }
@@ -1788,75 +2713,16 @@
               }
             } catch {}
           } else {
-            // Apply night resolution BEFORE moving to next day.
-            // Note: Night actions are considered simultaneous; being shot does NOT prevent acting that same night.
-            // Disables (e.g., Magician) can still block actions that night.
+            // Apply night resolution BEFORE moving to next day (via effect registry or fallback).
             try {
-              const draw = appState.draw;
               const ev = (f.events || []).slice().reverse().find((e) => e && e.kind === "night_actions" && e.phase === "night" && e.day === f.day && e.data);
               const payload0 = ev && ev.data ? { ...ev.data } : null;
-              if (payload0 && draw && draw.players) {
-                // Determine who is disabled tonight (Magician).
-                const disabledIdx = (payload0.magicianDisable !== null && payload0.magicianDisable !== undefined && Number.isFinite(Number(payload0.magicianDisable)))
-                  ? parseInt(payload0.magicianDisable, 10)
-                  : null;
-                const findIdxByRole = (roleIds) => {
-                  const ids = Array.isArray(roleIds) ? roleIds : [roleIds];
-                  for (let i = 0; i < (draw.players || []).length; i++) {
-                    const p = draw.players[i];
-                    if (!p) continue;
-                    if (ids.includes(p.roleId)) return i;
-                  }
-                  return null;
-                };
-                const doctorIdx = findIdxByRole(["doctor", "watson"]);
-                const lecterIdx = findIdxByRole(["doctorLecter"]);
-                const detIdx = findIdxByRole(["detective"]);
-                const proIdx = findIdxByRole(["professional"]);
-                const bomberIdx = findIdxByRole(["bomber"]);
-                const oceanIdx = findIdxByRole(["ocean"]);
-                const zodiacIdx = findIdxByRole(["zodiac"]);
-                const sniperIdx2 = findIdxByRole(["sniper"]);
-                // If a role is disabled, its action is ignored for resolution.
-                if (disabledIdx !== null) {
-                  if (doctorIdx !== null && disabledIdx === doctorIdx) payload0.doctorSave = null;
-                  if (lecterIdx !== null && disabledIdx === lecterIdx) payload0.lecterSave = null;
-                  if (detIdx !== null && disabledIdx === detIdx) payload0.detectiveQuery = null;
-                  if (proIdx !== null && disabledIdx === proIdx) payload0.professionalShot = null;
-                  if (bomberIdx !== null && disabledIdx === bomberIdx) { payload0.bombTarget = null; payload0.bombCode = null; }
-                  if (oceanIdx !== null && disabledIdx === oceanIdx) payload0.oceanWake = null;
-                  if (zodiacIdx !== null && disabledIdx === zodiacIdx) payload0.zodiacShot = null;
-                  if (sniperIdx2 !== null && disabledIdx === sniperIdx2) payload0.sniperShot = null;
-                  // Persist disable so Day N+1 can reference it (e.g., for informational notes).
-                  if (!f.draft || typeof f.draft !== "object") f.draft = {};
-                  if (!f.draft.disabledByNight || typeof f.draft.disabledByNight !== "object") f.draft.disabledByNight = {};
-                  f.draft.disabledByNight[String(f.day)] = disabledIdx;
+              if (payload0) {
+                if (typeof applyEffect === "function" && typeof hasEffect === "function" && hasEffect("night_resolution")) {
+                  applyEffect("night_resolution", { f, payload: payload0 });
+                } else {
+                  resolveNightFromPayload(f, payload0);
                 }
-
-                // Constantine revives first (restores a previously-dead player before shots resolve).
-                try { applyNightConstantineFromPayload(f, payload0); } catch {}
-                // Herbalist poison-kill: if no antidote given on the night after a poison, the victim dies.
-                try { applyNightHerbalistFromPayload(f, payload0); } catch {}
-                // Apply professional/sniper/ocean first so they still act even if mafia shot them.
-                try { applyNightProfessionalFromPayload(f, payload0); } catch {}
-                try { applyNightSniperFromPayload(f, payload0); } catch {}
-                try { applyNightOceanFromPayload(f, payload0); } catch {}
-                try { applyNightZodiacFromPayload(f, payload0); } catch {}
-                // Negotiator converts a citizen/armored to mafia (role conversion, not a kill).
-                try { applyNightNegotiatorFromPayload(f, payload0); } catch {}
-                // Investigator records 2 targets (bazras scenario).
-                try { applyNightInvestigatorFromPayload(f, payload0); } catch {}
-                // Sodagari (bazras): mafiaBoss sacrifice + citizen conversion.
-                try { applyNightSodagariFromPayload(f, payload0); } catch {}
-                // Soldier (namayande): gives bullet to a player.
-                try { applyNightSoldierFromPayload(f, payload0); } catch {}
-                // Apply mafia last (uses doctorSave + lecterSave, possibly cleared by disable).
-                try { applyNightMafiaFromPayload(f, payload0); } catch {}
-                // Heir inheritance: triggers after all kills so we know who actually died.
-                try { applyHeirInheritanceFromPayload(f); } catch {}
-                try { renderCast(); } catch {}
-                try { if (typeof renderNameGrid === "function") renderNameGrid(); } catch {}
-                try { saveState(appState); } catch {}
               }
             } catch {}
             // Bomb is planted at night and becomes active on the NEXT day.
@@ -1899,6 +2765,8 @@
 
         function prevFlowStep() {
           const f = ensureFlow();
+          // No previous step at the very start of the flow.
+          if (f.phase === "intro_day" && (f.step || 0) === 0) return;
           if (f.step > 0) {
             const steps = getFlowSteps(f);
             const leavingStep = steps[Math.min(steps.length - 1, Math.max(0, f.step || 0))] || {};
@@ -1908,26 +2776,135 @@
             //   (a) leaving that step going backward, OR
             //   (b) entering that step from a later step going backward.
             if (leavingStep.id === "day_elim" || leavingStep.id === "namayande_vote") {
-              // These use applyDayElimFromPayload. Revert when leaving them going backward.
-              try { applyDayElimFromPayload(f, { out: null }); } catch {}
+              // Revert via effect registry (or fallback to direct call if registry not loaded)
+              try {
+                if (typeof revertEffect === "function" && typeof hasEffect === "function" && hasEffect(leavingStep.id)) {
+                  revertEffect(leavingStep.id, { f });
+                } else {
+                  applyDayElimFromPayload(f, { out: null });
+                }
+              } catch {}
+              // Do NOT clear challengeUsedByDay — challenge selections are part of day_vote state and should persist when navigating back.
+              // Return end card to pool when reverting elimination (cards cannot be reused in same game).
+              try {
+                const ec = appState.god && appState.god.endCards;
+                if (ec && ec.byDay && ec.used && Array.isArray(ec.used)) {
+                  const dayKey = String(f.day || 1);
+                  const rec = ec.byDay[dayKey] && typeof ec.byDay[dayKey] === "object" ? ec.byDay[dayKey] : null;
+                  if (rec && rec.cardId) {
+                    const idx = ec.used.indexOf(rec.cardId);
+                    if (idx >= 0) ec.used.splice(idx, 1);
+                    delete ec.byDay[dayKey];
+                  }
+                }
+              } catch {}
+              try { renderCast(); } catch {}
+            } else if (leavingStep.id && String(leavingStep.id).startsWith("day_end_card_")) {
+              try {
+                if (typeof revertEffect === "function" && typeof hasEffect === "function" && hasEffect("day_end_card_action")) {
+                  revertEffect("day_end_card_action", { f });
+                } else {
+                  revertEndCardActionForDay(f);
+                }
+              } catch {}
+              // Clear day step snapshot so steps are recomputed when user changes votes and a new card is drawn.
+              try {
+                if (f.draft && f.draft.dayStepsByDay && typeof f.draft.dayStepsByDay === "object") {
+                  delete f.draft.dayStepsByDay[String(f.day)];
+                }
+              } catch {}
+              // Do NOT clear endCardActionByDay — selection should persist when navigating back (see day_vote/challengeUsedByDay).
               try { renderCast(); } catch {}
             } else if (leavingStep.id === "kabo_shoot" || enteringStep.id === "kabo_shoot") {
-              // kabo_shoot applies death on Next. Also revert when entering it from the next step.
-              try { applyDayElimFromPayload(f, { out: null }); } catch {}
+              // kabo_shoot applies death on Next. Revert via effect registry.
+              try {
+                if (typeof revertEffect === "function" && typeof hasEffect === "function" && hasEffect("kabo_shoot")) {
+                  revertEffect("kabo_shoot", { f });
+                } else {
+                  applyDayElimFromPayload(f, { out: null });
+                }
+              } catch {}
               try { renderCast(); } catch {}
             } else if (leavingStep.id === "bazras_forced_vote" || enteringStep.id === "bazras_forced_vote") {
-              // bazras_forced_vote applies death on Next. Also revert when entering it from the next step.
               try {
-                const d = f.draft || {};
-                const dayKey = String(f.day || 1);
-                const rec = (d.bazrasInterrogationByDay && d.bazrasInterrogationByDay[dayKey]) || {};
-                applyBazrasInterrogationFromPayload(f, { decision: rec.decision || null, outcome: null });
+                if (typeof revertEffect === "function" && typeof hasEffect === "function" && hasEffect("bazras_forced_vote")) {
+                  revertEffect("bazras_forced_vote", { f });
+                } else {
+                  const d = f.draft || {};
+                  const dayKey = String(f.day || 1);
+                  const rec = (d.bazrasInterrogationByDay && d.bazrasInterrogationByDay[dayKey]) || {};
+                  applyBazrasInterrogationFromPayload(f, { decision: rec.decision || null, outcome: null });
+                }
               } catch {}
               try { renderCast(); } catch {}
             } else if (leavingStep.id === "day_gun_expiry") {
-              // Gun expiry deaths are only applied when clicking Next from this step,
-              // so on the way BACK through this step we revert them as well.
-              try { revertGunExpiryForDay(f); } catch {}
+              try {
+                if (typeof revertEffect === "function" && typeof hasEffect === "function" && hasEffect("day_gun_expiry")) {
+                  revertEffect("day_gun_expiry", { f });
+                } else {
+                  revertGunExpiryForDay(f);
+                }
+              } catch {}
+              try { renderCast(); } catch {}
+            } else if (leavingStep.id === "day_guns" || enteringStep.id === "day_guns") {
+              try {
+                if (typeof revertEffect === "function" && typeof hasEffect === "function" && hasEffect("day_guns")) {
+                  revertEffect("day_guns", { f });
+                } else {
+                  revertGunShotsForDay(f);
+                }
+              } catch {}
+              try { renderCast(); } catch {}
+            } else if (enteringStep.id === "day_kane_reveal") {
+              try {
+                if (typeof revertEffect === "function" && typeof hasEffect === "function" && hasEffect("day_kane_reveal")) {
+                  revertEffect("day_kane_reveal", { f });
+                } else {
+                  revertKaneRevealForDay(f);
+                }
+              } catch {}
+              try { renderCast(); } catch {}
+            } else if (enteringStep.id && String(enteringStep.id).startsWith("day_end_card_")) {
+              try {
+                if (typeof revertEffect === "function" && typeof hasEffect === "function" && hasEffect("day_end_card_action")) {
+                  revertEffect("day_end_card_action", { f });
+                } else {
+                  revertEndCardActionForDay(f);
+                }
+              } catch {}
+              try { renderCast(); } catch {}
+            } else if (enteringStep.id === "night_mafia_team" && getDrawScenarioForFlow() === "pedarkhande") {
+              // Revert Saul Buy when going Back to mafia step (it was applied when leaving mafia step).
+              // Trigger when entering mafia from any later night step (Watson, Leon, Kane, Constantine).
+              try {
+                const dayKey = String(f.day || 1);
+                const d = f.draft || {};
+                if (d.nightSaulBuyAppliedByDay && d.nightSaulBuyAppliedByDay[dayKey]) {
+                  const rec = d.nightSaulBuyAppliedByDay[dayKey];
+                  if (Number.isFinite(Number(rec.converted)) && rec.prevRoleId !== null) {
+                    const p = appState.draw && appState.draw.players && appState.draw.players[parseInt(rec.converted, 10)];
+                    if (p) p.roleId = rec.prevRoleId;
+                  }
+                  d.nightSaulBuyAppliedByDay[dayKey] = { converted: null, prevRoleId: null };
+                }
+                if (d.saulBuyUsedOnNight != null && Number(d.saulBuyUsedOnNight) === Number(dayKey)) {
+                  d.saulBuyUsed = false;
+                  d.saulBuyUsedOnNight = null;
+                }
+                try { renderCast(); } catch {}
+              } catch {}
+            }
+            // When entering day_vote or namayande_defense from day_elim/namayande_vote, ensure vote-out is reverted
+            // so the voted-out player appears in the select-defenders list (user-reported bug).
+            if (enteringStep.id === "day_vote" || enteringStep.id === "namayande_defense") {
+              try {
+                const elimId = (leavingStep.id === "namayande_vote") ? "namayande_vote" : "day_elim";
+                if (typeof revertEffect === "function" && typeof hasEffect === "function" && hasEffect(elimId)) {
+                  revertEffect(elimId, { f });
+                } else {
+                  applyDayElimFromPayload(f, { out: null });
+                }
+              } catch {}
               try { renderCast(); } catch {}
             }
             f.step--;
@@ -1969,9 +2946,49 @@
             return;
           }
           if (f.phase === "night") {
-            // Night → last day step (day_elim).
-            // Revert day_elim death so it is live-editable when landing back on it.
-            try { applyDayElimFromPayload(f, { out: null }); } catch {}
+            // Night → last day step. Use snapshot from day→night transition when available,
+            // else compute steps (before any revert) so we land on the correct step
+            // (e.g. Face Off, not day_elim, when the last step was an end card).
+            const dayKey = String(f.day || 1);
+            const snapshotIds = (f.draft && f.draft.dayStepsByDay && Array.isArray(f.draft.dayStepsByDay[dayKey]))
+              ? f.draft.dayStepsByDay[dayKey] : null;
+            const daySteps = snapshotIds && snapshotIds.length
+              ? snapshotIds.map((id) => ({ id, title: id }))
+              : getFlowSteps({ ...f, phase: "day" });
+            const lastDayStepId = daySteps.length > 0 ? (daySteps[daySteps.length - 1] || {}).id : "";
+            const lastStepIsEndCard = lastDayStepId && String(lastDayStepId).startsWith("day_end_card_");
+            f.phase = "day";
+            f.step = Math.max(0, daySteps.length - 1);
+            // Only revert day_elim when landing on day_elim (not when landing on end card step).
+            if (!lastStepIsEndCard) {
+              try {
+                if (typeof revertEffect === "function" && typeof hasEffect === "function" && hasEffect("day_elim")) {
+                  revertEffect("day_elim", { f });
+                } else {
+                  applyDayElimFromPayload(f, { out: null });
+                }
+              } catch {}
+              try {
+                const ec = appState.god && appState.god.endCards;
+                if (ec && ec.byDay && ec.used && Array.isArray(ec.used)) {
+                  const dayKey = String(f.day || 1);
+                  const rec = ec.byDay[dayKey] && typeof ec.byDay[dayKey] === "object" ? ec.byDay[dayKey] : null;
+                  if (rec && rec.cardId) {
+                    const idx = ec.used.indexOf(rec.cardId);
+                    if (idx >= 0) ec.used.splice(idx, 1);
+                    delete ec.byDay[dayKey];
+                  }
+                }
+              } catch {}
+            } else {
+              try {
+                if (typeof revertEffect === "function" && typeof hasEffect === "function" && hasEffect("day_end_card_action")) {
+                  revertEffect("day_end_card_action", { f });
+                } else {
+                  revertEndCardActionForDay(f);
+                }
+              } catch {}
+            }
             try { renderCast(); } catch {}
             // Restore f.guns from this day's night gives (night N-1 gave guns for day N).
             try {
@@ -1990,11 +3007,17 @@
                 f.guns[to] = { type: g.type || "real", used: usedShooters.has(to), givenAt: g.at || 0 };
               }
             } catch {}
-            f.phase = "day";
-            f.step = Math.max(0, getFlowSteps({ ...f, phase: "day" }).length - 1);
           } else {
             // Day step 0 → previous night's last step.
             if ((f.day || 1) > 1) {
+              // Revert day effects applied at step 0 (e.g. Kane reveal) before reverting night.
+              try {
+                if (typeof revertEffect === "function" && typeof hasEffect === "function" && hasEffect("day_kane_reveal")) {
+                  revertEffect("day_kane_reveal", { f });
+                } else {
+                  revertKaneRevealForDay(f);
+                }
+              } catch {}
               // Clear the day step snapshot for this day — it will be recomputed on next forward.
               try {
                 if (f.draft && f.draft.dayStepsByDay && typeof f.draft.dayStepsByDay === "object") {
@@ -2003,18 +3026,26 @@
               } catch {}
               // Revert all deaths that were applied when that night transitioned to this day.
               const prevNight = (f.day || 1) - 1;
-              try { revertNightDeaths(f, prevNight); } catch {}
+              try {
+                if (typeof revertEffect === "function" && typeof hasEffect === "function" && hasEffect("night_resolution")) {
+                  revertEffect("night_resolution", { f, nightDayNum: prevNight });
+                } else {
+                  revertNightDeaths(f, prevNight);
+                }
+              } catch {}
               try { renderCast(); } catch {}
               f.day = Math.max(1, f.day - 1);
               f.phase = "night";
               f.step = Math.max(0, getFlowSteps({ ...f, phase: "night" }).length - 1);
             } else {
-              // Day 1 step 0 → go back to intro_night.
+              // Day 1 step 0 → go back to intro_night (last step).
               f.phase = "intro_night";
-              f.step = 0;
+              const introSteps = getFlowSteps({ ...f, phase: "intro_night" });
+              f.step = Math.max(0, introSteps.length - 1);
             }
           }
           try { pruneEventsForward(f); } catch {}
+          try { if (typeof syncGodStatusFromPlayers === "function") syncGodStatusFromPlayers(); } catch {}
           saveState(appState);
           showFlowTool();
         }
@@ -2056,7 +3087,9 @@
               } catch {}
               return null;
             })();
-            const guardSac = !!(document.getElementById("fl_bomb_guard") && document.getElementById("fl_bomb_guard").checked && guardIdx !== null);
+            const guardDisabledPrevNight = (guardIdx !== null && d.disabledByNight && d.disabledByNight[String(f.day)] != null)
+              ? (parseInt(d.disabledByNight[String(f.day)], 10) === guardIdx) : false;
+            const guardSac = !!(document.getElementById("fl_bomb_guard") && document.getElementById("fl_bomb_guard").checked && guardIdx !== null && !guardDisabledPrevNight);
             const guardGuess = String(((document.getElementById("fl_bomb_guard_guess") || {}).value) || "").trim();
             const targetGuess = String(((document.getElementById("fl_bomb_target_guess") || {}).value) || "").trim();
             const guess = guardSac ? guardGuess : targetGuess;

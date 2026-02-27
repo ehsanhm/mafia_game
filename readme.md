@@ -1,9 +1,7 @@
-## TODO:
+## Tests
 
-Day 2
-Step 1 of 4 • Gun use
-Guns manager
+Open `tests/run.html` in a browser to run effect registry, selection-persistence, revert-death, revert-vote-after-reopen, matador-disabled, i18n-farsi, and flow tests.
 
-the options can be more user friendly, we shouldn't have to select the shooter and target. instead it's better if we have 2 dropbdown menus for targets: 
-- Player1Name's Target 
-- Player2Name's target
+## TODO
+
+- **Guns manager (Zodiac):** Use two target dropdowns (e.g. "Player1's Target", "Player2's Target") instead of shooter + target selection.

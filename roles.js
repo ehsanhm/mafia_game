@@ -10,20 +10,20 @@ const roles = {
   nato: { faName: "ناتو", teamFa: "مافیا", hintFa: "حدسِ نقش", descFa: "یک‌بار در طول بازی می‌تواند نقش دقیقِ یک بازیکن را حدس بزند؛ در صورت حدسِ درست آن بازیکن در هر شرایطی از بازی خارج می‌شود. در شب ناتو معمولاً شلیک انجام نمی‌شود." },
   negotiator: { faName: "مذاکره‌کننده", teamFa: "مافیا", hintFa: "مذاکره/تبدیل", descFa: "اگر ۱ یا ۲ نفر از مافیا حذف شده باشند، می‌تواند «شب مذاکره» را فعال کند. در شب مذاکره مافیا شلیک نمی‌کند؛ مذاکره‌کننده یک نفر را انتخاب می‌کند — اگر شهروند ساده یا زره‌پوشِ زره‌دار باشد، به مافیا تبدیل می‌شود؛ در غیر این صورت مذاکره شکست می‌خورد." },
   natasha: { faName: "ناتاشا", teamFa: "مافیا", hintFa: "سایلنتِ شب", descFa: "هر شب یک نفر را انتخاب می‌کند تا روز بعد نتواند صحبت کند (سایلنت). نمی‌تواند دو شب پشت‌سرهم یک نفر را سایلنت کند." },
-  doctorLecter: { faName: "دکتر لکتر", teamFa: "مافیا", hintFa: "سیوِ مافیا", descFa: "پزشکِ تیم مافیاست. هر شب می‌تواند یک نفر را از شلیک نجات دهد. جان خودش را فقط یک‌بار در کل بازی می‌تواند نجات دهد.", canBeDisabled: true },
+  doctorLecter: { faName: "دکتر لکتر", teamFa: "مافیا", hintFa: "سیوِ مافیا", descFa: "پزشکِ تیم مافیاست. هر شب می‌تواند یک نفر را از شلیک نجات دهد. جان خودش را فقط یک‌بار در کل بازی می‌تواند نجات دهد." },
   jokerMafia: { faName: "جوکر مافیا", teamFa: "مافیا", hintFa: "برعکس‌کردن استعلام", descFa: "فقط ۲ بار در کل بازی می‌تواند یک نفر را انتخاب کند تا استعلام همان شب برای کارآگاه برعکس شود. انتخاب تکراری پشت‌سرهم (دو شب متوالی یک نفر) ممنوع است." },
-  matador: { faName: "ماتادور", teamFa: "مافیا", hintFa: "گرفتنِ قابلیت", descFa: "هر شب با تیم مافیا بیدار می‌شود و یک نفر را نشان می‌دهد؛ توانایی آن نفر همان شب غیرفعال می‌شود. اگر آن فرد همان شب بیدار شود، گرداننده با علامت ضربدر این را اعلام می‌کند." },
+  matador: { faName: "ماتادور", teamFa: "مافیا", hintFa: "گرفتنِ قابلیت", descFa: "هر شب با تیم مافیا بیدار می‌شود و یک نفر را نشان می‌دهد؛ آن نفر ۲۴ ساعت قابلیت ندارد. نمی‌تواند دو شب متوالی یک نفر را انتخاب کند." },
   saulGoodman: { faName: "ساول گودمن", teamFa: "مافیا", hintFa: "خرید/سوداگری", descFa: "یک‌بار در کل بازی می‌تواند یک «شهروند ساده» را بخرد و به «مافیا ساده» تبدیل کند. در شبِ خرید، گرداننده اعلام می‌کند که خرید انجام خواهد شد." },
 
-  detective: { faName: "کارآگاه", teamFa: "شهر", hintFa: "استعلامِ شب", descFa: "هر شب می‌تواند یک نفر را استعلام کند؛ گرداننده با علامت مشخص می‌کند که آن نفر مافیاست یا شهروند. رئیس مافیا و پدرخوانده همیشه «منفی» (شهروند) نمایش می‌دهند.", canBeDisabled: true },
+  detective: { faName: "کارآگاه", teamFa: "شهر", hintFa: "استعلامِ شب", descFa: "هر شب می‌تواند یک نفر را استعلام کند؛ گرداننده با علامت مشخص می‌کند که آن نفر مافیاست یا شهروند. رئیس مافیا و پدرخوانده همیشه «منفی» (شهروند) نمایش می‌دهند." },
   investigator: { faName: "بازپرس", teamFa: "شهر", hintFa: "بازپرسی", descFa: "یک‌بار در کل بازی می‌تواند بازپرسی انجام دهد: دو نفر را همزمان به دفاعیه می‌آورد، آن دو کوتاه صحبت می‌کنند، سپس رأی‌گیری فقط بین همان دو نفر انجام می‌شود." },
-  doctor: { faName: "پزشک", teamFa: "شهر", hintFa: "سیوِ شب", descFa: "هر شب می‌تواند جان یک نفر را از شلیک نجات دهد. نمی‌تواند دو شب پشت‌سرهم یک نفر را نجات دهد. نجات خودش فقط یک‌بار در کل بازی مجاز است.", canBeDisabled: true },
-  watson: { faName: "دکتر واتسون", teamFa: "شهر", hintFa: "نجات", descFa: "مثل پزشک عمل می‌کند: هر شب جان یک نفر را نجات می‌دهد. نجات خودش فقط یک‌بار در کل بازی مجاز است.", canBeDisabled: true },
+  doctor: { faName: "پزشک", teamFa: "شهر", hintFa: "سیوِ شب", descFa: "هر شب می‌تواند جان یک نفر را از شلیک نجات دهد. نمی‌تواند دو شب پشت‌سرهم یک نفر را نجات دهد. نجات خودش فقط یک‌بار در کل بازی مجاز است." },
+  watson: { faName: "دکتر واتسون", teamFa: "شهر", hintFa: "نجات", descFa: "مثل پزشک عمل می‌کند: هر شب جان یک نفر را نجات می‌دهد. نجات خودش فقط یک‌بار در کل بازی مجاز است." },
   researcher: { faName: "محقق", teamFa: "شهر", hintFa: "گره/پیوند", descFa: "به‌جز شب معارفه، هر شب می‌تواند خودش را به یک نفر «گره» بزند. اگر محقق با شات شب یا رأی از بازی خارج شود، فردِ گره‌خورده هم خارج می‌شود — معمولاً اگر رئیس مافیا را انتخاب کرده باشد، رئیس خارج نمی‌شود." },
   invulnerable: { faName: "رویین‌تن", teamFa: "شهر", hintFa: "زرهِ شب", descFa: "شلیک شبانه مافیا کشنده نیست. فقط از طریق رأی‌گیری روز یا شرایط خاص از بازی خارج می‌شود." },
   armored: { faName: "زره‌پوش", teamFa: "شهر", hintFa: "زره + بازگشت", descFa: "شلیک شبانه مافیا کشنده نیست. اگر با رأی‌گیری روز از بازی خارج شود، نقشش اعلام می‌شود و به بازی برمی‌گردد — از آن به بعد دیگر قابل مذاکره نیست." },
   sniper: { faName: "تک‌تیرانداز", teamFa: "شهر", hintFa: "شلیکِ محدود", descFa: "فقط یک‌بار در کل بازی می‌تواند شلیک کند. اگر به شهروند شلیک کند، خودش از بازی خارج می‌شود — حتی اگر پزشک نجات دهد." },
-  professional: { faName: "حرفه‌ای", teamFa: "شهر", hintFa: "شلیک", descFa: "شب‌ها می‌تواند به کسی که مطمئن است مافیاست شلیک کند. اگر اشتباه به شهروند شلیک کند، خودش از بازی خارج می‌شود.", canBeDisabled: true },
+  professional: { faName: "حرفه‌ای", teamFa: "شهر", hintFa: "شلیک", descFa: "شب‌ها می‌تواند به کسی که مطمئن است مافیاست شلیک کند. اگر اشتباه به شهروند شلیک کند، خودش از بازی خارج می‌شود." },
   reporter: { faName: "خبرنگار", teamFa: "شهر", hintFa: "استعلامِ مذاکره", descFa: "در سناریو مذاکره، در شبی که مذاکره انجام می‌شود بیدار می‌شود و از گرداننده می‌فهمد آیا هدف مذاکره شهروند/زره‌پوش بود یا نه." },
   representative: { faName: "نماینده", teamFa: "شهر", hintFa: "قدرتِ روز", descFa: "یک‌بار در کل بازی می‌تواند یکی از دو قدرت روز را اعمال کند: وتوی رأی‌گیری (نتیجه رأی جاری را ملغی کند) یا حمایت از بازیکن (مصونیت موقت از حذف برای یک نفر در همان روز). شب بیدار می‌شود ولی اکشنی ثبت نمی‌شود." },
   hardJohn: { faName: "جان‌سخت", teamFa: "شهر", hintFa: "جان اضافه + استعلام", descFa: "اولین شلیک مافیا کشنده نیست (معمولاً خودش هم متوجه نمی‌شود). دو بار در کل بازی می‌تواند از گرداننده ساید یک بازیکنِ اخراج‌شده را بپرسد." },
@@ -47,12 +47,12 @@ const roles = {
 
   // --- Zodiac ---
   alcapone: { faName: "آلکاپن", teamFa: "مافیا", hintFa: "رئیس", descFa: "رئیس مافیاست؛ استعلام کارآگاه برای او همیشه «منفی» (شهروند) است." },
-  zodiac: { faName: "زودیاک", teamFa: "مستقل", hintFa: "شلیکِ شب‌های زوج", descFa: "تیم مستقل. فقط در شب‌های زوج می‌تواند شلیک کند و یک نفر را از بازی خارج کند. با شلیک شبانه کشته نمی‌شود؛ فقط با رأی، تفنگ روزانه یا بمب‌گذاری خارج می‌شود. اگر به محافظ شلیک کند، خودش کشته می‌شود.", canBeDisabled: true },
+  zodiac: { faName: "زودیاک", teamFa: "مستقل", hintFa: "شلیکِ شب‌های زوج", descFa: "تیم مستقل. فقط در شب‌های زوج می‌تواند شلیک کند و یک نفر را از بازی خارج کند. با شلیک شبانه کشته نمی‌شود؛ فقط با رأی، تفنگ روزانه یا بمب‌گذاری خارج می‌شود. اگر به محافظ شلیک کند، خودش کشته می‌شود." },
   magician: { faName: "شعبده‌باز", teamFa: "مافیا", hintFa: "گرفتن قابلیت", descFa: "هر شب با هماهنگی تیم مافیا یک نفر از شهر را انتخاب می‌کند و توانایی شبانه او را غیرفعال می‌کند." },
-  bomber: { faName: "بمب‌گذار", teamFa: "مافیا", hintFa: "بمب‌گذاری", descFa: "یک‌بار در کل بازی می‌تواند بمب‌گذاری کند: یک کد بین ۱ تا ۴ به گرداننده می‌دهد و یک نفر را هدف قرار می‌دهد. هدف باید همان عدد را حدس بزند — درست = زنده / غلط = خارج.", canBeDisabled: true },
+  bomber: { faName: "بمب‌گذار", teamFa: "مافیا", hintFa: "بمب‌گذاری", descFa: "یک‌بار در کل بازی می‌تواند بمب‌گذاری کند: یک کد بین ۱ تا ۴ به گرداننده می‌دهد و یک نفر را هدف قرار می‌دهد. هدف باید همان عدد را حدس بزند — درست = زنده / غلط = خارج." },
   guard: { faName: "محافظ", teamFa: "شهر", hintFa: "ضد بمب/زودیاک", descFa: "وقتی بمب‌گذاری اعلام می‌شود، محافظ می‌تواند خودش را فدای هدف کند و کد خنثی‌سازی را حدس بزند: درست = هر دو زنده / غلط = محافظ خارج ولی هدف زنده. اگر زودیاک به محافظ شلیک کند، زودیاک کشته می‌شود.", canSacrificeForBomb: true },
-  ocean: { faName: "اوشن", teamFa: "شهر", hintFa: "بیداری شهر", descFa: "دو بار در کل بازی می‌تواند شب چند نفر را بیدار کند تا با چشم باز مشورت کنند. اگر اشتباهاً یک مافیا یا زودیاک را بیدار کند، اوشن از بازی خارج می‌شود.", canBeDisabled: true },
-  gunslinger: { faName: "تفنگدار", teamFa: "شهر", hintFa: "دادن تفنگ", descFa: "سه تفنگ دارد: ۲ تیر مشقی + ۱ تیر جنگی (خودش نمی‌داند کدام‌ها مشقی‌اند). شب تفنگ‌ها را به بازیکنان می‌دهد؛ گیرنده روز بعد می‌تواند استفاده کند.", canBeDisabled: true },
+  ocean: { faName: "اوشن", teamFa: "شهر", hintFa: "بیداری شهر", descFa: "دو بار در کل بازی می‌تواند شب چند نفر را بیدار کند تا با چشم باز مشورت کنند. اگر اشتباهاً یک مافیا یا زودیاک را بیدار کند، اوشن از بازی خارج می‌شود." },
+  gunslinger: { faName: "تفنگدار", teamFa: "شهر", hintFa: "دادن تفنگ", descFa: "سه تفنگ دارد: ۲ تیر مشقی + ۱ تیر جنگی (خودش نمی‌داند کدام‌ها مشقی‌اند). شب تفنگ‌ها را به بازیکنان می‌دهد؛ گیرنده روز بعد می‌تواند استفاده کند." },
 
   // --- Representative (نماینده) ---
   don: { faName: "دن مافیا", teamFa: "مافیا", hintFa: "رهبر + رأی خیانت", descFa: "رهبر تیم مافیاست؛ استعلام او همیشه «منفی» (شهروند) است. یک‌بار در هر روز می‌تواند «رأی خیانت» بزند: مخفیانه یک رأی از یک نماینده کم یا به او اضافه می‌کند. اگر خودش نماینده شود، نمی‌تواند این قدرت را روی خودش اعمال کند." },
@@ -67,7 +67,7 @@ const roles = {
   // --- Godfather (game) ---
   leon: { faName: "لئون", teamFa: "شهر", hintFa: "حرفه‌ای شهر", descFa: "شب‌ها می‌تواند به کسی شلیک کند. اگر به شهروند شلیک کند، خودش از بازی خارج می‌شود و دکتر نمی‌تواند نجات دهد. یک جلیقه دارد (اولین شلیک مافیا را تحمل می‌کند)." },
   constantine: { faName: "کنستانتین", teamFa: "شهر", hintFa: "بازگردانی", descFa: "یک‌بار در کل بازی می‌تواند یک بازیکنِ اخراج‌شده را به بازی برگرداند — فقط اگر نقش آن بازیکن هنوز توسط گرداننده اعلام نشده باشد." },
-  citizenKane: { faName: "همشهری کین", teamFa: "شهر", hintFa: "افشا", descFa: "یک‌بار در کل بازی یک نفر را به گرداننده نشان می‌دهد؛ اگر آن نفر مافیا باشد، صبح ساید او توسط گرداننده اعلام می‌شود (بدون خروج فوری). در برخی قوانین، اگر حدسش درست باشد شب بعد خودِ کین از بازی خارج می‌شود." },
+  citizenKane: { faName: "همشهری کین", teamFa: "شهر", hintFa: "افشا", descFa: "یک‌بار در کل بازی یک نفر را نشان می‌دهد؛ اگر مافیا باشد، گرداننده روز بعد نقشش را افشا می‌کند (در بازی می‌ماند) و همان شب کین با تیر غیب خارج می‌شود. اگر اشتباه: اتفاقی نمی‌افتد." },
   nostradamus: { faName: "نوستراداموس", teamFa: "مستقل", hintFa: "شب معارفه", descFa: "فقط شب معارفه بیدار می‌شود. ۳ نفر را نشان می‌دهد و گرداننده تعداد مافیاهای داخل آن ۳ را اعلام می‌کند. نوستراداموس بر اساس این اطلاعات ساید خود را انتخاب می‌کند (اگر ۲ نفر از ۳ مافیا باشند، معمولاً مجبور است ساید مافیا را انتخاب کند)." },
 };
 
@@ -83,7 +83,7 @@ const ROLE_I18N = {
   natasha: { name: "Natasha", hint: "Night silence", desc: "Each night silences one player — they cannot speak the following day. Cannot silence the same player on consecutive nights." },
   doctorLecter: { name: "Dr. Lecter", hint: "Save (mafia)", desc: "Mafia doctor. Can save any player from the night shot each night. Self-save: only once per game." },
   jokerMafia: { name: "Mafia Joker", hint: "Flip inquiry", desc: "Max 2 times per game, selects a player to have their Detective inquiry result flipped that night. Cannot target the same player on consecutive nights." },
-  matador: { name: "Matador", hint: "Disable ability", desc: "Each night wakes with the mafia team and marks one player; that player's night ability is disabled. The host signals with an X if they wake up." },
+  matador: { name: "Matador", hint: "Disable ability", desc: "Each night marks one player; that player loses their ability for 24 hours. Cannot choose the same player two consecutive nights." },
   saulGoodman: { name: "Saul Goodman", hint: "Buy/convert", desc: "Once per game can buy a Simple Citizen and convert them to Simple Mafia. The host announces a purchase will occur that night." },
 
   detective: { name: "Detective", hint: "Night inquiry", desc: "Each night can check one player's side. The host signals the result. Mafia Boss and Godfather always show as 'citizen' (negative)." },
@@ -125,7 +125,7 @@ const ROLE_I18N = {
 
   leon: { name: "Leon", hint: "City pro", desc: "Can shoot at night. If shoots a citizen, Leon is eliminated — Dr. Watson cannot prevent this. Has one vest (survives the first mafia shot)." },
   constantine: { name: "Constantine", hint: "Revive", desc: "Once per game can revive an eliminated player — only if that player's role has not yet been announced by the host." },
-  citizenKane: { name: "Citizen Kane", hint: "Reveal", desc: "Once per game marks a player; if mafia, their side is announced next morning (no immediate elimination). In some rules, if correct, Kane exits the game the following night." },
+  citizenKane: { name: "Citizen Kane", hint: "Reveal", desc: "Once per game marks a player; if mafia, host reveals their role next day (they remain in game) and Kane is eliminated the following night (invisible bullet). If wrong, nothing happens." },
   nostradamus: { name: "Nostradamus", hint: "Intro night", desc: "Wakes only on the intro night. Marks 3 players; host reveals how many are mafia. Nostradamus chooses their side based on this — if 2 of 3 are mafia, usually must join the mafia side." },
 
   don: { name: "Don", hint: "Leader + betrayal vote", desc: "Mafia leader; always shows 'citizen' to Detective. Once per day may secretly add or subtract 1 vote from any representative's tally. Cannot use this power on themselves if elected representative." },

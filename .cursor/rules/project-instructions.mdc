@@ -1,0 +1,69 @@
+---
+description: Core project instructions for Mafia game app
+alwaysApply: true
+---
+
+# Mafia Game — Project Instructions
+
+## Design-First Workflow
+
+- **Design docs** in `design/` are the single source of truth for intended behavior.
+- When fixing a bug: open the scenario's design file, confirm intended behavior, then align code with the doc.
+- When adding a feature: update the design doc first, then implement.
+- When adding a new scenario: add entry in `scenarios.js` and `00-overview.md`, then create `design/<scenario_id>.md` from `template.md`.
+
+## Key Files
+
+| File | Purpose |
+|------|---------|
+| `scenarios.js` | Single source of truth for scenario configs (allowedRoles, wakeOrder, features, etc.) |
+| `flow-engine.js` | Flow logic, state, back-navigation, night resolution |
+| `flow-ui.js` | UI rendering for flow steps |
+| `effect-registry.js` | Central apply/revert for flow steps — register effects here instead of scattering logic |
+| `design/*.md` | Human-readable game flow design — one per scenario |
+
+## Effect Registry and Testing
+
+- **Effect registry:** Steps that change game state register `{ apply, revert }` in `effect-registry.js`. Flow engine calls `applyEffect(stepId, ctx)` / `revertEffect(stepId, ctx)` instead of direct applyXxx/revertXxx calls.
+- **Adding effects:** Use `registerEffect(stepId, { apply: (ctx) => ..., revert: (ctx) => ... })`. Context has `{ f, payload }`.
+- **Revert tests:** All flow actions must be revertible when going back. `tests/revert-flow-actions.test.js` covers night_resolution, day_elim, day_end_card_action, etc. When adding a new effect, add a revert test in that suite.
+- **Regression tests:** Open `tests/run.html` in a browser to run tests. When fixing a bug, add a test that reproduces it first, then fix.
+- **Always run tests after code changes:** After making any change to the codebase (flow-engine, flow-ui, effect-registry, flow-configs, scenarios, etc.), run the tests by opening `tests/run.html` in a browser and confirm all tests pass. Do this before considering the change complete.
+
+## Bilingual Support
+
+- App supports **Persian (fa)** and **English (en)**. Use `t(key, vars)` for all user-facing strings.
+- Add strings to `strings.js` under both `STR.fa` and `STR.en`.
+- Use `data-i18n`, `data-i18n-title`, `data-i18n-aria-label` for static elements.
+
+## UX Conventions
+
+- **Selections:** Always use **cards** (clickable cards in a grid) for any selection UI — never radio buttons, checkboxes, or dropdowns when a card-based choice is feasible. See `design/player-selection-cards.md`.
+- **Validation feedback:** Never use `alert()` or modal popups for validation. Show inline messages (e.g. a `.note.alert` div) within the flow body instead.
+- **Player selection:** Use **player cards** (clickable cards in a grid), not dropdowns, for choosing targets.
+- **Guns manager:** Prefer two target dropdowns (e.g. "Player1's Target", "Player2's Target") over separate shooter + target selection.
+- **Winner page:** Do not show a "Next" button on the winner screen.
+- **Scenario list:** Order scenarios logically (by scenario type/theme), not alphabetically.
+
+## Phase Boundaries and Resolution
+
+- **Phases** have sub-steps (e.g. night has Mafia → Doctor → Leon → …). Deaths, revivals, role changes are **resolved at the end of the phase**, not during individual steps.
+- **Night:** All effects batch-resolve at dawn. Use `revertNightDeaths(f, nightDayNum)` when going back from Day N+1 to Night N.
+- **Day:** Vote-out and similar effects resolve at the end of the day (e.g. `day_elim` step). Revert via `applyDayElimFromPayload(f, { out: null })`.
+- **Mid-day:** Scenario-specific steps (e.g. `kabo_shoot`, `bazras_forced_vote`, `day_gun_expiry`) resolve at the end of that step. Each has its own revert: `applyDayElimFromPayload`, `applyBazrasInterrogationFromPayload(f, { outcome: null })`, `revertGunExpiryForDay(f)`.
+- When adding new effects: ensure there is a corresponding revert for back-navigation, following the same phase-boundary model.
+
+## Flow Navigation and Status Check
+
+- **Full back/forth:** God must be able to go Next and Previous for every Phase (Day, Mid-day, Night) and all their sub-steps. Selections on each step must persist when navigating.
+- **Sub-steps can be parallel:** Some sub-steps happen at the same time (e.g. Day: voting, gun use, bomb diffusion). God must be able to visit any sub-step in any order, even if another sub-step is not "finished" yet.
+- **Never disable navigation:** The Next and Back buttons must never be disabled. God can always move forward or backward through phases and sub-steps, regardless of completion state.
+- **Record everything:** Keep a record of all important actions (votes, eliminations, shots, saves, conversions, revives, etc.) so they can be replayed and reverted correctly.
+- **Player statuses:** Update player state (alive/dead, role changes) as God navigates. Going forward applies effects; going back reverts them. Status Check and cast view must always reflect the state at the current flow position.
+- **Status Check:** Must display all important actions from every phase and sub-step, grouped by day and phase. Only show events **up to the current flow position** — going back removes "future" results from Status Check and reverts game state. See `design/00-night-phases-and-status-check.md`.
+- **Status Check display order:** Saved and shown data in the Status Check window must follow the **same order as events happen in the game**, based on the step order defined in each scenario's flow config (`flow-configs/{scenario_name}.js`). Day steps follow `day.steps`; night steps follow `night` array. Events are tagged with `stepId` when recorded; Status Check sorts and renders by this order.
+
+## Code Conventions
+
+- Vanilla JS — no frameworks. Keep dependencies minimal.
+- Use `getDrawScenarioForFlow()` / `getScenarioConfig(scenario)` to branch scenario-specific logic.

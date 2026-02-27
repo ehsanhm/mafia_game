@@ -127,6 +127,7 @@ const SCENARIO_CONFIGS = {
     defaults: { nPlayers: 11, mafiaCount: 3 },
     allowedRoles: ["godfather", "matador", "saulGoodman", "watson", "leon", "citizenKane", "constantine", "nostradamus"],
     defaultToggles: ["godfather", "matador", "saulGoodman", "watson", "leon", "citizenKane", "constantine", "nostradamus"],
+    voteThreshold: "half_minus_one", // نصف منهای یک: defense threshold = (eligible/2) - 1
     wakeOrder: {
       fa: ["نوستراداموس (فقط شب معارفه)", "تیم مافیا (پدرخوانده/ماتادور/ساول)", "دکتر واتسون", "لئون", "همشهری کین", "کنستانتین"],
       en: ["Nostradamus (intro night only)", "Mafia team (Godfather/Matador/Saul)", "Dr. Watson", "Leon", "Citizen Kane", "Constantine"],
@@ -139,16 +140,15 @@ const SCENARIO_CONFIGS = {
       { id: "beautiful_mind", fa: "ذهن زیبا", en: "Beautiful Mind" },
       { id: "handcuffs", fa: "دستبند", en: "Handcuffs" },
       { id: "face_change", fa: "تغییر چهره", en: "Face Off" },
-      { id: "duel", fa: "دوئل", en: "Duel" },
     ],
     roleOverrides: {
       godfather: { descFa: "در سناریو پدرخوانده یک جلیقه دارد و «حس ششم» دارد. تیم مافیا هر شب معمولاً یکی را انتخاب می‌کند: یا شلیک، یا استفاده از حس ششم، یا خرید توسط ساول (طبق قوانین سناریو)." },
-      matador: { descFa: "شب‌ها با تیم مافیا بیدار می‌شود. هر شب می‌تواند یک نفر را نشان کند تا توانایی شبِ او همان شب غیرفعال شود؛ اگر آن فرد بیدار شود با علامت ضربدر گرداننده مواجه می‌شود (طبق سناریو پدرخوانده)." },
+      matador: { descFa: "شب‌ها با تیم مافیا بیدار می‌شود. هر شب یک نفر را نشان می‌دهد؛ آن نفر ۲۴ ساعت قابلیت ندارد. نمی‌تواند دو شب متوالی یک نفر را انتخاب کند (طبق سناریو پدرخوانده)." },
       saulGoodman: { descFa: "معمولاً فقط یک‌بار می‌تواند یک «شهروند ساده» را بخرد و به «مافیا ساده» تبدیل کند؛ در شبی که خرید انجام می‌شود، گرداننده اعلام می‌کند خریداری انجام خواهد شد (طبق سناریو پدرخوانده)." },
       watson: { descFa: "مثل پزشک عمل می‌کند: هر شب می‌تواند جان یک نفر را نجات دهد و جان خودش را فقط یک‌بار در کل بازی می‌تواند نجات دهد (طبق سناریو پدرخوانده)." },
       leon: { descFa: "می‌تواند (طبق قوانین سناریو) محدود شلیک کند؛ اگر به شهروند شلیک کند، خودش کشته می‌شود و معمولاً دکتر نمی‌تواند او را نجات دهد. یک جلیقه هم دارد (طبق سناریو پدرخوانده)." },
-      citizenKane: { descFa: "معمولاً یک‌بار یک نفر را به گرداننده نشان می‌دهد؛ اگر مافیا باشد، صبح ساید/مافیا بودن او اعلام می‌شود (بدون خروج فوری). در بعضی قوانین اگر استعلامش درست باشد، شب بعد خودِ کین از بازی خارج می‌شود (طبق قوانین سناریو)." },
-      constantine: { descFa: "یک‌بار می‌تواند یکی از بازیکنان اخراجی (در صورتی که نقش او افشا نشده باشد) را به بازی برگرداند (طبق سناریو پدرخوانده)." },
+      citizenKane: { descFa: "یک‌بار یک نفر را نشان می‌دهد؛ اگر مافیا باشد، گرداننده روز بعد نقشش را افشا می‌کند (در بازی می‌ماند) و همان شب کین با تیر غیب خارج می‌شود. اگر اشتباه: اتفاقی نمی‌افتد، کین قابلیتش را از دست می‌دهد (طبق سناریو پدرخوانده)." },
+      constantine: { descFa: "یک‌بار می‌تواند یکی از بازیکنان اخراجی (نقش افشا نشده) را برگرداند. نمی‌تواند کسی که با حس ششم یا کارت افشای هویت خارج شده را برگرداند (طبق سناریو پدرخوانده)." },
       nostradamus: { descFa: "فقط شب معارفه بیدار می‌شود. ۳ نفر را نشان می‌دهد و گرداننده تعداد مافیاهای داخل این ۳ نفر را اعلام می‌کند. سپس نوستراداموس ساید خود را انتخاب می‌کند؛ اگر بین ۳ نفر، ۲ مافیا باشد معمولاً مجبور است در ساید مافیا بازی کند (طبق سناریو پدرخوانده)." },
     },
   },
@@ -159,8 +159,8 @@ const SCENARIO_CONFIGS = {
     allowedRoles: ["alcapone", "zodiac", "magician", "bomber", "detective", "doctor", "professional", "guard", "ocean", "gunslinger"],
     defaultToggles: ["alcapone", "zodiac", "magician", "bomber", "detective", "doctor", "professional", "guard", "ocean", "gunslinger"],
     wakeOrder: {
-      fa: ["تیم مافیا", "شعبده‌باز", "بمب‌گذار", "زودیاک", "حرفه‌ای", "پزشک", "کارآگاه", "تفنگدار", "اوشن"],
-      en: ["Mafia team", "Magician", "Bomber", "Zodiac", "Professional", "Doctor", "Detective", "Gunslinger", "Ocean"],
+      fa: ["تیم مافیا", "شعبده‌باز", "بمب‌گذار", "حرفه‌ای", "پزشک", "کارآگاه", "تفنگدار", "اوشن", "زودیاک"],
+      en: ["Mafia team", "Magician", "Bomber", "Professional", "Doctor", "Detective", "Gunslinger", "Ocean", "Zodiac"],
     },
     features: { lastMove: false, endCards: false },
     dayPhaseConfig: { steps: ["day_guns", "day_gun_expiry", "day_vote", "day_elim"] },
