@@ -14,8 +14,8 @@
     },
     night: [
       "night_heir",
-      "night_mafia",
       "night_herbalist",
+      "night_mafia",
       "night_detective",
       "night_armorsmith",
       "night_kadkhoda",

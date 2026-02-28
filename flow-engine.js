@@ -130,6 +130,25 @@
               d.armorsmithSelfUsed = false;
               d.armorsmithSelfUsedOnNight = null;
             }
+            // Kabo Executioner kill
+            if (d.nightExecutionerAppliedByDay && d.nightExecutionerAppliedByDay[dayKey]) {
+              const eRec = d.nightExecutionerAppliedByDay[dayKey];
+              if (eRec && Number.isFinite(Number(eRec.killed)) && eRec.prevAlive === true) {
+                try { setPlayerLife(parseInt(eRec.killed, 10), { alive: true }); } catch {}
+              }
+              d.nightExecutionerAppliedByDay[dayKey] = { killed: null, prevAlive: null };
+            }
+            // Kabo Yakooza (revert role conversion)
+            if (d.nightKaboYakoozaAppliedByDay && d.nightKaboYakoozaAppliedByDay[dayKey]) {
+              const rec = d.nightKaboYakoozaAppliedByDay[dayKey];
+              if (rec && Number.isFinite(Number(rec.converted)) && rec.prevRoleId !== null) {
+                const prevIdx = parseInt(rec.converted, 10);
+                const prevP = appState.draw && appState.draw.players && appState.draw.players[prevIdx];
+                if (prevP) prevP.roleId = rec.prevRoleId;
+                d.kaboYakoozaUsed = false;
+              }
+              d.nightKaboYakoozaAppliedByDay[dayKey] = { converted: null, prevRoleId: null };
+            }
             // Herbalist poison-kill (revive the killed player and reset the record)
             if (d.nightHerbalistAppliedByDay && d.nightHerbalistAppliedByDay[dayKey]) {
               const hRec = d.nightHerbalistAppliedByDay[dayKey];
@@ -140,6 +159,11 @@
                 d.herbalistCycleComplete = false;
                 d.nightHerbalistAppliedByDay[dayKey] = { killed: null, prevAlive: null };
               }
+            }
+            // Don antidote used this night — revert
+            if (d.danMafiaAntidoteUsedOnNight != null && Number(d.danMafiaAntidoteUsedOnNight) === nightDayNum) {
+              d.danMafiaAntidoteUsed = false;
+              d.danMafiaAntidoteUsedOnNight = null;
             }
             // Hard John first-survival flag
             if (d.hardJohnSurvivedOnNight != null && Number(d.hardJohnSurvivedOnNight) === nightDayNum) {
@@ -663,10 +687,16 @@
             const natoMadeGuess = Number.isFinite(natoTgt) && natoTgt >= 0 && natoTgt < draw.players.length && natoGuess !== null;
 
             let desiredKill = (Number.isFinite(ms) && ms >= 0 && ms < draw.players.length && ms !== ds && ms !== ls) ? ms : null;
+            // Armorsmith armor: if target received armor this night, shot is blocked.
+            const armorTgt = (payload.armorsmithArmor !== null && payload.armorsmithArmor !== undefined && Number.isFinite(Number(payload.armorsmithArmor)))
+              ? parseInt(payload.armorsmithArmor, 10) : null;
+            if (desiredKill !== null && armorTgt !== null && desiredKill === armorTgt) desiredKill = null;
             // Pedarkhande: no mafia shot when Godfather chose sixth sense or Saul buy (if Saul buy fails, no shot either).
+            // Kabo: no mafia shot when Don chose yakooza or guess_role.
             const scenarioMafia = getDrawScenarioForFlow();
             const godfatherAction = (payload.godfatherAction != null && String(payload.godfatherAction)) ? String(payload.godfatherAction) : "shoot";
             if (scenarioMafia === "pedarkhande" && (godfatherAction === "sixth_sense" || godfatherAction === "saul_buy")) desiredKill = null;
+            if (scenarioMafia === "kabo" && (godfatherAction === "yakooza" || godfatherAction === "guess_role")) desiredKill = null;
             // NATO blocks the mafia shot entirely when a guess was made.
             if (natoMadeGuess) desiredKill = null;
 
@@ -681,9 +711,23 @@
               if (targetRole === "zodiac" || targetRole === "invulnerable") {
                 desiredKill = null;
               } else if (targetRole === "heir") {
-                // Heir is immune to Mafia night shots until they inherit a role
-                // (at which point their roleId changes away from "heir").
-                desiredKill = null;
+                // Heir is immune only when they picked a citizen and that successor is still alive.
+                // If Heir picked mafia, nothing special — Heir plays as simple citizen (no immunity).
+                const heirPick = (() => {
+                  if (!f.draft.nightActionsByNight) return null;
+                  for (const nk of Object.keys(f.draft.nightActionsByNight)) {
+                    const na = f.draft.nightActionsByNight[nk];
+                    if (na && na.heirPick !== null && na.heirPick !== undefined) {
+                      const idx = parseInt(na.heirPick, 10);
+                      if (Number.isFinite(idx)) return idx;
+                    }
+                  }
+                  return null;
+                })();
+                const pickedRole = heirPick != null && draw.players[heirPick] ? (draw.players[heirPick].roleId || "citizen") : null;
+                const pickedIsMafia = pickedRole && (roles[pickedRole] && roles[pickedRole].teamFa === "مافیا");
+                const pickedAlive = heirPick != null && draw.players[heirPick] && draw.players[heirPick].alive !== false;
+                if (heirPick != null && !pickedIsMafia && pickedAlive) desiredKill = null;
               } else if (targetRole === "armored" && !f.draft.armoredVoteUsed) {
                 // Armored is immune to night shots until their armor has been spent by a vote-out.
                 desiredKill = null;
@@ -1203,6 +1247,11 @@
 
             const cr = (payload.constantineRevive === null || payload.constantineRevive === undefined) ? null : parseInt(payload.constantineRevive, 10);
             let desiredRevive = (Number.isFinite(cr) && cr >= 0 && cr < draw.players.length) ? cr : null;
+            // Executioner (Kabo) kill is unconditional — Constantine cannot revive executioner victims.
+            if (desiredRevive !== null) {
+              const execRec = (f.draft.nightExecutionerAppliedByDay && f.draft.nightExecutionerAppliedByDay[dayKey]) ? f.draft.nightExecutionerAppliedByDay[dayKey] : null;
+              if (execRec && execRec.killed !== null && execRec.killed !== undefined && parseInt(execRec.killed, 10) === desiredRevive) desiredRevive = null;
+            }
             // Once per game: if Constantine already revived someone in a previous night, block.
             if (desiredRevive !== null) {
               const nc = f.draft.nightConstantineAppliedByDay || {};
@@ -1251,7 +1300,8 @@
         }
 
         // Apply Herbalist poison-kill (with reversible preview).
-        // Rule: Herbalist poisons on Night X. On Night X+1, if no antidote given → poisoned player dies.
+        // Rule: Herbalist poisons on Night X. Victim stays alive. At Night X+1: group votes on antidote, Herbalist decides.
+        // At dawn of Day X+2 (Night X+1 resolution): if no antidote given → poisoned player dies.
         // Herbalist has one poison + one antidote total per game (tracked via d.herbalistCycleComplete).
         function applyNightHerbalistFromPayload(f, payload) {
           try {
@@ -1259,7 +1309,7 @@
             const draw = appState.draw;
             if (!draw || !draw.players) return false;
             const dayKey = String(f.day || 1);
-            const prevNightKey = String((f.day || 1) - 1);
+            const prevNightKey = String(Math.max(0, (f.day || 1) - 1));
             if (!f.draft || typeof f.draft !== "object") f.draft = {};
             const d = f.draft;
             if (!d.nightHerbalistAppliedByDay || typeof d.nightHerbalistAppliedByDay !== "object") d.nightHerbalistAppliedByDay = {};
@@ -1267,19 +1317,44 @@
               ? d.nightHerbalistAppliedByDay[dayKey]
               : { killed: null, prevAlive: null };
 
-            // Read previous night's poison from saved night actions.
+            // Night 1: poison applied, victim does NOT die. Night 2+: check previous night's poison + antidote decision.
             const prevActions = (d.nightActionsByNight && d.nightActionsByNight[prevNightKey]) ? d.nightActionsByNight[prevNightKey] : null;
-            const prevPoisonRaw = prevActions ? prevActions.herbalistPoison : null;
+            let prevPoisonRaw = (prevActions ? prevActions.herbalistPoison : null) ?? (prevNightKey === dayKey ? payload.herbalistPoison : null);
+            // Witch (Kabo): when herbalist is bewitched, herbalist poisons self — override applies regardless of herbalist's pick.
+            if (getDrawScenarioForFlow() === "kabo" && prevActions && prevActions.witchTarget != null && Number.isFinite(Number(prevActions.witchTarget))) {
+              const wt = parseInt(prevActions.witchTarget, 10);
+              const tgt = (draw.players && draw.players[wt]) || null;
+              if (tgt && tgt.roleId === "herbalist") prevPoisonRaw = wt;
+            }
             const prevPoison = (prevPoisonRaw !== null && prevPoisonRaw !== undefined && Number.isFinite(parseInt(prevPoisonRaw, 10)))
               ? parseInt(prevPoisonRaw, 10) : null;
+
+            // Night 1: no kill (poison deferred to Night 2 resolution).
+            if (parseInt(dayKey, 10) <= 1) return false;
 
             // No active poison from previous night — nothing to kill.
             if (prevPoison === null) return false;
 
-            // Antidote check: if herbalistAntidote matches the poisoned player, they live.
-            const haRaw = payload.herbalistAntidote;
-            const antidoteGiven = (haRaw !== null && haRaw !== undefined &&
+            // Antidote check: herbalistAntidoteDecision from Night 2 (or payload) — Herbalist's final call.
+            // Don (danMafia) has one antidote: when poisoned, he can use it (no Herbalist decision needed).
+            // If Don was killed by Capo gun on Day 1, his antidote transfers to Witch.
+            const haRaw = (payload.herbalistAntidoteDecision !== null && payload.herbalistAntidoteDecision !== undefined)
+              ? payload.herbalistAntidoteDecision
+              : payload.herbalistAntidote;
+            let antidoteGiven = (haRaw !== null && haRaw !== undefined &&
               Number.isFinite(parseInt(haRaw, 10)) && parseInt(haRaw, 10) === prevPoison);
+            const prevPoisonRole = (draw.players[prevPoison] && draw.players[prevPoison].roleId) ? draw.players[prevPoison].roleId : "citizen";
+            if (!antidoteGiven && prevPoisonRole === "danMafia" && !d.danMafiaAntidoteUsed) {
+              antidoteGiven = true;
+              d.danMafiaAntidoteUsed = true;
+              d.danMafiaAntidoteUsedOnNight = f.day || 1;
+              f.draft = d;
+            }
+            if (!antidoteGiven && prevPoisonRole === "witch" && d.witchHasAntidoteFromDon) {
+              antidoteGiven = true;
+              d.witchHasAntidoteFromDon = false;
+              f.draft = d;
+            }
             const desiredKill = antidoteGiven ? null : prevPoison;
 
             // no change
@@ -1451,6 +1526,86 @@
             }).filter((x) => x !== null);
           } catch {
             return [];
+          }
+        }
+
+        // Kabo Yakooza: Mafia Don buys a simple citizen; converts to mafia. Once per game when at least one mafia dead.
+        function applyNightKaboYakoozaFromPayload(f, payload) {
+          try {
+            if (getDrawScenarioForFlow() !== "kabo" || !f || !payload) return false;
+            const godfatherAction = (payload.godfatherAction != null && String(payload.godfatherAction)) ? String(payload.godfatherAction) : "shoot";
+            if (godfatherAction !== "yakooza") return false;
+            const draw = appState.draw;
+            if (!draw || !draw.players) return false;
+            const yRaw = (payload.kaboYakoozaTarget === null || payload.kaboYakoozaTarget === undefined) ? null : parseInt(payload.kaboYakoozaTarget, 10);
+            const desiredTarget = (Number.isFinite(yRaw) && yRaw >= 0 && yRaw < draw.players.length) ? yRaw : null;
+            if (desiredTarget === null) return false;
+            const d = f.draft || {};
+            const mafiaCount = (draw.players || []).filter((p) => p && (roles[p.roleId || "citizen"] && roles[p.roleId || "citizen"].teamFa === "مافیا")).length;
+            const mafiaAliveCount = (draw.players || []).filter((p) => p && p.alive !== false && (roles[p.roleId || "citizen"] && roles[p.roleId || "citizen"].teamFa === "مافیا")).length;
+            const atLeastOneMafiaDead = mafiaCount > 0 && mafiaAliveCount < mafiaCount;
+            if (!atLeastOneMafiaDead || d.kaboYakoozaUsed) return false;
+            const p = draw.players[desiredTarget];
+            const targetRole = (p && p.roleId) ? p.roleId : "citizen";
+            if (targetRole !== "citizen" && targetRole !== "suspect") return false;
+            const dayKey = String(f.day || 1);
+            if (!f.draft || typeof f.draft !== "object") f.draft = {};
+            if (!f.draft.nightKaboYakoozaAppliedByDay || typeof f.draft.nightKaboYakoozaAppliedByDay !== "object") f.draft.nightKaboYakoozaAppliedByDay = {};
+            const rec = (f.draft.nightKaboYakoozaAppliedByDay[dayKey] && typeof f.draft.nightKaboYakoozaAppliedByDay[dayKey] === "object")
+              ? f.draft.nightKaboYakoozaAppliedByDay[dayKey]
+              : { converted: null, prevRoleId: null };
+            if (Number.isFinite(Number(rec.converted)) && rec.prevRoleId !== null) {
+              const prevIdx = parseInt(rec.converted, 10);
+              const prevP = draw.players[prevIdx];
+              if (prevP) prevP.roleId = rec.prevRoleId;
+            }
+            rec.converted = desiredTarget;
+            rec.prevRoleId = targetRole;
+            p.roleId = "mafia";
+            f.draft.nightKaboYakoozaAppliedByDay[dayKey] = rec;
+            f.draft.kaboYakoozaUsed = true;
+            saveState(appState);
+            return true;
+          } catch {
+            return false;
+          }
+        }
+
+        // Kabo Executioner: guess a player's role; if correct, target is eliminated unconditionally.
+        // This kill bypasses all saves (armorsmith, doctor, Constantine, etc.) — no one can prevent it.
+        function applyNightExecutionerFromPayload(f, payload) {
+          try {
+            if (getDrawScenarioForFlow() !== "kabo" || !f || !payload) return false;
+            const godfatherAction = (payload.godfatherAction != null && String(payload.godfatherAction)) ? String(payload.godfatherAction) : "shoot";
+            if (godfatherAction !== "guess_role") return false;
+            const draw = appState.draw;
+            if (!draw || !draw.players) return false;
+            const tRaw = (payload.executionerTarget === null || payload.executionerTarget === undefined) ? null : parseInt(payload.executionerTarget, 10);
+            const targetIdx = (Number.isFinite(tRaw) && tRaw >= 0 && tRaw < draw.players.length) ? tRaw : null;
+            if (targetIdx === null) return false;
+            const guessedRole = (payload.executionerRoleGuess != null && String(payload.executionerRoleGuess).trim()) ? String(payload.executionerRoleGuess).trim() : null;
+            if (!guessedRole) return false;
+            const targetPlayer = draw.players[targetIdx];
+            if (!targetPlayer || targetPlayer.alive === false) return false;
+            const actualRole = targetPlayer.roleId || "citizen";
+            const correct = guessedRole === actualRole;
+            if (!correct) return false;
+            const dayKey = String(f.day || 1);
+            if (!f.draft || typeof f.draft !== "object") f.draft = {};
+            if (!f.draft.nightExecutionerAppliedByDay || typeof f.draft.nightExecutionerAppliedByDay !== "object") f.draft.nightExecutionerAppliedByDay = {};
+            const rec = (f.draft.nightExecutionerAppliedByDay[dayKey] && typeof f.draft.nightExecutionerAppliedByDay[dayKey] === "object")
+              ? f.draft.nightExecutionerAppliedByDay[dayKey]
+              : { killed: null, prevAlive: null };
+            if (Number.isFinite(Number(rec.killed)) && rec.prevAlive === true) {
+              try { setPlayerLife(parseInt(rec.killed, 10), { alive: true }); } catch {}
+            }
+            const wasAlive = targetPlayer.alive !== false;
+            try { setPlayerLife(targetIdx, { alive: false, reason: "executioner" }); } catch {}
+            f.draft.nightExecutionerAppliedByDay[dayKey] = { killed: targetIdx, prevAlive: wasAlive };
+            saveState(appState);
+            return true;
+          } catch {
+            return false;
           }
         }
 
@@ -1731,11 +1886,16 @@
             // revert previous applied out
             if (Number.isFinite(Number(rec.out))) {
               const prevIdx = parseInt(rec.out, 10);
+              const prevWasDon = (draw.players[prevIdx] && draw.players[prevIdx].roleId === "danMafia");
               if (rec.armoredAbsorbed) {
                 // Armor absorbed the vote — just clear the used flag on revert
                 f.draft.armoredVoteUsed = false;
               } else if (rec.prevAlive === true) {
                 try { setPlayerLife(prevIdx, { alive: true }); } catch {}
+              }
+              // Kabo: revert Don→Witch antidote transfer when reverting kabo_shoot (Day 1 elim = kabo_shoot)
+              if (prevWasDon && desiredOut === null && (f.day || 1) === 1 && f.draft.witchHasAntidoteFromDon) {
+                f.draft.witchHasAntidoteFromDon = false;
               }
             }
             // revert previous researcher chain kill
@@ -1768,6 +1928,14 @@
                 rec.armoredAbsorbed = false;
                 rec.out = desiredOut;
                 rec.prevAlive = wasAlive === true;
+
+                // Kabo: if Don killed by Capo gun on Day 1, his antidote transfers to Witch.
+                if (getDrawScenarioForFlow() === "kabo" && payload.kaboShot && (f.day || 1) === 1) {
+                  const victimRole = (draw.players[desiredOut] && draw.players[desiredOut].roleId) ? draw.players[desiredOut].roleId : "citizen";
+                  if (victimRole === "danMafia") {
+                    f.draft.witchHasAntidoteFromDon = true;
+                  }
+                }
 
                 // researcher chain kill: if voted-out player is Researcher linked to eligible role
                 try {
@@ -1891,6 +2059,10 @@
             kabo_suspect_select: appLang === "fa" ? "انتخاب مظنون" : "Select Suspects",
             kabo_midday: appLang === "fa" ? "چرت روز" : "Mid-day Sleep",
             kabo_shoot: appLang === "fa" ? "دفاع و شلیک" : "Defense & Shoot",
+            day_poison_status: appLang === "fa" ? "وضعیت زهر" : "Poison Status",
+            night_poisoned_player: appLang === "fa" ? "بازیکن مسموم" : "Poisoned Player",
+            night_herbalist_antidote: appLang === "fa" ? "تصمیم عطار (پادزهر)" : "Herbalist Decision",
+            night_poison_result: appLang === "fa" ? "نتیجه زهر" : "Poison Result",
             bazras_interrogation: appLang === "fa" ? "بازپرسی" : "Interrogation",
             bazras_midday: appLang === "fa" ? "چرت روز" : "Mid-day",
             bazras_forced_vote: appLang === "fa" ? "رأی‌گیری اجباری" : "Forced Vote",
@@ -2017,6 +2189,8 @@
               if (sod && sod.prevAlive === true && sod.sacrifice != null) addElim(sod.sacrifice);
               const sixthRec = f.draft.nightSixthSenseAppliedByDay && f.draft.nightSixthSenseAppliedByDay[dk];
               if (sixthRec && sixthRec.prevAlive === true && sixthRec.killed != null) addElim(sixthRec.killed);
+              const execRec = f.draft.nightExecutionerAppliedByDay && f.draft.nightExecutionerAppliedByDay[dk];
+              if (execRec && execRec.prevAlive === true && execRec.killed != null) addElim(execRec.killed);
               const solRec = f.draft.nightSoldierAppliedByDay && f.draft.nightSoldierAppliedByDay[dk];
               if (solRec && solRec.soldierPrevAlive === true && solRec.soldierKilled != null) addElim(solRec.soldierKilled);
               if (solRec && solRec.gunShotPrevAlive === true && solRec.gunShotKilled != null) addElim(solRec.gunShotKilled);
@@ -2071,9 +2245,46 @@
               if (sr && sr.converted != null && Number.isFinite(parseInt(sr.converted, 10))) {
                 entries.push({ type: "saul_buy", idx: parseInt(sr.converted, 10), newRole: "mafia" });
               }
+              const heirRec = f.draft.heirInheritedByDay && f.draft.heirInheritedByDay[dk];
+              if (heirRec && heirRec.heirIdx != null && heirRec.newRole != null) {
+                entries.push({ type: "heir_inherit", idx: parseInt(heirRec.heirIdx, 10), newRole: heirRec.newRole });
+              }
             }
           } catch {}
           return entries;
+        }
+
+        /** Returns true if Status Check has the data to show the Herbalist antidote decision for a given night.
+         * gave: true = gave antidote, false = withheld. */
+        function hasStatusCheckHerbalistAntidoteDecision(f, day, gave) {
+          if (!f || !f.events || !f.draft) return false;
+          const dk = String(day || 1);
+          const ev = (f.events || []).find((e) => e && e.kind === "night_actions" && e.phase === "night" && String(e.day) === dk);
+          if (!ev || !ev.data) return false;
+          const payload = ev.data;
+          const antidote = (payload.herbalistAntidote != null && Number.isFinite(parseInt(payload.herbalistAntidote, 10))) ? parseInt(payload.herbalistAntidote, 10) : null;
+          const prevNightKey = String(Math.max(0, (day || 1) - 1));
+          const prevNa = (f.draft.nightActionsByNight && f.draft.nightActionsByNight[prevNightKey]) ? f.draft.nightActionsByNight[prevNightKey] : null;
+          const prevPoison = (prevNa && prevNa.herbalistPoison != null && Number.isFinite(parseInt(prevNa.herbalistPoison, 10))) ? parseInt(prevNa.herbalistPoison, 10) : null;
+          if (prevPoison === null || day < 2) return false;
+          return gave ? (antidote !== null && antidote === prevPoison) : (antidote === null);
+        }
+
+        /** Returns true if Status Check has the data to show the Executioner guess-role action for a given night.
+         * Used by tests to verify the action will appear in the Status Check list. */
+        function hasStatusCheckExecutionerActionData(f, day) {
+          if (!f || !f.events || !f.draft) return false;
+          const dk = String(day || 1);
+          const execRec = (f.draft.nightExecutionerAppliedByDay && f.draft.nightExecutionerAppliedByDay[dk]) ? f.draft.nightExecutionerAppliedByDay[dk] : null;
+          if (!execRec || execRec.killed == null) return false;
+          const ev = (f.events || []).find((e) => e && e.kind === "night_actions" && e.phase === "night" && String(e.day) === dk);
+          if (!ev || !ev.data) return false;
+          const payload = ev.data;
+          const godfatherAction = (payload.godfatherAction != null) ? String(payload.godfatherAction) : "";
+          if (godfatherAction !== "guess_role") return false;
+          const target = (payload.executionerTarget != null && Number.isFinite(parseInt(payload.executionerTarget, 10))) ? parseInt(payload.executionerTarget, 10) : null;
+          const role = (payload.executionerRoleGuess != null && String(payload.executionerRoleGuess).trim()) ? String(payload.executionerRoleGuess).trim() : null;
+          return target !== null && role !== null;
         }
 
         /** Returns true if Status Check would show playerIdx in the Eliminated list.
@@ -2141,8 +2352,14 @@
                   : ["kabo_trust_vote"];
                 return ids.map((id) => ({ id, title: getStepTitle(id) }));
               }
-              // Day 2+: use default
-              const ids = dayCfg.default || dayCfg.base;
+              // Day 2+: poison status before voting if poison from previous night is pending (victim alive, will resolve at Night 2)
+              const prevNightKey = String(Math.max(0, dayNum - 1));
+              const prevNa = (f.draft && f.draft.nightActionsByNight && f.draft.nightActionsByNight[prevNightKey]) || null;
+              const poisonIdx = (prevNa && prevNa.herbalistPoison != null && Number.isFinite(parseInt(prevNa.herbalistPoison, 10))) ? parseInt(prevNa.herbalistPoison, 10) : null;
+              const victimAlive = poisonIdx != null && appState.draw && appState.draw.players && appState.draw.players[poisonIdx] && appState.draw.players[poisonIdx].alive !== false;
+              const poisonPending = !!(poisonIdx != null && victimAlive);
+              const baseIds = dayCfg.default || dayCfg.base;
+              const ids = poisonPending ? ["day_poison_status", ...baseIds] : baseIds;
               return ids.map((id) => ({ id, title: getStepTitle(id) }));
             }
             // Bazras: optional interrogation at start
@@ -2217,11 +2434,20 @@
                 return teamFa === "مافیا" ? idx : null;
               } catch { return null; }
             })();
+            const prevNightKey = String(Math.max(0, dayNum - 1));
+            const prevNa = (f.draft && f.draft.nightActionsByNight && f.draft.nightActionsByNight[prevNightKey]) || null;
+            const poisonIdx = (prevNa && prevNa.herbalistPoison != null && Number.isFinite(parseInt(prevNa.herbalistPoison, 10))) ? parseInt(prevNa.herbalistPoison, 10) : null;
+            const victimAlive = poisonIdx != null && appState.draw && appState.draw.players && appState.draw.players[poisonIdx] && appState.draw.players[poisonIdx].alive !== false;
+            const poisonPending = !!(poisonIdx != null && victimAlive);
+
             const stepIds = Array.isArray(dayCfg.steps) ? dayCfg.steps : null;
             if (stepIds) {
               for (const rawId of stepIds) {
                 const optional = String(rawId).endsWith("?");
                 const id = optional ? String(rawId).slice(0, -1) : String(rawId);
+                if (id === "day_vote" && poisonPending) {
+                  steps.push({ id: "day_poison_status", title: getStepTitle("day_poison_status") });
+                }
                 if (id === "day_kane_reveal") {
                   if (kaneRevealIdx !== null) steps.push({ id: "day_kane_reveal", title: getStepTitle("day_kane_reveal") });
                   continue;
@@ -2244,6 +2470,9 @@
               steps.push({ id: "day_kane_reveal", title: getStepTitle("day_kane_reveal") });
             }
             const baseIds = dayCfg.base || ["day_vote", "day_elim"];
+            if (poisonPending && baseIds.includes("day_vote")) {
+              steps.push({ id: "day_poison_status", title: getStepTitle("day_poison_status") });
+            }
             for (const id of baseIds) {
               if (id === "day_guns" && !(allowed.includes("day_guns") || allowed.includes("day_bomb"))) continue;
               if (id === "day_guns" && !(hasUsableDayGuns() || hasBombForStep)) continue;
@@ -2301,6 +2530,51 @@
             if (kaneIdx === -1) return true;
             return draw.players[kaneIdx].alive !== false;
           };
+          // Skip night steps for roles not in the draw (e.g. no Kadkhoda → no Kadkhoda step)
+          const keepRoleInDraw = (stepId) => {
+            const draw = appState.draw;
+            if (!draw || !draw.players) return true;
+            const sid = String(stepId || "");
+            const stepToRoles = {
+              night_heir: ["heir"],
+              night_herbalist: ["herbalist"],
+              night_detective: ["detective"],
+              night_armorsmith: ["armorsmith"],
+              night_kadkhoda: ["kadkhoda"],
+              night_doctor: ["doctor", "watson"],
+              night_constantine: ["constantine"],
+              night_kane: ["citizenKane"],
+              night_ocean: ["ocean"],
+              night_bomber: ["bomber"],
+              night_zodiac: ["zodiac"],
+              night_professional: ["professional", "leon"],
+              night_sniper: ["sniper"],
+              night_negotiator: ["negotiator"],
+              night_reporter: ["reporter"],
+              night_researcher: ["researcher"],
+              night_swindler: ["swindler"],
+              night_natasha: ["natasha"],
+              night_jokermaf: ["jokerMafia"],
+              night_lecter: ["doctorLecter"],
+              night_magician: ["magician"],
+              night_hacker: ["hacker"],
+              night_guide: ["guide"],
+              night_bodyguard: ["bodyguard"],
+              night_minemaker: ["minemaker"],
+              night_lawyer: ["lawyer"],
+              night_soldier: ["soldier"],
+              night_nato: ["nato"],
+              night_investigator: ["investigator"],
+            };
+            const roleIds = stepToRoles[sid];
+            if (!roleIds) return true;
+            if (sid === "night_mafia") {
+              const hasMafia = draw.players.some((p) => p && p.roleId && (roles[p.roleId] && roles[p.roleId].teamFa === "مافیا"));
+              return hasMafia;
+            }
+            const hasRole = draw.players.some((p) => p && roleIds.includes(p.roleId));
+            return hasRole;
+          };
           // Build kept labels and stepIds in parallel — same filter applied to both so indices stay aligned.
           // Using wake index i for nightStepIds would misalign when middle entries are filtered
           // (e.g. bomber already used, zodiac on odd nights): kept[k] must use the k-th kept stepId.
@@ -2310,15 +2584,33 @@
           for (let i = 0; i < wake.length; i++) {
             const w = wake[i];
             const stepId = (nightStepIds && i < nightStepIds.length) ? String(nightStepIds[i]) : "night_step_" + keptStepIds.length;
-            if (keepZodiac(w) && keepBomber(w) && keepNotIntroOnly(w) && keepKaneAlive(w, stepId)) {
+            if (keepZodiac(w) && keepBomber(w) && keepNotIntroOnly(w) && keepKaneAlive(w, stepId) && keepRoleInDraw(stepId)) {
               keptLabels.push(w);
               keptStepIds.push(stepId);
             }
           }
-          return keptLabels.map((label, k) => ({
+          let steps = keptLabels.map((label, k) => ({
             id: keptStepIds[k] || ("night_step_" + k),
             title: getStepTitle(keptStepIds[k]) || label,
           }));
+
+          // Kabo: inject poison steps at start of Night N when poison from Night N-1 is pending (victim alive).
+          if (scenario === "kabo" && (f.day || 1) >= 2) {
+            const prevNightKey = String(Math.max(0, (f.day || 1) - 1));
+            const prevNa = (f.draft && f.draft.nightActionsByNight && f.draft.nightActionsByNight[prevNightKey]) || null;
+            const poisonIdx = (prevNa && prevNa.herbalistPoison != null && Number.isFinite(parseInt(prevNa.herbalistPoison, 10))) ? parseInt(prevNa.herbalistPoison, 10) : null;
+            const victimAlive = poisonIdx != null && appState.draw && appState.draw.players && appState.draw.players[poisonIdx] && appState.draw.players[poisonIdx].alive !== false;
+            if (poisonIdx != null && victimAlive) {
+              steps = [
+                { id: "night_poisoned_player", title: getStepTitle("night_poisoned_player") },
+                { id: "night_herbalist_antidote", title: getStepTitle("night_herbalist_antidote") },
+                { id: "night_poison_result", title: getStepTitle("night_poison_result") },
+                ...steps,
+              ];
+            }
+          }
+
+          return steps;
         }
 
         // Apply Heir role inheritance at the night→day transition.
@@ -2384,6 +2676,15 @@
             if (!payload || !draw || !draw.players) return false;
             const payload0 = { ...payload };
             const scenario0 = getDrawScenarioForFlow();
+            // Witch (Kabo): ability reflects to target — override payload so target's ability applies to themselves.
+            if (scenario0 === "kabo" && payload0.witchTarget != null && Number.isFinite(Number(payload0.witchTarget))) {
+              const wt = parseInt(payload0.witchTarget, 10);
+              const tgt = draw.players[wt];
+              const role = (tgt && tgt.roleId) ? tgt.roleId : "citizen";
+              if (role === "detective") payload0.detectiveQuery = wt;
+              else if (role === "herbalist") payload0.herbalistPoison = wt;
+              else if (role === "armorsmith") payload0.armorsmithArmor = wt;
+            }
             const findIdxByRole = (roleIds) => {
               const ids = Array.isArray(roleIds) ? roleIds : [roleIds];
               for (let i = 0; i < (draw.players || []).length; i++) {
@@ -2435,13 +2736,25 @@
               if (!f.draft.disabledByNight || typeof f.draft.disabledByNight !== "object") f.draft.disabledByNight = {};
               f.draft.disabledByNight[String(f.day)] = disabledIdx;
             }
+            // Store detective result for Status Check (when detectiveQuery is set, including Witch override).
+            try {
+              if (payload0.detectiveQuery !== null && payload0.detectiveQuery !== undefined && Number.isFinite(Number(payload0.detectiveQuery))) {
+                const tIdx = parseInt(payload0.detectiveQuery, 10);
+                const tr = (draw.players[tIdx] && draw.players[tIdx].roleId) ? draw.players[tIdx].roleId : "citizen";
+                const isMafia = (typeof detectiveInquiryIsMafia === "function") ? detectiveInquiryIsMafia(tr) : ((roles[tr] && roles[tr].teamFa === "مافیا"));
+                if (!f.draft.detectiveResultByNight || typeof f.draft.detectiveResultByNight !== "object") f.draft.detectiveResultByNight = {};
+                f.draft.detectiveResultByNight[String(f.day || 1)] = { target: tIdx, isMafia, at: Date.now() };
+              }
+            } catch {}
             try { applyNightHerbalistFromPayload(f, payload0); } catch {}
+            try { applyNightExecutionerFromPayload(f, payload0); } catch {}
             try { applyNightProfessionalFromPayload(f, payload0); } catch {}
             try { applyNightSniperFromPayload(f, payload0); } catch {}
             try { applyNightOceanFromPayload(f, payload0); } catch {}
             try { applyNightZodiacFromPayload(f, payload0); } catch {}
             try { applyNightNegotiatorFromPayload(f, payload0); } catch {}
             try { applyNightSaulBuyFromPayload(f, payload0); } catch {}
+            try { applyNightKaboYakoozaFromPayload(f, payload0); } catch {}
             try { applyNightInvestigatorFromPayload(f, payload0); } catch {}
             try { applyNightSodagariFromPayload(f, payload0); } catch {}
             try { applyNightSoldierFromPayload(f, payload0); } catch {}
@@ -2473,11 +2786,15 @@
 
         // Remove events that belong to phases/days "after" the current position.
         // Called during back-navigation to keep the timeline accurate.
+        // When on a night step, also prune night_actions for this night (resolution not yet committed).
         function pruneEventsForward(f) {
           try {
             const cutoff = flowLogicalTime(f.phase, f.day);
+            const onNightStep = f.phase === "night" && (f.day || 1) >= 1;
+            const currentNight = f.day || 1;
             f.events = (f.events || []).filter((ev) => {
               if (!ev) return false;
+              if (onNightStep && ev.kind === "night_actions" && ev.phase === "night" && Number(ev.day) === currentNight) return false;
               return flowLogicalTime(ev.phase, ev.day) <= cutoff;
             });
           } catch {}

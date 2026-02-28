@@ -28,7 +28,7 @@ This improves UX: all options are visible at once, fewer taps, and works better 
 | **Night — Nostradamus** | Multi (3) | Same as intro: tap cards to pick 3. |
 | **Night — Constantine** | Single | Tap one **dead** player card to revive; no dropdown. |
 | **Night — Guide** | Single | Tap one card for Guide target; previous night’s target is shown but disabled (greyed, not clickable). |
-| **Other night single-target roles** | Single | Doctor save, Detective query, Mafia shot, etc. already use `mkNightTargetCards`. |
+| **Other night single-target roles** | Single | Doctor save, Detective query, Mafia shot, Armorsmith armor, etc. use `mkNightTargetCards`. |
 
 ---
 

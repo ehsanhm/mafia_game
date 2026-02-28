@@ -918,12 +918,27 @@
           const m = $("toolModal");
           // Preserve scroll position when refreshing an already-open modal (e.g. gun give, undo shot).
           const prevScroll = (m.style.display === "flex") ? tb.scrollTop : 0;
+          // Also preserve nested scroll containers (e.g. voting player cards, night target grids).
+          const nestedScrolls = [];
+          if (m.style.display === "flex") {
+            try {
+              tb.querySelectorAll(".fl-scrollable").forEach((el) => {
+                nestedScrolls.push(el.scrollTop);
+              });
+            } catch {}
+          }
           $("toolTitle").textContent = title;
           tb.innerHTML = bodyHtml;
           $("toolBottom").style.display = hideBottom ? "none" : "flex";
           m.style.display = "flex";
           m.setAttribute("aria-hidden", "false");
           if (prevScroll > 0) tb.scrollTop = prevScroll;
+          nestedScrolls.forEach((saved, i) => {
+            try {
+              const el = tb.querySelectorAll(".fl-scrollable")[i];
+              if (el) el.scrollTop = saved;
+            } catch {}
+          });
         }
         function closeToolModal() {
           const m = $("toolModal");
@@ -1367,6 +1382,49 @@
                         : `${nameOf(saulIdx)} (Saul) attempted to buy ${nameOf(saulBuyTarget)}.`);
                     }
                   }
+                  // Kabo: Executioner guess role (correct → target eliminated)
+                  if (scenarioDesc === "kabo" && godfatherAction === "guess_role") {
+                    try {
+                      const execRec = f && f.draft && f.draft.nightExecutionerAppliedByDay && f.draft.nightExecutionerAppliedByDay[String(eventDay)];
+                      const execTarget = idxFrom(payload.executionerTarget);
+                      const execRole = (payload.executionerRoleGuess != null && String(payload.executionerRoleGuess).trim()) ? String(payload.executionerRoleGuess).trim() : null;
+                      const roleName = execRole && roles[execRole] ? (appLang === "fa" ? roles[execRole].faName : (ROLE_I18N && ROLE_I18N[execRole] && ROLE_I18N[execRole].name) ? ROLE_I18N[execRole].name : roles[execRole].faName) : execRole;
+                      if (execRec && execRec.killed != null && execTarget !== null && roleName) {
+                        out.push((appLang === "fa")
+                          ? `جلاد حدس زد ${plainNameOf(execTarget)} نقش ${roleName} است — درست، ${nameOf(execTarget)} از بازی خارج شد.`
+                          : `Executioner guessed ${plainNameOf(execTarget)} is ${roleName} — correct, ${nameOf(execTarget)} eliminated.`);
+                      } else if (execTarget !== null && roleName) {
+                        out.push((appLang === "fa")
+                          ? `جلاد حدس زد ${plainNameOf(execTarget)} نقش ${roleName} است — غلط.`
+                          : `Executioner guessed ${plainNameOf(execTarget)} is ${roleName} — wrong.`);
+                      }
+                    } catch {}
+                  }
+                  // Kabo: Yakooza conversion
+                  if (scenarioDesc === "kabo" && godfatherAction === "yakooza") {
+                    try {
+                      const yakRec = f && f.draft && f.draft.nightKaboYakoozaAppliedByDay && f.draft.nightKaboYakoozaAppliedByDay[String(eventDay)];
+                      const yakTarget = idxFrom(payload.kaboYakoozaTarget);
+                      if (yakRec && yakRec.converted != null && yakTarget !== null) {
+                        out.push((appLang === "fa")
+                          ? `یاکوزا ${nameOf(yakTarget)} را به مافیا تبدیل کرد.`
+                          : `Yakooza converted ${nameOf(yakTarget)} to Mafia.`);
+                      } else if (yakTarget !== null) {
+                        out.push((appLang === "fa")
+                          ? `یاکوزا ${nameOf(yakTarget)} را برای خرید انتخاب کرد.`
+                          : `Yakooza attempted to buy ${nameOf(yakTarget)}.`);
+                      }
+                    } catch {}
+                  }
+                  // Kabo: Witch bewitched target
+                  if (scenarioDesc === "kabo") {
+                    const witchTarget = idxFrom(payload.witchTarget);
+                    if (witchTarget !== null) {
+                      out.push((appLang === "fa")
+                        ? `جادوگر ${nameOf(witchTarget)} را مسحور کرد.`
+                        : `Witch bewitched ${nameOf(witchTarget)}.`);
+                    }
+                  }
                   if (mafiaShot !== null) {
                     const targetRole = (draw.players[mafiaShot] && draw.players[mafiaShot].roleId) ? draw.players[mafiaShot].roleId : "citizen";
                     const alwaysImmuneToMafiaShot = (targetRole === "zodiac" || targetRole === "invulnerable" || targetRole === "armored" || targetRole === "heir");
@@ -1578,6 +1636,18 @@
                   out.push((appLang === "fa")
                     ? `${nameOf(herbalistIdx)} پادزهر داد به: ${nameOf(herbalistAntidote)}.`
                     : `${nameOf(herbalistIdx)} antidote to: ${nameOf(herbalistAntidote)}.`);
+                } else {
+                  // Log withheld antidote when previous night had poison and Herbalist decided not to give.
+                  try {
+                    const prevNightKey = String(Math.max(0, (eventDay || 1) - 1));
+                    const prevNa = (f && f.draft && f.draft.nightActionsByNight && f.draft.nightActionsByNight[prevNightKey]) ? f.draft.nightActionsByNight[prevNightKey] : null;
+                    const prevPoisonRaw = prevNa && prevNa.herbalistPoison != null && Number.isFinite(parseInt(prevNa.herbalistPoison, 10)) ? parseInt(prevNa.herbalistPoison, 10) : null;
+                    if (prevPoisonRaw !== null && herbalistIdx !== null && eventDay >= 2) {
+                      out.push((appLang === "fa")
+                        ? `${nameOf(herbalistIdx)} پادزهر نداد به: ${nameOf(prevPoisonRaw)}.`
+                        : `${nameOf(herbalistIdx)} withheld antidote from ${nameOf(prevPoisonRaw)}.`);
+                    }
+                  } catch {}
                 }
                 try {
                   const herbRec = (f && f.draft && f.draft.nightHerbalistAppliedByDay && f.draft.nightHerbalistAppliedByDay[String(eventDay)]) ? f.draft.nightHerbalistAppliedByDay[String(eventDay)] : null;
@@ -1733,7 +1803,7 @@
                 if (kadkhodaTarget !== null && kadkhodaIdx !== null) {
                   out.push((appLang === "fa")
                     ? `${plainNameOf(kadkhodaIdx)} (کدخدا) ${nameOf(kadkhodaTarget)} را بیدار کرد.`
-                    : `${plainNameOf(kadkhodaIdx)} (Kadkhoda) linked/woke ${nameOf(kadkhodaTarget)}.`);
+                    : `${plainNameOf(kadkhodaIdx)} (Village Chief) linked/woke ${nameOf(kadkhodaTarget)}.`);
                 }
                 }
                 if (shouldAddRole(/hacker/)) {
@@ -2316,7 +2386,7 @@
                       ? `${plainNameOf(entry.out)} شد ${outRn}، ${plainNameOf(entry.target)} شد ${tgtRn}`
                       : `${plainNameOf(entry.out)} became ${outRn}, ${plainNameOf(entry.target)} became ${tgtRn}`;
                   }
-                  if (entry.type === "saul_buy") {
+                  if (entry.type === "saul_buy" || entry.type === "heir_inherit") {
                     const rn = (typeof roleName === "function") ? roleName(entry.newRole) : entry.newRole;
                     return (appLang === "fa")
                       ? `${plainNameOf(entry.idx)} شد ${rn}`
@@ -3955,11 +4025,12 @@
           const statusMods = (() => {
             try {
               const f = (appState.god && appState.god.flow) ? ensureFlow() : null;
-              if (!f || !f.draft) return { handcuffed: new Set(), silenced: new Set() };
+              if (!f || !f.draft) return { handcuffed: new Set(), silenced: new Set(), bewitched: new Set() };
               const d = f.draft;
               const dayKey = String(f.day || 1);
               const handcuffed = new Set();
               const silenced = new Set();
+              const bewitched = new Set();
               if (f.phase === "night" && d.handcuffedByDay && d.handcuffedByDay[dayKey] != null) {
                 const h = parseInt(d.handcuffedByDay[dayKey], 10);
                 if (Number.isFinite(h)) handcuffed.add(h);
@@ -3970,8 +4041,13 @@
                   if (Number.isFinite(n)) silenced.add(n);
                 }
               }
-              return { handcuffed, silenced };
-            } catch { return { handcuffed: new Set(), silenced: new Set() }; }
+              if (f.phase === "night" && typeof getDrawScenarioForFlow === "function" && getDrawScenarioForFlow() === "kabo") {
+                const na = (d.nightActionsByNight && d.nightActionsByNight[dayKey]) ? d.nightActionsByNight[dayKey] : null;
+                const wt = (na && na.witchTarget != null && Number.isFinite(parseInt(na.witchTarget, 10))) ? parseInt(na.witchTarget, 10) : null;
+                if (wt !== null && draw.players && draw.players[wt]) bewitched.add(wt);
+              }
+              return { handcuffed, silenced, bewitched };
+            } catch { return { handcuffed: new Set(), silenced: new Set(), bewitched: new Set() }; }
           })();
 
           const entries = draw.players.map((p, idx) => {
@@ -3982,7 +4058,8 @@
             const deathReason = p.deathReason || null;
             const isHandcuffed = statusMods.handcuffed.has(idx);
             const isSilenced = statusMods.silenced.has(idx);
-            return { idx, name, roleId: rid, team: r ? r.teamFa : "شهر", alive, deathReason, isHandcuffed, isSilenced };
+            const isBewitched = statusMods.bewitched && statusMods.bewitched.has(idx);
+            return { idx, name, roleId: rid, team: r ? r.teamFa : "شهر", alive, deathReason, isHandcuffed, isSilenced, isBewitched };
           });
           const mafia = entries.filter((e) => e.team === "مافیا");
           const city = entries.filter((e) => e.team === "شهر");
@@ -4009,6 +4086,7 @@
             const modPills = [];
             if (e.isHandcuffed) modPills.push(`<div class="statusPill handcuffed">${escapeHtml(t("lifeSheet.handcuffed"))}</div>`);
             if (e.isSilenced) modPills.push(`<div class="statusPill silent">${escapeHtml(t("lifeSheet.silent"))}</div>`);
+            if (e.isBewitched) modPills.push(`<div class="statusPill bewitched">${escapeHtml(t("lifeSheet.bewitched"))}</div>`);
             return `
               <div class="castRow ${e.alive ? "" : "dead"} ${teamCls}" data-idx="${e.idx}">
                 <div class="leftMeta">

@@ -101,9 +101,13 @@
   <script src="i18n-farsi.test.js"></script>
   <script src="end-card-action.test.js"></script>
   <script src="saul-buy-ui.test.js"></script>
+  <script src="scroll-persistence.test.js"></script>
+  <script src="player-selection-cards.test.js"></script>
+  <script src="night-step-role-filter.test.js"></script>
+  <script src="capo_test_instructions.test.js"></script>
   <script>
     (function () {
-      const suites = [window.EFFECT_REGISTRY_TESTS, window.SELECTION_PERSISTENCE_TESTS, window.REVERT_DEATH_TESTS, window.REVERT_VOTE_AFTER_REOPEN_TESTS, window.REVERT_FLOW_ACTIONS_TESTS, window.MATADOR_DISABLED_TESTS, window.SIXTH_SENSE_TESTS, window.STATUS_CHECK_ELIMINATED_TESTS, window.CONSTANTINE_ONCE_PER_GAME_TESTS, window.GODFATHER_TESTS, window.I18N_FARSI_TESTS, window.END_CARD_ACTION_TESTS, window.SAUL_BUY_UI_TESTS].filter(Boolean);
+      const suites = [window.EFFECT_REGISTRY_TESTS, window.SELECTION_PERSISTENCE_TESTS, window.REVERT_DEATH_TESTS, window.REVERT_VOTE_AFTER_REOPEN_TESTS, window.REVERT_FLOW_ACTIONS_TESTS, window.MATADOR_DISABLED_TESTS, window.SIXTH_SENSE_TESTS, window.STATUS_CHECK_ELIMINATED_TESTS, window.CONSTANTINE_ONCE_PER_GAME_TESTS, window.GODFATHER_TESTS, window.I18N_FARSI_TESTS, window.END_CARD_ACTION_TESTS, window.SAUL_BUY_UI_TESTS, window.SCROLL_PERSISTENCE_TESTS, window.PLAYER_SELECTION_CARDS_TESTS, window.NIGHT_STEP_ROLE_FILTER_TESTS, window.CAPO_TEST_INSTRUCTIONS_TESTS].filter(Boolean);
       if (!suites.length || typeof runTests !== "function") {
         document.getElementById("results").innerHTML = "<p class='fail'>Tests not loaded.</p>";
         return;

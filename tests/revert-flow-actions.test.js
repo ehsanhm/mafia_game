@@ -44,7 +44,8 @@
         { roleId: "danMafia", alive: true },
         { roleId: "detective", alive: true },
         { roleId: "heir", alive: true },
-        { roleId: "citizen", alive: true },
+        { roleId: "herbalist", alive: true },
+        { roleId: "armorsmith", alive: true },
         { roleId: "citizen", alive: true },
       ];
     }
@@ -223,6 +224,90 @@
           const endCardSteps = steps.filter((s) => s && s.id && String(s.id).startsWith("day_end_card_"));
           assert(endCardSteps.length === 1, "Should have exactly one end card step");
           assert(endCardSteps[0].id === "day_end_card_handcuffs", "Should show handcuffs (current card), not beautiful_mind from snapshot");
+        },
+      },
+      {
+        name: "night_revert Armorsmith: armorsmithSelfUsed false when going back from Day 2 to Night 1",
+        fn: function ({ assert }) {
+          if (typeof prevFlowStep !== "function" || typeof nextFlowStep !== "function" || typeof addFlowEvent !== "function" || typeof getFlowSteps !== "function") return;
+          const f = setupScenario("kabo");
+          const draw = appState.draw.players;
+          const armorsmithIdx = draw.findIndex((p) => p && p.roleId === "armorsmith");
+          if (armorsmithIdx < 0) return;
+
+          f.phase = "night";
+          f.day = 1;
+          const nightSteps = getFlowSteps({ ...f, phase: "night" });
+          f.step = Math.max(0, nightSteps.length - 1);
+          if (!f.draft) f.draft = {};
+          f.draft.nightActionsByNight = f.draft.nightActionsByNight || {};
+          f.draft.nightActionsByNight["1"] = { mafiaShot: 5, armorsmithArmor: armorsmithIdx };
+          f.draft.armorsmithSelfUsed = true;
+          f.draft.armorsmithSelfUsedOnNight = 1;
+          addFlowEvent("night_actions", { mafiaShot: 5, armorsmithArmor: armorsmithIdx });
+
+          nextFlowStep();
+          if (f.phase !== "day" || f.day !== 2) return;
+          assert(f.draft.armorsmithSelfUsed === true, "armorsmithSelfUsed should be true after night resolution");
+
+          prevFlowStep();
+          assert(f.draft.armorsmithSelfUsed !== true, "armorsmithSelfUsed must be reverted when going back to Night 1 so Armorsmith can choose himself again");
+        },
+      },
+      {
+        name: "night_revert Herbalist: poison victim alive and herbalistCycleComplete false when going back",
+        fn: function ({ assert }) {
+          if (typeof prevFlowStep !== "function" || typeof nextFlowStep !== "function" || typeof addFlowEvent !== "function" || typeof getFlowSteps !== "function") return;
+          const f = setupScenario("kabo");
+          const draw = appState.draw.players;
+          const victimIdx = 5;
+          if (!draw[victimIdx]) return;
+
+          // Kabo poison: Herbalist poisons Night 1; victim stays alive until Night 2 resolution.
+          // At dawn of Day 3 (Night 2 resolution): if no antidote → victim dies.
+          f.phase = "night";
+          f.day = 1;
+          const nightSteps = getFlowSteps({ ...f, phase: "night" });
+          f.step = Math.max(0, nightSteps.length - 1);
+          if (!f.draft) f.draft = {};
+          f.draft.nightActionsByNight = f.draft.nightActionsByNight || {};
+          f.draft.nightActionsByNight["1"] = { mafiaShot: null, herbalistPoison: victimIdx };
+          addFlowEvent("night_actions", { mafiaShot: null, herbalistPoison: victimIdx });
+
+          nextFlowStep(); // Night 1 -> Day 2 (poison does NOT kill yet; victim stays alive)
+          if (f.phase !== "day" || f.day !== 2) return;
+          assert(draw[victimIdx].alive !== false, "herbalist poison victim stays alive after Night 1 resolution (kills at Night 2)");
+
+          prevFlowStep(); // Day 2 -> Night 1
+          assert(draw[victimIdx].alive !== false, "herbalist poison victim still alive after revert (was never killed)");
+          assert(f.draft.herbalistCycleComplete !== true, "herbalistCycleComplete not set at Night 1 (poison deferred)");
+        },
+      },
+      {
+        name: "night_revert Doctor: doctor save reverted when going back from Day 2 to Night 1",
+        fn: function ({ assert }) {
+          if (typeof prevFlowStep !== "function" || typeof nextFlowStep !== "function" || typeof addFlowEvent !== "function" || typeof getFlowSteps !== "function") return;
+          const f = setupScenario("classic");
+          const draw = appState.draw.players;
+          const victimIdx = 3;
+          const doctorIdx = 1;
+          if (!draw[victimIdx] || !draw[doctorIdx]) return;
+
+          f.phase = "night";
+          f.day = 1;
+          const nightSteps = getFlowSteps({ ...f, phase: "night" });
+          f.step = Math.max(0, nightSteps.length - 1);
+          if (!f.draft) f.draft = {};
+          f.draft.nightActionsByNight = f.draft.nightActionsByNight || {};
+          f.draft.nightActionsByNight["1"] = { mafiaShot: victimIdx, doctorSave: victimIdx };
+          addFlowEvent("night_actions", { mafiaShot: victimIdx, doctorSave: victimIdx });
+
+          nextFlowStep();
+          if (f.phase !== "day" || f.day !== 2) return;
+          assert(draw[victimIdx].alive !== false, "doctor save: victim should be alive after night");
+
+          prevFlowStep();
+          assert(draw[victimIdx].alive !== false, "victim should still be alive after revert (mafia kill was reverted)");
         },
       },
       {

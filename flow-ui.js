@@ -127,7 +127,7 @@
               <input type="hidden" id="${escapeHtml(fieldId)}" value="${escapeHtml(s)}">
               <div class="nightTargetGroup" data-field="${escapeHtml(fieldId)}" style="margin-top:6px">
                 <div style="font-weight:1100; margin-bottom:6px">${escapeHtml(labelText)}</div>
-                <div class="nightCardGrid" style="display:grid; grid-template-columns:repeat(3,1fr); gap:8px; max-height:42vh; overflow:auto; -webkit-overflow-scrolling:touch; touch-action:manipulation; overscroll-behavior:contain;">${cards.join("")}</div>
+                <div class="nightCardGrid fl-scrollable" style="display:grid; grid-template-columns:repeat(3,1fr); gap:8px; max-height:42vh; overflow:auto; -webkit-overflow-scrolling:touch; touch-action:manipulation; overscroll-behavior:contain;">${cards.join("")}</div>
               </div>`;
           };
           const mkNightMultiPickCards = (fieldId, savedArr, maxCount, labelText, indexList, opts) => {
@@ -145,7 +145,7 @@
               <input type="hidden" id="${escapeHtml(fieldId)}" value="${escapeHtml(hidVal)}">
               <div class="nightTargetGroup nightMultiPickGroup" data-field="${escapeHtml(fieldId)}" data-multipick="true" data-max="${escapeHtml(String(maxCount))}"${dataIntro} style="margin-top:6px">
                 <div style="font-weight:1100; margin-bottom:6px">${escapeHtml(labelText)}</div>
-                <div class="nightCardGrid" style="display:grid; grid-template-columns:repeat(3,1fr); gap:8px; max-height:42vh; overflow:auto; -webkit-overflow-scrolling:touch; touch-action:manipulation; overscroll-behavior:contain;">${cards.join("")}</div>
+                <div class="nightCardGrid fl-scrollable" style="display:grid; grid-template-columns:repeat(3,1fr); gap:8px; max-height:42vh; overflow:auto; -webkit-overflow-scrolling:touch; touch-action:manipulation; overscroll-behavior:contain;">${cards.join("")}</div>
               </div>`;
           };
 
@@ -529,6 +529,91 @@
               `;
             }
 
+          } else if (cur.id === "day_poison_status") {
+            body = `
+              <div class="note" style="margin-top:12px; padding:16px; font-size:18px; font-weight:1100; text-align:center; background:rgba(255,75,75,.12); border-radius:12px; border:1px solid rgba(255,75,75,.3)">
+                ${escapeHtml(t("tool.flow.poisonStatus.message"))}
+              </div>
+            `;
+          } else if (cur.id === "night_poisoned_player") {
+            const prevNightKey = String(Math.max(0, (f.day || 1) - 1));
+            const prevNa = (f.draft && f.draft.nightActionsByNight && f.draft.nightActionsByNight[prevNightKey]) || null;
+            const poisonIdx = (prevNa && prevNa.herbalistPoison != null && Number.isFinite(parseInt(prevNa.herbalistPoison, 10))) ? parseInt(prevNa.herbalistPoison, 10) : null;
+            const victimName = (poisonIdx != null && names[poisonIdx]) ? names[poisonIdx] : t("common.playerN", { n: (poisonIdx || 0) + 1 });
+            const nightKey = String(f.day || 1);
+            const vote = (f.draft && f.draft.poisonAntidoteVoteByDay && f.draft.poisonAntidoteVoteByDay[nightKey]) || { agree: 0, disagree: 0 };
+            const agree = Math.max(0, Number(vote.agree) || 0);
+            const disagree = Math.max(0, Number(vote.disagree) || 0);
+            const total = agree + disagree;
+            const moreThanHalfAgree = total > 0 && agree > total / 2;
+            const voteResult = total > 0 ? (moreThanHalfAgree ? t("tool.flow.poisonedPlayer.voteResultAgree") : t("tool.flow.poisonedPlayer.voteResultDisagree")) : "";
+            const _pmSvg = `<svg viewBox="0 0 20 20" width="14" height="14" fill="currentColor"><rect x="3" y="9" width="14" height="2" rx="1"/></svg>`;
+            const _plSvg = `<svg viewBox="0 0 20 20" width="14" height="14" fill="currentColor"><rect x="3" y="9" width="14" height="2" rx="1"/><rect x="9" y="3" width="2" height="14" rx="1"/></svg>`;
+            const cardStyle = "border-radius:14px; padding:14px; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:8px; box-shadow:0 2px 8px rgba(0,0,0,.2); background:rgba(255,255,255,.05); border:2px solid rgba(255,255,255,.12);";
+            body = `
+              <div class="note" style="margin-top:12px; padding:16px; font-size:18px; font-weight:1100; text-align:center; background:rgba(255,75,75,.12); border-radius:12px; border:1px solid rgba(255,75,75,.3)">
+                ${escapeHtml(t("tool.flow.poisonedPlayer.victim", { name: victimName }))}
+              </div>
+              <div class="note" style="margin-top:12px">${escapeHtml(t("tool.flow.poisonedPlayer.voteHint"))}</div>
+              <div style="margin-top:14px; display:grid; grid-template-columns:1fr 1fr; gap:12px">
+                <div class="poison_antidote_card" data-vote="agree" style="${cardStyle} border-color:rgba(74,222,128,.35); background:rgba(74,222,128,.08)">
+                  <div style="font-weight:1100; font-size:14px">${escapeHtml(t("tool.flow.poisonedPlayer.agree"))}</div>
+                  <div style="display:flex; align-items:center; gap:8px">
+                    <button class="poison_antidote_minus" data-vote="agree" type="button" style="width:36px;height:36px;border-radius:10px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.18);color:rgba(255,255,255,.85);cursor:pointer;display:flex;align-items:center;justify-content:center">${_pmSvg}</button>
+                    <span class="poison_antidote_count" data-vote="agree" style="min-width:28px;text-align:center;font-size:22px;font-weight:1200">${agree}</span>
+                    <button class="poison_antidote_plus" data-vote="agree" type="button" style="width:36px;height:36px;border-radius:10px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.18);color:rgba(255,255,255,.85);cursor:pointer;display:flex;align-items:center;justify-content:center">${_plSvg}</button>
+                  </div>
+                </div>
+                <div class="poison_antidote_card" data-vote="disagree" style="${cardStyle} border-color:rgba(255,75,75,.35); background:rgba(255,75,75,.08)">
+                  <div style="font-weight:1100; font-size:14px">${escapeHtml(t("tool.flow.poisonedPlayer.disagree"))}</div>
+                  <div style="display:flex; align-items:center; gap:8px">
+                    <button class="poison_antidote_minus" data-vote="disagree" type="button" style="width:36px;height:36px;border-radius:10px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.18);color:rgba(255,255,255,.85);cursor:pointer;display:flex;align-items:center;justify-content:center">${_pmSvg}</button>
+                    <span class="poison_antidote_count" data-vote="disagree" style="min-width:28px;text-align:center;font-size:22px;font-weight:1200">${disagree}</span>
+                    <button class="poison_antidote_plus" data-vote="disagree" type="button" style="width:36px;height:36px;border-radius:10px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.18);color:rgba(255,255,255,.85);cursor:pointer;display:flex;align-items:center;justify-content:center">${_plSvg}</button>
+                  </div>
+                </div>
+              </div>
+              ${voteResult ? `<div class="note result" id="fl_poison_vote_result" style="margin-top:14px; padding:12px; font-weight:1100">${escapeHtml(voteResult)}</div>` : `<div id="fl_poison_vote_result" style="margin-top:14px; min-height:24px"></div>`}
+            `;
+          } else if (cur.id === "night_herbalist_antidote") {
+            const prevNightKey = String(Math.max(0, (f.day || 1) - 1));
+            const prevNa = (f.draft && f.draft.nightActionsByNight && f.draft.nightActionsByNight[prevNightKey]) || null;
+            const poisonIdx = (prevNa && prevNa.herbalistPoison != null && Number.isFinite(parseInt(prevNa.herbalistPoison, 10))) ? parseInt(prevNa.herbalistPoison, 10) : null;
+            const victimName = (poisonIdx != null && names[poisonIdx]) ? names[poisonIdx] : t("common.playerN", { n: (poisonIdx || 0) + 1 });
+            const nightKey = String(f.day || 1);
+            const savedNight = (f.draft && f.draft.nightActionsByNight && f.draft.nightActionsByNight[nightKey]) || {};
+            const savedAntidote = (savedNight.herbalistAntidote === null || savedNight.herbalistAntidote === undefined) ? null : parseInt(savedNight.herbalistAntidote, 10);
+            const giveAntidote = savedAntidote === poisonIdx;
+            const herbCardStyle = "border-radius:14px; padding:16px; display:flex; align-items:center; justify-content:center; text-align:center; font-weight:1100; font-size:15px; box-shadow:0 2px 8px rgba(0,0,0,.2); min-height:56px; cursor:pointer; transition:background .12s,border-color .12s; touch-action:manipulation; user-select:none; border:2px solid;";
+            const giveSel = giveAntidote ? "background:rgba(74,222,128,.2); border-color:#4ade80;" : "background:rgba(255,255,255,.05); border-color:rgba(255,255,255,.15); color:rgba(255,255,255,.85);";
+            const withholdSel = !giveAntidote ? "background:rgba(255,75,75,.15); border-color:rgba(255,75,75,.5);" : "background:rgba(255,255,255,.05); border-color:rgba(255,255,255,.15); color:rgba(255,255,255,.85);";
+            body = `
+              <div class="note" style="margin-top:12px">${escapeHtml(t("tool.flow.herbalistAntidote.hint"))}</div>
+              <div class="note" style="margin-top:8px">${escapeHtml(appLang === "fa" ? `مسموم شده: ${victimName}` : `Poisoned: ${victimName}`)}</div>
+              <div style="margin-top:14px; display:grid; grid-template-columns:1fr 1fr; gap:12px">
+                <button class="herbalist_antidote_card" type="button" data-value="give" style="${herbCardStyle}${giveSel}">${escapeHtml(t("tool.flow.herbalistAntidote.give"))}</button>
+                <button class="herbalist_antidote_card" type="button" data-value="withhold" style="${herbCardStyle}${withholdSel}">${escapeHtml(t("tool.flow.herbalistAntidote.withhold"))}</button>
+              </div>
+            `;
+          } else if (cur.id === "night_poison_result") {
+            const prevNightKey = String(Math.max(0, (f.day || 1) - 1));
+            const prevNa = (f.draft && f.draft.nightActionsByNight && f.draft.nightActionsByNight[prevNightKey]) || null;
+            const poisonIdx = (prevNa && prevNa.herbalistPoison != null && Number.isFinite(parseInt(prevNa.herbalistPoison, 10))) ? parseInt(prevNa.herbalistPoison, 10) : null;
+            const victimName = (poisonIdx != null && names[poisonIdx]) ? names[poisonIdx] : t("common.playerN", { n: (poisonIdx || 0) + 1 });
+            const nightKey = String(f.day || 1);
+            const d = f.draft || {};
+            const savedNight = (d.nightActionsByNight && d.nightActionsByNight[nightKey]) || {};
+            const savedAntidote = (savedNight.herbalistAntidote === null || savedNight.herbalistAntidote === undefined) ? null : parseInt(savedNight.herbalistAntidote, 10);
+            let antidoteGiven = (savedAntidote !== null && savedAntidote !== undefined && savedAntidote === poisonIdx);
+            const victimRole = (poisonIdx != null && draw.players && draw.players[poisonIdx]) ? (draw.players[poisonIdx].roleId || "citizen") : "citizen";
+            if (!antidoteGiven && victimRole === "danMafia" && !d.danMafiaAntidoteUsed) antidoteGiven = true;
+            if (!antidoteGiven && victimRole === "witch" && d.witchHasAntidoteFromDon) antidoteGiven = true;
+            const msg = antidoteGiven ? t("tool.flow.poisonResult.fixed") : t("tool.flow.poisonResult.worked", { name: victimName });
+            body = `
+              <div class="note" style="margin-top:12px; padding:16px; font-size:18px; font-weight:1100; text-align:center; background:${antidoteGiven ? "rgba(74,222,128,.15)" : "rgba(255,75,75,.12)"}; border-radius:12px; border:1px solid ${antidoteGiven ? "rgba(74,222,128,.4)" : "rgba(255,75,75,.3)"}">
+                ${escapeHtml(msg)}
+              </div>
+            `;
           } else if (cur.id === "day_vote") {
             const d = f.draft || {};
             if (!d.voteCandidatesByDay || typeof d.voteCandidatesByDay !== "object") d.voteCandidatesByDay = {};
@@ -595,7 +680,7 @@
                 </div>
               </div>
               <div style="height:10px"></div>
-              <div style="display:grid; grid-template-columns:repeat(3,1fr); gap:8px; max-height:50vh; overflow:auto; -webkit-overflow-scrolling:touch;">
+              <div class="fl-scrollable" style="display:grid; grid-template-columns:repeat(3,1fr); gap:8px; max-height:50vh; overflow:auto; -webkit-overflow-scrolling:touch;">
                 ${cells || `<div style="color:var(--muted); font-weight:900; grid-column:1/-1">${escapeHtml(appLang === "fa" ? "بازیکن زنده‌ای وجود ندارد." : "No alive players.")}</div>`}
               </div>
             `;
@@ -923,7 +1008,7 @@
                   <div style="height:12px"></div>
                   <div style="font-weight:1100">${escapeHtml(t("tool.flow.outcome.lastMove"))}</div>
                   <div style="height:8px"></div>
-                  <div style="border:1px solid rgba(255,255,255,.08); border-radius:14px; padding:10px; background: rgba(17,24,36,.25); max-height: 34vh; overflow:auto; -webkit-overflow-scrolling: touch;">
+                  <div class="fl-scrollable" style="border:1px solid rgba(255,255,255,.08); border-radius:14px; padding:10px; background: rgba(17,24,36,.25); max-height: 34vh; overflow:auto; -webkit-overflow-scrolling: touch;">
                     <div style="font-weight:1100;margin-bottom:8px">${escapeHtml(t("tool.lastMove.header"))}</div>
                     ${listHtml}
                   </div>
@@ -983,7 +1068,7 @@
                 <div style="color:var(--muted); font-weight:900; font-size:12px">${escapeHtml(t("tool.flow.elim.votes"))}</div>
               </div>
               <div style="height:6px"></div>
-              <div style="border:1px solid rgba(255,255,255,.08); border-radius:14px; padding:10px; background: rgba(17,24,36,.25); max-height: 46vh; overflow:auto; -webkit-overflow-scrolling: touch;">
+              <div class="fl-scrollable" style="border:1px solid rgba(255,255,255,.08); border-radius:14px; padding:10px; background: rgba(17,24,36,.25); max-height: 46vh; overflow:auto; -webkit-overflow-scrolling: touch;">
                 ${(dayCounts || Array.isArray(d.voteCandidatesByDay && d.voteCandidatesByDay[f.day]))
                   ? (rows || `<div style="color:var(--muted); font-weight:900">${escapeHtml(t("tool.flow.elim.noCandidates"))}</div>`)
                   : `<div style="color:var(--muted); font-weight:900">${escapeHtml(t("tool.flow.defense.needVotes"))}</div>`}
@@ -1238,6 +1323,8 @@
                 : "Trusted person fires both guns — they don't know which has the real bullet.")}</div>
               ${trustedName2 ? `<div style="margin-bottom:10px"><span style="font-weight:1100">${escapeHtml(appLang === "fa" ? "معتمد: " : "Trusted: ")}</span>${escapeHtml(trustedName2)}</div>` : ""}
               ${!realGun ? `<div class="note warn" style="margin-bottom:10px">${escapeHtml(appLang === "fa" ? "⚠ گلوله واقعی توسط کاپو انتخاب نشده." : "⚠ Capo has not set the real bullet.")}</div>` : ""}
+              ${realGun && gun1Target === null && gun2Target === null ? `<div class="note alert" style="margin-bottom:10px">${escapeHtml(t("tool.flow.kabo.bothAir"))}</div>` : ""}
+              ${realGun && gun1Target !== null && gun2Target !== null && gun1Target === gun2Target ? `<div class="note alert" style="margin-bottom:10px">${escapeHtml(t("tool.flow.kabo.bothSame"))}</div>` : ""}
               <div style="border-radius:14px; padding:12px; margin-bottom:10px; ${gun1CardStyle}">
                 <div style="font-weight:1100; margin-bottom:8px">${gunSvg} ${escapeHtml(appLang === "fa" ? "گلوله ۱" : "Gun 1")}</div>
                 <label>${escapeHtml(appLang === "fa" ? "هدف" : "Target")}
@@ -1736,6 +1823,70 @@
                     })()}
                   `;
                 }
+                // Kabo (Capo): Mafia Don choice — Shoot / Buy (Yakooza) / Guess role (Executioner)
+                if (scenario === "kabo") {
+                  const kaboAction = (savedNight.godfatherAction != null && String(savedNight.godfatherAction)) ? String(savedNight.godfatherAction) : "shoot";
+                  const yakoozaUsed = !!(d && d.kaboYakoozaUsed);
+                  const mafiaCount = (draw.players || []).filter((p) => p && (roles[p.roleId || "citizen"] && roles[p.roleId || "citizen"].teamFa === "مافیا")).length;
+                  const mafiaAliveCount = (draw.players || []).filter((p) => p && p.alive !== false && (roles[p.roleId || "citizen"] && roles[p.roleId || "citizen"].teamFa === "مافیا")).length;
+                  const atLeastOneMafiaDead = mafiaCount > 0 && mafiaAliveCount < mafiaCount;
+                  const yakoozaAllowed = !yakoozaUsed && atLeastOneMafiaDead;
+                  const shootLabel = appLang === "fa" ? "شلیک" : "Shoot";
+                  const buyLabel = appLang === "fa" ? "خرید (یاکوزا)" : "Buy (Yakooza)";
+                  const guessLabel = appLang === "fa" ? "حدس نقش" : "Guess role";
+                  const mkKaboRoleOpts = (savedRoleId) => {
+                    const saved = String(savedRoleId || "");
+                    const seen = new Set();
+                    const opts = [`<option value="" ${saved === "" ? "selected" : ""}>—</option>`];
+                    for (const p of (draw.players || [])) {
+                      if (!p || !p.roleId) continue;
+                      const rid = String(p.roleId);
+                      if (seen.has(rid)) continue;
+                      seen.add(rid);
+                      const fa = (roles[rid] && roles[rid].faName) ? roles[rid].faName : rid;
+                      const en = (typeof ROLE_I18N !== "undefined" && ROLE_I18N[rid] && ROLE_I18N[rid].name) ? ROLE_I18N[rid].name : fa;
+                      opts.push(`<option value="${escapeHtml(rid)}" ${rid === saved ? "selected" : ""}>${escapeHtml(appLang === "fa" ? fa : en)}</option>`);
+                    }
+                    return opts.join("");
+                  };
+                  const yakoozaTargetIdxs = aliveIdxs.filter((idx) => {
+                    const p = draw.players[idx];
+                    if (!p) return false;
+                    const teamFa = (roles[p.roleId || "citizen"] && roles[p.roleId || "citizen"].teamFa) || "شهر";
+                    return teamFa !== "مافیا";
+                  });
+                  return `
+                    <div style="font-weight:1100; margin-bottom:6px">${escapeHtml(appLang === "fa" ? "دن مافیا — انتخاب شب" : "Mafia Don — Night choice")}</div>
+                    <label style="display:block; margin-bottom:8px">
+                      <select id="fl_godfather_action" style="font-size:14px; padding:6px; min-width:160px">
+                        <option value="shoot" ${kaboAction === "shoot" ? "selected" : ""}>${escapeHtml(shootLabel)}</option>
+                        <option value="yakooza" ${kaboAction === "yakooza" ? "selected" : ""} ${!yakoozaAllowed ? "disabled" : ""}>${escapeHtml(buyLabel)}${!yakoozaAllowed ? (appLang === "fa" ? " (غیرفعال)" : " (unavailable)") : ""}</option>
+                        <option value="guess_role" ${kaboAction === "guess_role" ? "selected" : ""}>${escapeHtml(guessLabel)}</option>
+                      </select>
+                    </label>
+                    ${kaboAction === "shoot" ? `
+                      ${mkNightTargetCards("fl_mafia_shot", savedNight.mafiaShot, t("tool.flow.action.mafiaShot"))}
+                      <div style="height:10px"></div>
+                    ` : ""}
+                    ${kaboAction === "yakooza" && yakoozaAllowed ? `
+                      <div class="note" style="margin-top:6px">${escapeHtml(appLang === "fa" ? "هدف‌ها شامل همه بازیکنان زنده غیرمافیا. فقط شهروند ساده موفق می‌شود." : "Targets include all alive non-mafia players. Only simple citizen succeeds.")}</div>
+                      ${yakoozaTargetIdxs.length ? mkNightTargetCards("fl_kabo_yakooza_target", savedNight.kaboYakoozaTarget, appLang === "fa" ? "هدف خرید یاکوزا" : "Yakooza buy target", yakoozaTargetIdxs) : `<div class="note warn">${escapeHtml(appLang === "fa" ? "هیچ بازیکن غیرمافیایی زنده نیست." : "No alive non-mafia player.")}</div>`}
+                    ` : ""}
+                    ${kaboAction === "guess_role" ? `
+                      <div class="note" style="margin-top:6px">${escapeHtml(appLang === "fa" ? "جلاد یک بازیکن را انتخاب و نقشش را حدس می‌زند. درست → خارج. غلط → هیچ." : "Executioner picks a player and guesses their role. Correct → eliminated. Wrong → nothing.")}</div>
+                      <div style="height:6px"></div>
+                      ${mkNightTargetCards("fl_executioner_target", savedNight.executionerTarget, appLang === "fa" ? "بازیکن حدس‌زده‌شده" : "Guessed player")}
+                      <label style="margin-top:6px">${escapeHtml(appLang === "fa" ? "نقش حدس‌زده شده" : "Guessed role")}
+                        <select id="fl_executioner_role">${mkKaboRoleOpts(savedNight.executionerRoleGuess)}</select>
+                      </label>
+                      <div style="height:10px"></div>
+                    ` : ""}
+                    <div style="font-weight:1100; border-top:1px solid rgba(255,255,255,.15); padding-top:10px">${escapeHtml(appLang === "fa" ? "جادوگر — بازگرداندن توانایی به هدف" : "Witch — Reflect ability to target")}</div>
+                    <div class="note" style="margin-top:6px">${escapeHtml(appLang === "fa" ? "جادوگر یک شهروند را انتخاب می‌کند؛ توانایی آن بازیکن به خودش بازمی‌گردد (کارآگاه→استعلام خودش منفی؛ عطار→زهر به خودش؛ زره‌ساز→زره به خودش)." : "Witch picks a citizen; that player's ability reflects to themselves (Detective→inquiry on self=negative; Herbalist→poison self; Armorsmith→armor self).")}</div>
+                    <div style="height:6px"></div>
+                    ${mkNightTargetCards("fl_witch_target", savedNight.witchTarget, appLang === "fa" ? "هدف جادوگر" : "Witch target", yakoozaTargetIdxs)}
+                  `;
+                }
                 // Check if NATO player is present and alive (NATO wakes with Mafia in some scenarios).
                 const natoPlayerIdx = (() => {
                   for (let i = 0; i < (draw.players || []).length; i++) {
@@ -2060,29 +2211,35 @@
                 return null;
               }
               if (k === "herbalist") {
-                // Two-night mechanic: poison on Night X, antidote decision on Night X+1.
-                const herbPrevKey = String((f.day || 1) - 1);
-                const herbPrevActions = (d && d.nightActionsByNight && d.nightActionsByNight[herbPrevKey]) ? d.nightActionsByNight[herbPrevKey] : null;
-                const herbPrevPoisonRaw = herbPrevActions ? herbPrevActions.herbalistPoison : null;
-                const herbPrevPoison = (herbPrevPoisonRaw !== null && herbPrevPoisonRaw !== undefined && Number.isFinite(parseInt(herbPrevPoisonRaw, 10)))
-                  ? parseInt(herbPrevPoisonRaw, 10) : null;
+                // Kabo: antidote decision is in dedicated steps (night_poisoned_player, night_herbalist_antidote, night_poison_result).
+                // Here we only show poison pick for the current night, or exhausted.
                 const herbCycleDone = !!(d && d.herbalistCycleComplete);
+                const isKabo = (typeof getDrawScenarioForFlow === "function" && getDrawScenarioForFlow() === "kabo");
 
-                if (herbPrevPoison !== null) {
-                  // Antidote night: previous night had a poison — show antidote decision only.
-                  const poisonedName = names[herbPrevPoison] || t("common.playerN", { n: herbPrevPoison + 1 });
-                  const savedAnt = (savedNight.herbalistAntidote === null || savedNight.herbalistAntidote === undefined) ? null : parseInt(savedNight.herbalistAntidote, 10);
-                  const antOpts = [
-                    `<option value="" ${savedAnt === null ? "selected" : ""}>${escapeHtml(appLang === "fa" ? `بدون پادزهر: ${poisonedName} حذف می‌شود` : `No antidote: ${poisonedName} will be eliminated`)}</option>`,
-                    `<option value="${herbPrevPoison}" ${savedAnt === herbPrevPoison ? "selected" : ""}>${escapeHtml(appLang === "fa" ? `پادزهر را به ${poisonedName} بده` : `Give antidote to ${poisonedName}`)}</option>`,
-                  ].join("");
-                  return `
-                    <div class="note" style="margin-bottom:8px">${escapeHtml(appLang === "fa" ? `مسموم شده (شب قبل): ${poisonedName}` : `Poisoned last night: ${poisonedName}`)}</div>
-                    <label>${escapeHtml(appLang === "fa" ? "تصمیم عطار (پادزهر؟)" : "Herbalist — antidote decision")}
-                      <select id="fl_herb_antidote">${antOpts}</select>
-                    </label>
-                  `;
-                } else if (herbCycleDone) {
+                if (!isKabo) {
+                  // Non-Kabo: two-night mechanic — antidote decision here when prev night had poison.
+                  const herbPrevKey = String(Math.max(0, (f.day || 1) - 1));
+                  const herbPrevActions = (d && d.nightActionsByNight && d.nightActionsByNight[herbPrevKey]) ? d.nightActionsByNight[herbPrevKey] : null;
+                  const herbPrevPoisonRaw = herbPrevActions ? herbPrevActions.herbalistPoison : null;
+                  const herbPrevPoison = (herbPrevPoisonRaw !== null && herbPrevPoisonRaw !== undefined && Number.isFinite(parseInt(herbPrevPoisonRaw, 10)))
+                    ? parseInt(herbPrevPoisonRaw, 10) : null;
+                  if (herbPrevPoison !== null) {
+                    const poisonedName = names[herbPrevPoison] || t("common.playerN", { n: herbPrevPoison + 1 });
+                    const savedAnt = (savedNight.herbalistAntidote === null || savedNight.herbalistAntidote === undefined) ? null : parseInt(savedNight.herbalistAntidote, 10);
+                    const antOpts = [
+                      `<option value="" ${savedAnt === null ? "selected" : ""}>${escapeHtml(appLang === "fa" ? `بدون پادزهر: ${poisonedName} حذف می‌شود` : `No antidote: ${poisonedName} will be eliminated`)}</option>`,
+                      `<option value="${herbPrevPoison}" ${savedAnt === herbPrevPoison ? "selected" : ""}>${escapeHtml(appLang === "fa" ? `پادزهر را به ${poisonedName} بده` : `Give antidote to ${poisonedName}`)}</option>`,
+                    ].join("");
+                    return `
+                      <div class="note" style="margin-bottom:8px">${escapeHtml(appLang === "fa" ? `مسموم شده (شب قبل): ${poisonedName}` : `Poisoned last night: ${poisonedName}`)}</div>
+                      <label>${escapeHtml(appLang === "fa" ? "تصمیم عطار (پادزهر؟)" : "Herbalist — antidote decision")}
+                        <select id="fl_herb_antidote">${antOpts}</select>
+                      </label>
+                    `;
+                  }
+                }
+
+                if (herbCycleDone) {
                   // One poison + one antidote used — abilities exhausted.
                   return `<div class="note">${escapeHtml(appLang === "fa" ? "عطار هر دو توانایی خود را استفاده کرده است." : "Herbalist has used both abilities (poison + antidote) for this game.")}</div>`;
                 } else {
@@ -2104,21 +2261,9 @@
                 })();
                 const selfUsed = !!(d && d.armorsmithSelfUsed);
                 const sIdx = (savedNight.armorsmithArmor === null || savedNight.armorsmithArmor === undefined) ? null : parseInt(savedNight.armorsmithArmor, 10);
-                const optsArmor = (() => {
-                  const s = (sIdx === null || !Number.isFinite(sIdx)) ? "" : String(sIdx);
-                  const base = [`<option value="" ${s === "" ? "selected" : ""}>—</option>`];
-                  for (const idx of aliveIdxs) {
-                    const v = String(idx);
-                    const isSelf = (armorIdx !== null && idx === armorIdx);
-                    const dis = (isSelf && selfUsed && v !== s) ? "disabled" : "";
-                    base.push(`<option value="${v}" ${v === s ? "selected" : ""} ${dis}>${escapeHtml(names[idx] || t("common.playerN", { n: idx + 1 }))}</option>`);
-                  }
-                  return base.join("");
-                })();
+                const disabledSet = (selfUsed && armorIdx !== null) ? new Set([armorIdx]) : new Set();
                 return `
-                  <label>${escapeHtml(t("tool.flow.action.armorsmithArmor"))}
-                    <select id="fl_armor_target">${optsArmor}</select>
-                  </label>
+                  ${mkNightTargetCards("fl_armor_target", sIdx, t("tool.flow.action.armorsmithArmor"), aliveIdxs, disabledSet)}
                   <div class="note" style="margin-top:6px">${escapeHtml(t("tool.flow.action.armorsmith.selfOnce"))}</div>
                 `;
               }
@@ -2207,9 +2352,9 @@
                   <div class="note">${escapeHtml(kadQuota)}</div>
                   ${kadRemaining > 0 ? `
                   <div style="height:6px"></div>
-                  ${mkNightTargetCards("fl_kadkhoda_target", savedNight.kadkhodaTarget, appLang === "fa" ? "هدف بیداری کدخدا" : "Kadkhoda wake target")}
-                  <div class="note" style="margin-top:6px">${escapeHtml(appLang === "fa" ? "اگر کدخدا یک مافیا (غیر خبرچین) را بیدار کند، کدخدا از بازی خارج می‌شود." : "If Kadkhoda wakes a Mafia (except Informant), Kadkhoda is eliminated.")}</div>
-                  ` : `<div class="note warn" style="margin-top:6px">${escapeHtml(appLang === "fa" ? "کدخدا هر دو لینک را استفاده کرده است." : "Kadkhoda has used both links.")}</div>`}
+                  ${mkNightTargetCards("fl_kadkhoda_target", savedNight.kadkhodaTarget, appLang === "fa" ? "هدف بیداری کدخدا" : "Village Chief wake target")}
+                  <div class="note" style="margin-top:6px">${escapeHtml(appLang === "fa" ? "اگر کدخدا یک مافیا (غیر خبرچین) را بیدار کند، کدخدا از بازی خارج می‌شود." : "If Village Chief wakes a Mafia (except Informant), Village Chief is eliminated.")}</div>
+                  ` : `<div class="note warn" style="margin-top:6px">${escapeHtml(appLang === "fa" ? "کدخدا هر دو لینک را استفاده کرده است." : "Village Chief has used both links.")}</div>`}
                 `;
               }
               if (k === "reporter") {
@@ -2433,8 +2578,31 @@
               if (kaneIdx === -1) return true;
               return (draw.players[kaneIdx] && draw.players[kaneIdx].alive !== false);
             };
-            const ordered = (evenNight ? orderedFiltered : orderedFiltered.filter((w) => normWake(w) !== "zodiac"))
-              .filter((w) => (normWake(w) !== "bomber" || !bombAlreadyUsed) && keepKaneAlive(w));
+            // Skip roles not in the draw (must match flow-engine's keepRoleInDraw).
+            const keepRoleInDraw = (stepId) => {
+              const players = draw && draw.players;
+              if (!players || !players.length) return true;
+              const sid = String(stepId || "");
+              const stepToRoles = { night_heir: ["heir"], night_herbalist: ["herbalist"], night_detective: ["detective"], night_armorsmith: ["armorsmith"], night_kadkhoda: ["kadkhoda"], night_doctor: ["doctor", "watson"], night_constantine: ["constantine"], night_kane: ["citizenKane"], night_ocean: ["ocean"], night_bomber: ["bomber"], night_zodiac: ["zodiac"], night_professional: ["professional", "leon"], night_sniper: ["sniper"], night_negotiator: ["negotiator"], night_reporter: ["reporter"], night_researcher: ["researcher"], night_swindler: ["swindler"], night_natasha: ["natasha"], night_jokermaf: ["jokerMafia"], night_lecter: ["doctorLecter"], night_magician: ["magician"], night_hacker: ["hacker"], night_guide: ["guide"], night_bodyguard: ["bodyguard"], night_minemaker: ["minemaker"], night_lawyer: ["lawyer"], night_soldier: ["soldier"], night_nato: ["nato"], night_investigator: ["investigator"] };
+              const roleIds = stepToRoles[sid];
+              if (!roleIds) return true;
+              if (sid === "night_mafia") return players.some((p) => p && p.roleId && (roles[p.roleId] && roles[p.roleId].teamFa === "مافیا"));
+              return players.some((p) => p && roleIds.includes(p.roleId));
+            };
+            const flowCfg = (typeof getFlowConfig === "function") ? getFlowConfig(scenario) : null;
+            const nightStepIds = Array.isArray(flowCfg && flowCfg.night) ? flowCfg.night : null;
+            // Build ordered with same filters as flow-engine; iterate over wake with original index for stepId.
+            const ordered = [];
+            for (let i = 0; i < orderedRaw.length; i++) {
+              const w = orderedRaw[i];
+              const x = String(w || "").toLowerCase();
+              if (x.includes("intro night only") || x.includes("فقط شب معارفه")) continue;
+              if (!evenNight && normWake(w) === "zodiac") continue;
+              if ((normWake(w) === "bomber" && bombAlreadyUsed) || !keepKaneAlive(w)) continue;
+              const stepId = (nightStepIds && i < nightStepIds.length) ? String(nightStepIds[i]) : null;
+              if (stepId && !keepRoleInDraw(stepId)) continue;
+              ordered.push(w);
+            }
             // Death timing helpers (see `setPlayerLife` -> `deadAtByIdx`)
             const deathRec = (idx) => {
               try {
@@ -2671,14 +2839,11 @@
               `;
             };
             const isPerRoleNight = cur.id && (String(cur.id).startsWith("night_step_") || (f.phase === "night" && steps.length > 1));
-            const nightStepIndex = isPerRoleNight
-              ? (String(cur.id).startsWith("night_step_")
-                ? parseInt(String(cur.id).replace("night_step_", ""), 10)
-                : steps.findIndex((s) => s && s.id === cur.id))
-              : -1;
+            // Use cur.title (from filtered steps) as the wake label — ensures content matches the step title
+            // even when ordered has different length (e.g. roles filtered out by keepRoleInDraw).
             const actionBlocks = isPerRoleNight
               ? (() => {
-                  const w = (ordered && nightStepIndex >= 0 && nightStepIndex < ordered.length) ? ordered[nightStepIndex] : undefined;
+                  const w = (cur && cur.title) ? cur.title : (ordered && (f.step || 0) >= 0 && (f.step || 0) < ordered.length) ? ordered[f.step] : undefined;
                   if (w === undefined) return `<div class="note">${escapeHtml(noActionTxt)}</div>`;
                   return oneBlock(w) || `<div class="note">${escapeHtml(noActionTxt)}</div>`;
                 })()
@@ -2712,7 +2877,7 @@
             body = `
               ${bombLine ? `<div class="note" style="margin-top:6px">${escapeHtml(bombLine)}</div>` : ``}
               <div style="height:10px"></div>
-              <div style="max-height: 60vh; overflow:auto; -webkit-overflow-scrolling: touch; border:1px solid rgba(255,255,255,.08); border-radius:14px; padding:10px; background: rgba(17,24,36,.25)">
+              <div class="fl-scrollable" style="max-height: 60vh; overflow:auto; -webkit-overflow-scrolling: touch; border:1px solid rgba(255,255,255,.08); border-radius:14px; padding:10px; background: rgba(17,24,36,.25)">
                 ${actionBlocks || `<div class="note">${escapeHtml(t("tool.wake.none"))}</div>`}
               </div>
               ${researcherNightChainNote}
@@ -3001,7 +3166,7 @@
             const nightGiveCount = nightGives.length;
             const nightRealCount = nightGives.filter((x) => x && x.type === "real").length;
             body = `
-              <div style="max-height: 46vh; overflow:auto; -webkit-overflow-scrolling: touch;">
+              <div class="fl-scrollable" style="max-height: 46vh; overflow:auto; -webkit-overflow-scrolling: touch;">
                 ${showGunner ? `
                 <div style="font-weight:1100">${escapeHtml(t("tool.flow.guns.add"))}</div>
                 <div class="row one" style="margin-top:8px">
@@ -3268,7 +3433,10 @@
                 document.getElementById("fl_neutralized_shot") ||
                 document.getElementById("fl_betrayal_rep") ||
                 document.getElementById("fl_betrayal_dir") ||
-                document.getElementById("fl_capo_bullet_order");
+                document.getElementById("fl_capo_bullet_order") ||
+                document.getElementById("fl_kabo_yakooza_target") ||
+                document.getElementById("fl_executioner_target") ||
+                document.getElementById("fl_executioner_role");
               if (!hasAny) return false;
 
               const read = (id) => { const el = document.getElementById(id); return el ? (el.value || "") : ""; };
@@ -3280,8 +3448,15 @@
               if (document.getElementById("fl_sixth_sense_target") || !mergeOnly) per.sixthSenseTarget = readNum("fl_sixth_sense_target");
               if (document.getElementById("fl_sixth_sense_role") || !mergeOnly) per.sixthSenseRole = String(read("fl_sixth_sense_role") || "");
               if (document.getElementById("fl_matador_disable") || !mergeOnly) per.matadorDisable = readNum("fl_matador_disable");
+              if (document.getElementById("fl_kabo_yakooza_target") || !mergeOnly) per.kaboYakoozaTarget = readNum("fl_kabo_yakooza_target");
+              if (document.getElementById("fl_executioner_target") || !mergeOnly) per.executionerTarget = readNum("fl_executioner_target");
+              if (document.getElementById("fl_executioner_role") || !mergeOnly) per.executionerRoleGuess = String(read("fl_executioner_role") || "");
+              if (document.getElementById("fl_witch_target") || !mergeOnly) per.witchTarget = readNum("fl_witch_target");
               if (getDrawScenarioForFlow() === "pedarkhande" && per.godfatherAction && per.godfatherAction !== "shoot") per.mafiaShot = null;
               if (getDrawScenarioForFlow() === "pedarkhande" && per.godfatherAction && per.godfatherAction !== "sixth_sense") { per.sixthSenseTarget = null; per.sixthSenseRole = null; }
+              if (getDrawScenarioForFlow() === "kabo" && per.godfatherAction && per.godfatherAction !== "shoot") per.mafiaShot = null;
+              if (getDrawScenarioForFlow() === "kabo" && per.godfatherAction && per.godfatherAction !== "yakooza") per.kaboYakoozaTarget = null;
+              if (getDrawScenarioForFlow() === "kabo" && per.godfatherAction && per.godfatherAction !== "guess_role") { per.executionerTarget = null; per.executionerRoleGuess = null; }
               if (document.getElementById("fl_doctor_save") || !mergeOnly) per.doctorSave = readNum("fl_doctor_save");
               if (document.getElementById("fl_det_query") || !mergeOnly) per.detectiveQuery = readNum("fl_det_query");
               if (document.getElementById("fl_pro_shot") || !mergeOnly) per.professionalShot = readNum("fl_pro_shot");
@@ -3349,6 +3524,14 @@
                     } catch { return null; }
                   })()
                 : null;
+
+              // Witch (Kabo): when herbalist is bewitched, herbalist poisons self — override stored value.
+              if (getDrawScenarioForFlow() === "kabo" && per.witchTarget != null && Number.isFinite(Number(per.witchTarget))) {
+                const wt = parseInt(per.witchTarget, 10);
+                const tgt = (appState.draw && appState.draw.players && appState.draw.players[wt]) || null;
+                const role = (tgt && tgt.roleId) ? tgt.roleId : "citizen";
+                if (role === "herbalist") per.herbalistPoison = wt;
+              }
 
               d.nightActionsByNight[nk] = per;
               d.bombCode = (per.bombCode != null && String(per.bombCode)) ? String(per.bombCode) : "";
@@ -3443,6 +3626,7 @@
                 sodagariSacrifice: per.sodagariSacrifice != null ? per.sodagariSacrifice : null,
                 sodagariTarget: per.sodagariTarget != null ? per.sodagariTarget : null,
                 godfatherAction: (per.godfatherAction != null && String(per.godfatherAction)) ? String(per.godfatherAction) : null,
+                witchTarget: per.witchTarget != null ? per.witchTarget : null,
                 saulBuyTarget: per.saulBuyTarget != null ? per.saulBuyTarget : null,
                 sixthSenseTarget: per.sixthSenseTarget != null ? per.sixthSenseTarget : null,
                 sixthSenseRole: (per.sixthSenseRole != null && String(per.sixthSenseRole).trim()) ? String(per.sixthSenseRole).trim() : null,
@@ -3453,6 +3637,15 @@
                 betrayalRep: per.betrayalRep != null ? per.betrayalRep : null,
                 betrayalDir: per.betrayalDir != null ? per.betrayalDir : null,
               };
+              // Witch (Kabo): ability reflects to target — override payload so target's ability applies to themselves.
+              if (getDrawScenarioForFlow() === "kabo" && payload.witchTarget != null && Number.isFinite(Number(payload.witchTarget))) {
+                const wt = parseInt(payload.witchTarget, 10);
+                const tgt = (appState.draw && appState.draw.players && appState.draw.players[wt]) || null;
+                const role = (tgt && tgt.roleId) ? tgt.roleId : "citizen";
+                if (role === "detective") payload.detectiveQuery = wt;
+                else if (role === "herbalist") payload.herbalistPoison = wt;
+                else if (role === "armorsmith") payload.armorsmithArmor = wt;
+              }
               // Clear handcuffed or disabled (Magician/Matador) player's actions
               try {
                 const draw = appState.draw;
@@ -3495,7 +3688,7 @@
                     bodyguard: ["bodyguardProtect"], minemaker: ["minemakerTarget"], lawyer: ["lawyerTarget"],
                     nato: ["natoTarget", "natoRoleGuess"], reporter: ["reporterTarget"],
                     investigator: ["investigatorT1", "investigatorT2"], sodagari: ["sodagariSacrifice", "sodagariTarget"],
-                    godfather: ["godfatherAction", "mafiaShot", "saulBuyTarget", "sixthSenseTarget", "sixthSenseRole"], matador: ["matadorDisable"],
+                    godfather: ["godfatherAction", "mafiaShot", "saulBuyTarget", "sixthSenseTarget", "sixthSenseRole"], witch: ["witchTarget"], matador: ["matadorDisable"],
                     soldier: ["soldierTarget", "soldierGunShot"],
                   };
                   for (const [roleKey, fields] of Object.entries(roleToFields)) {
@@ -3928,6 +4121,20 @@
               return;
             }
             const nightSteps = getFlowSteps(f) || [];
+            if (cur && cur.id === "night_poisoned_player") {
+              // Values are already in draft from card +/- clicks; no DOM read needed.
+              nextFlowStep();
+              return;
+            }
+            if (cur && cur.id === "night_herbalist_antidote") {
+              // Values are already in draft from card clicks; no DOM read needed.
+              nextFlowStep();
+              return;
+            }
+            if (cur && cur.id === "night_poison_result") {
+              nextFlowStep();
+              return;
+            }
             const isPerRoleNightStep = cur && cur.id && (String(cur.id).startsWith("night_step_") || (f.phase === "night" && nightSteps.length > 1));
             if (cur && (cur.id === "night_run" || isPerRoleNightStep)) {
               if (isPerRoleNightStep) {
@@ -3994,7 +4201,11 @@
                       sodagariSacrifice: per.sodagariSacrifice != null ? per.sodagariSacrifice : null,
                       sodagariTarget: per.sodagariTarget != null ? per.sodagariTarget : null,
                       godfatherAction: (per.godfatherAction != null && String(per.godfatherAction)) ? String(per.godfatherAction) : null,
+                      witchTarget: per.witchTarget != null ? per.witchTarget : null,
                       saulBuyTarget: per.saulBuyTarget != null ? per.saulBuyTarget : null,
+                      kaboYakoozaTarget: per.kaboYakoozaTarget != null ? per.kaboYakoozaTarget : null,
+                      executionerTarget: per.executionerTarget != null ? per.executionerTarget : null,
+                      executionerRoleGuess: (per.executionerRoleGuess != null && String(per.executionerRoleGuess).trim()) ? String(per.executionerRoleGuess).trim() : null,
                       sixthSenseTarget: per.sixthSenseTarget != null ? per.sixthSenseTarget : null,
                       sixthSenseRole: (per.sixthSenseRole != null && String(per.sixthSenseRole).trim()) ? String(per.sixthSenseRole).trim() : null,
                       matadorDisable: per.matadorDisable != null ? per.matadorDisable : null,
@@ -4094,7 +4305,7 @@
                 const realGun = d2.kaboGunByDay && d2.kaboGunByDay[dayKey];
                 const savedShoot = d2.kaboShootByDay && d2.kaboShootByDay[dayKey];
                 const realTarget = (savedShoot && realGun) ? (realGun === "gun1" ? savedShoot.gun1 : savedShoot.gun2) : null;
-                applyDayElimFromPayload(f, { out: realTarget != null ? realTarget : null });
+                applyDayElimFromPayload(f, { out: realTarget != null ? realTarget : null, kaboShot: realTarget != null });
                 if (realTarget !== null && realTarget !== undefined) {
                   try { addFlowEvent("day_elim_out", { out: realTarget, kaboShot: true }); } catch {}
                 }
@@ -4302,6 +4513,50 @@
                   try { showFlowTool(); } catch {}
                 });
               }
+            } catch {}
+          }
+          // Herbalist antidote: card tap selects Give or Withhold.
+          if (cur && cur.id === "night_herbalist_antidote") {
+            try {
+              const prevNightKey = String(Math.max(0, (f.day || 1) - 1));
+              const prevNa = (f.draft && f.draft.nightActionsByNight && f.draft.nightActionsByNight[prevNightKey]) || null;
+              const poisonIdx = (prevNa && prevNa.herbalistPoison != null && Number.isFinite(parseInt(prevNa.herbalistPoison, 10))) ? parseInt(prevNa.herbalistPoison, 10) : null;
+              document.querySelectorAll(".herbalist_antidote_card").forEach((btn) => {
+                btn.addEventListener("click", () => {
+                  const val = btn.dataset.value || "withhold";
+                  const give = val === "give";
+                  if (!f.draft) f.draft = {};
+                  if (!f.draft.nightActionsByNight) f.draft.nightActionsByNight = {};
+                  const nk = String(f.day || 1);
+                  if (!f.draft.nightActionsByNight[nk]) f.draft.nightActionsByNight[nk] = {};
+                  f.draft.nightActionsByNight[nk].herbalistAntidote = give && poisonIdx != null ? poisonIdx : null;
+                  saveState(appState);
+                  showFlowTool();
+                });
+              });
+            } catch {}
+          }
+          // Poison antidote vote: +/- cards update agree/disagree; message updates live.
+          if (cur && cur.id === "night_poisoned_player") {
+            try {
+              const d2 = f.draft || {};
+              if (!d2.poisonAntidoteVoteByDay || typeof d2.poisonAntidoteVoteByDay !== "object") d2.poisonAntidoteVoteByDay = {};
+              const dayKey = String(f.day || 1);
+              if (!d2.poisonAntidoteVoteByDay[dayKey] || typeof d2.poisonAntidoteVoteByDay[dayKey] !== "object") d2.poisonAntidoteVoteByDay[dayKey] = { agree: 0, disagree: 0 };
+              const adjust = (vote, delta) => {
+                const v = d2.poisonAntidoteVoteByDay[dayKey];
+                const curVal = Math.max(0, Number(v[vote]) || 0);
+                v[vote] = Math.max(0, curVal + delta);
+                f.draft = d2;
+                saveState(appState);
+                showFlowTool();
+              };
+              document.querySelectorAll(".poison_antidote_plus").forEach((btn) => {
+                btn.addEventListener("click", () => adjust(btn.dataset.vote || "agree", 1));
+              });
+              document.querySelectorAll(".poison_antidote_minus").forEach((btn) => {
+                btn.addEventListener("click", () => adjust(btn.dataset.vote || "agree", -1));
+              });
             } catch {}
           }
           // Kabo trust vote: +/- buttons update vote counts, card tap sets trusted manually.

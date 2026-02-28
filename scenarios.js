@@ -111,8 +111,8 @@ const SCENARIO_CONFIGS = {
     allowedRoles: ["danMafia", "witch", "executioner", "detective", "heir", "herbalist", "armorsmith", "suspect", "informant", "kadkhoda"],
     defaultToggles: ["danMafia", "witch", "executioner", "detective", "heir", "herbalist", "armorsmith", "suspect"],
     wakeOrder: {
-      fa: ["وارث", "تیم مافیا (جادوگر/دن/جلاد)", "عطار", "کارآگاه", "زره‌ساز", "کدخدا"],
-      en: ["Heir", "Mafia team (Witch/Don/Executioner)", "Herbalist", "Detective", "Armorsmith", "Kadkhoda"],
+      fa: ["وارث", "عطار", "تیم مافیا (جادوگر/دن/جلاد)", "کارآگاه", "زره‌ساز", "کدخدا"],
+      en: ["Heir", "Herbalist", "Mafia team (Witch/Don/Executioner)", "Detective", "Armorsmith", "Village Chief"],
     },
     features: { lastMove: false, endCards: false },
     dayPhaseConfig: { steps: ["day_vote", "day_elim"] },

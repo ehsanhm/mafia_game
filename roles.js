@@ -36,7 +36,7 @@ const roles = {
 
   // --- Capo (کاپو/دن) ---
   danMafia: { faName: "دن مافیا", teamFa: "مافیا", hintFa: "رئیس + پادزهر", descFa: "رئیس تیم مافیاست؛ استعلام او «منفی» (شهروند) است. یک پادزهر دارد (در برابر زهر عطار). می‌تواند قابلیت سوداگری داشته باشد (طبق سناریو کاپو)." },
-  witch: { faName: "جادوگر", teamFa: "مافیا", hintFa: "کپیِ قابلیت", descFa: "هر شب یک شهروند را انتخاب می‌کند؛ اگر آن شهروند توانایی داشته باشد، توانایی‌اش روی جادوگر اجرا می‌شود (مثلاً: انتخاب کارآگاه = جادوگر استعلام می‌گیرد؛ انتخاب عطار = جادوگر زهر می‌زند)." },
+  witch: { faName: "جادوگر", teamFa: "مافیا", hintFa: "بازگرداندن به هدف", descFa: "هر شب یک شهروند را انتخاب می‌کند؛ اگر آن شهروند توانایی داشته باشد، هر کاری که بکند روی خودش اثر می‌کند (کارآگاه→استعلام خودش؛ عطار→زهر به خودش؛ زره‌ساز→زره به خودش)." },
   executioner: { faName: "جلاد", teamFa: "مافیا", hintFa: "حدسِ نقش", descFa: "مشابه ناتو: اگر نقش دقیق یک بازیکن را درست حدس بزند، آن بازیکن در هر شرایطی از بازی خارج می‌شود." },
   informant: { faName: "خبرچین", teamFa: "مافیا", hintFa: "جاسوس", descFa: "جاسوس تیم مافیاست؛ استعلام او «منفی» (شهروند) است. اگر کدخدا او را بیدار کند، مثل شهروند واکنش نشان می‌دهد و کدخدا لو نمی‌رود." },
   kadkhoda: { faName: "کدخدا", teamFa: "شهر", hintFa: "لینکِ شهر", descFa: "دو بار در کل بازی می‌تواند یک نفر را «لینک» کند: آن نفر بیدار می‌شود (بدون دانستن نقش) تا کدخدا بشناسدش. اگر فردِ لینک‌شده شهروند یا خبرچین باشد — بی‌خطر؛ اگر مافیا (غیر از خبرچین) باشد — کدخدا از بازی خارج می‌شود." },
@@ -106,10 +106,10 @@ const ROLE_I18N = {
   commander: { name: "Commander", hint: "Confirm shot", desc: "After the Sniper chooses a target, Commander wakes and can confirm or cancel the shot." },
 
   danMafia: { name: "Mafia Don", hint: "Leader + antidote", desc: "Mafia leader; always shows 'citizen' to Detective. Has one antidote (against Herbalist poison). May have trading abilities (Capo scenario rules)." },
-  witch: { name: "Witch", hint: "Copy ability", desc: "Each night picks a citizen; if that citizen has an ability, it is applied to the Witch instead (e.g., picks Detective → Witch gets an inquiry; picks Herbalist → Witch poisons someone)." },
+  witch: { name: "Witch", hint: "Reflect to target", desc: "Each night picks a citizen; if they have an ability, whatever action they do reflects onto themselves (Detective→inquiry about self; Herbalist→poisons self; Armorsmith→armors self)." },
   executioner: { name: "Executioner", hint: "Guess a role", desc: "Like NATO: if the exact role guess is correct, the target is eliminated unconditionally." },
-  informant: { name: "Informant", hint: "Spy", desc: "Mafia spy; shows 'citizen' to Detective. If the Village Elder links them, they respond like a citizen without exposing the Village Elder." },
-  kadkhoda: { name: "Village Elder", hint: "City link", desc: "Twice per game can link to a player: that player wakes (without knowing the Village Elder's role). If a citizen or Informant — safe; if a real mafia member — Village Elder is eliminated." },
+  informant: { name: "Informant", hint: "Spy", desc: "Mafia spy; shows 'citizen' to Detective. If the Village Chief links them, they respond like a citizen without exposing the Village Chief." },
+  kadkhoda: { name: "Village Chief", hint: "City link", desc: "Twice per game can link to a player: that player wakes (without knowing the Village Chief's role). If a citizen or Informant — safe; if a real mafia member — Village Chief is eliminated." },
   heir: { name: "Heir", hint: "Inherit role", desc: "On intro night selects a player to inherit from. Until that player is eliminated, Heir is immortal (immune to night shots). When the target is eliminated, Heir inherits their ability (usually Detective, Armorsmith, or Herbalist)." },
   herbalist: { name: "Herbalist", hint: "Poison + antidote", desc: "Each night can poison one player. Morning: host announces poison is active. If the poisoned player survives the day, a vote decides whether to give the antidote. Don has one antidote." },
   armorsmith: { name: "Armorsmith", hint: "One-time save", desc: "Once per game can save themselves from a shot or elimination." },

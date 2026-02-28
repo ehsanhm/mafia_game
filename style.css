@@ -175,6 +175,10 @@ select:focus, input[type="number"]:focus{
   border-color: rgba(110,168,255,.55);
   box-shadow: 0 0 0 3px rgba(110,168,255,.14);
 }
+option:disabled{
+  color: rgba(127, 145, 170, 0.95);
+  background-color: rgba(17, 24, 36, 0.9);
+}
 
 .toggles{
   display:grid;
@@ -620,6 +624,10 @@ select:focus, input[type="number"]:focus{
 .castRow .statusPill.silent{
   background: rgba(128,128,128,.2);
   border-color: rgba(128,128,128,.35);
+}
+.castRow .statusPill.bewitched{
+  background: rgba(180,100,220,.2);
+  border-color: rgba(180,100,220,.4);
 }
 .castRow:first-child{ border-top:none; }
 .castRow .p{
