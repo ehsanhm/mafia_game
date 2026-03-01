@@ -2163,6 +2163,16 @@
                 `;
               }
               if (k === "kane") {
+                const kaneAbilityUsed = !!(d && d.kaneAbilityUsed === true);
+                if (kaneAbilityUsed) {
+                  return `
+                    ${sectionDisabled ? `<div class="note warn" style="margin-top:6px">${escapeHtml(getDisabledNote(sectionPlayerIdx))}</div>` : ""}
+                    <div style="${sectionDisabledStyle}">
+                      <div class="note warn" style="margin-top:6px">${escapeHtml(t("tool.flow.kane.abilityUsed"))}</div>
+                      <input type="hidden" id="fl_kane_mark" value="">
+                    </div>
+                  `;
+                }
                 return `
                   ${sectionDisabled ? `<div class="note warn" style="margin-top:6px">${escapeHtml(getDisabledNote(sectionPlayerIdx))}</div>` : ""}
                   <div style="${sectionDisabledStyle}">
@@ -2569,14 +2579,16 @@
               } catch { return false; }
             })();
             // Hide Zodiac entirely on odd nights (no wake, no action block).
-            // Pedarkhande: skip Kane when Kane is dead (invisible bullet after revealing mafia).
+            // Pedarkhande: skip Kane only when Kane is dead (invisible bullet).
+            // When ability used (wrong guess), still show step with "ability used" message.
             const keepKaneAlive = (w) => {
               if (scenario !== "pedarkhande") return true;
               const x = String(w || "").toLowerCase();
               if (!x.includes("kane") && !x.includes("کین")) return true;
               const kaneIdx = (draw.players || []).findIndex((p) => p && p.roleId === "citizenKane");
               if (kaneIdx === -1) return true;
-              return (draw.players[kaneIdx] && draw.players[kaneIdx].alive !== false);
+              if (!(draw.players[kaneIdx] && draw.players[kaneIdx].alive !== false)) return false;
+              return true;
             };
             // Skip roles not in the draw (must match flow-engine's keepRoleInDraw).
             const keepRoleInDraw = (stepId) => {

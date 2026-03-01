@@ -222,6 +222,11 @@
               if (kaneIdx !== -1) try { setPlayerLife(kaneIdx, { alive: true }); } catch {}
               d.kaneInvisibleBulletByNight = null;
             }
+            // Kane ability (pedarkhande): once per game; refunded if marked player dies same night
+            if (d.kaneAbilityUsedOnNight != null && Number(d.kaneAbilityUsedOnNight) === nightDayNum) {
+              d.kaneAbilityUsed = false;
+              d.kaneAbilityUsedOnNight = null;
+            }
             // Soldier kills (namayande)
             if (d.nightSoldierAppliedByDay && d.nightSoldierAppliedByDay[dayKey]) {
               const rec = d.nightSoldierAppliedByDay[dayKey];
@@ -2070,6 +2075,7 @@
           if (titles[stepId]) return titles[stepId];
           const tKeys = {
             day_bomb: "tool.flow.bomb.active",
+            day_dawn_resolution: "tool.flow.dawn.title",
             day_guns: "tool.flow.day.guns",
             day_gun_expiry: "tool.flow.day.gunExpiry",
             day_kane_reveal: "tool.flow.kane.revealTitle",
@@ -2338,10 +2344,21 @@
             const dayNum = f.day || 1;
             const dayCfg = flowCfg && flowCfg.day ? flowCfg.day : { base: ["day_vote", "day_elim"] };
 
+            // Dawn resolution: first step every morning (Day 2+) — shows who died and who was revived last night.
+            const prependDawnStepIfNeeded = (stepObjs) => {
+              if (dayNum >= 2 && Array.isArray(stepObjs) && stepObjs.length > 0) {
+                const first = stepObjs[0];
+                if (first && first.id !== "day_dawn_resolution") {
+                  return [{ id: "day_dawn_resolution", title: getStepTitle("day_dawn_resolution") }, ...stepObjs];
+                }
+              }
+              return stepObjs;
+            };
+
             // Namayande: day1 vs default
             if (scenario === "namayande") {
               const ids = (dayNum === 1 && dayCfg.day1) ? dayCfg.day1 : (dayCfg.default || dayCfg.base);
-              return ids.map((id) => ({ id, title: getStepTitle(id) }));
+              return prependDawnStepIfNeeded(ids.map((id) => ({ id, title: getStepTitle(id) })));
             }
             // Kabo: day1 conditional (trust vote → suspect → midday → shoot)
             if (scenario === "kabo") {
@@ -2360,7 +2377,7 @@
               const poisonPending = !!(poisonIdx != null && victimAlive);
               const baseIds = dayCfg.default || dayCfg.base;
               const ids = poisonPending ? ["day_poison_status", ...baseIds] : baseIds;
-              return ids.map((id) => ({ id, title: getStepTitle(id) }));
+              return prependDawnStepIfNeeded(ids.map((id) => ({ id, title: getStepTitle(id) })));
             }
             // Bazras: optional interrogation at start
             if (scenario === "bazras") {
@@ -2370,7 +2387,8 @@
                 const endCardStep = getEndCardActionStepForDay(f);
                 const withoutEndCard = snapshotIds.filter((id) => !id || !String(id).startsWith("day_end_card_"));
                 const ids = endCardStep ? [...withoutEndCard, endCardStep.id] : withoutEndCard;
-                return ids.map((id) => ({ id, title: (endCardStep && id === endCardStep.id) ? endCardStep.title : getStepTitle(id) }));
+                const stepObjs = ids.map((id) => ({ id, title: (endCardStep && id === endCardStep.id) ? endCardStep.title : getStepTitle(id) }));
+                return prependDawnStepIfNeeded(stepObjs);
               }
               const prevNightKey = String(Math.max(0, dayNum - 1));
               const invTargets = (f.draft && f.draft.investigatorTargetsByNight && f.draft.investigatorTargetsByNight[prevNightKey]) || null;
@@ -2389,7 +2407,8 @@
               ids = ids.concat(dayCfg.base || ["day_vote", "day_elim"]);
               const endCardStep = getEndCardActionStepForDay(f);
               if (endCardStep) ids.push(endCardStep.id);
-              return ids.map((id) => ({ id, title: (endCardStep && id === endCardStep.id) ? endCardStep.title : getStepTitle(id) }));
+              const stepObjs = ids.map((id) => ({ id, title: (endCardStep && id === endCardStep.id) ? endCardStep.title : getStepTitle(id) }));
+              return prependDawnStepIfNeeded(stepObjs);
             }
 
             // Generic day: use snapshot if available, else compute from config + conditionals
@@ -2400,7 +2419,8 @@
               // Replace any day_end_card_* in snapshot with current day's drawn card (avoids duplicate/wrong card).
               const withoutEndCard = snapshotIds.filter((id) => !id || !String(id).startsWith("day_end_card_"));
               const ids = endCardStep ? [...withoutEndCard, endCardStep.id] : withoutEndCard;
-              return ids.map((id) => ({ id, title: (endCardStep && id === endCardStep.id) ? endCardStep.title : getStepTitle(id) }));
+              const stepObjs = ids.map((id) => ({ id, title: (endCardStep && id === endCardStep.id) ? endCardStep.title : getStepTitle(id) }));
+              return prependDawnStepIfNeeded(stepObjs);
             }
 
             // Compute steps from config + runtime conditionals
@@ -2463,7 +2483,7 @@
                 if (id === "day_gun_expiry" && !hasUnfiredRealGuns()) continue;
                 steps.push({ id, title: getStepTitle(id) });
               }
-              return steps;
+              return prependDawnStepIfNeeded(steps);
             }
 
             if (dayCfg.kaneReveal && kaneRevealIdx !== null) {
@@ -2482,7 +2502,7 @@
             }
             const endCardStep = (dayCfg.endCards && getEndCardActionStepForDay(f)) || null;
             if (endCardStep) steps.push(endCardStep);
-            return steps;
+            return prependDawnStepIfNeeded(steps);
           }
           // Per-role night steps: one step per wake order entry (same order as Wake tool).
           const cfg = getScenarioConfig(scenario);
@@ -2519,7 +2539,8 @@
             const x = labelLower(w);
             return !x.includes("intro night only") && !x.includes("فقط شب معارفه");
           };
-          // Pedarkhande: skip Kane step when Kane is dead (invisible bullet after revealing mafia)
+          // Pedarkhande: skip Kane step only when Kane is dead (invisible bullet).
+          // When ability used (wrong guess), still show step with "ability used" message.
           const keepKaneAlive = (w, stepId) => {
             if (scenario !== "pedarkhande") return true;
             const isKaneStep = (stepId && String(stepId).includes("kane")) || labelLower(w).includes("kane") || labelLower(w).includes("کین");
@@ -2528,7 +2549,8 @@
             if (!draw || !draw.players) return true;
             const kaneIdx = draw.players.findIndex((p) => p && p.roleId === "citizenKane");
             if (kaneIdx === -1) return true;
-            return draw.players[kaneIdx].alive !== false;
+            if (draw.players[kaneIdx].alive === false) return false;
+            return true;
           };
           // Skip night steps for roles not in the draw (e.g. no Kadkhoda → no Kadkhoda step)
           const keepRoleInDraw = (stepId) => {
@@ -2762,6 +2784,23 @@
             try { applyNightConstantineFromPayload(f, payload0); } catch {}
             try { applyNightSixthSenseFromPayload(f, payload0); } catch {}
             try { applyHeirInheritanceFromPayload(f); } catch {}
+            // Pedarkhande: Kane ability once per game. Consume only when marked player survives the night.
+            // If marked player dies same night, ability is refunded (not wasted).
+            try {
+              if (scenario0 === "pedarkhande" && kaneIdx !== null) {
+                const kaneMarkRaw = payload0.kaneMark;
+                const kaneMarkIdx = (kaneMarkRaw !== null && kaneMarkRaw !== undefined && Number.isFinite(parseInt(kaneMarkRaw, 10))) ? parseInt(kaneMarkRaw, 10) : null;
+                if (kaneMarkIdx !== null && kaneMarkIdx >= 0 && kaneMarkIdx < draw.players.length) {
+                  const markedPlayer = draw.players[kaneMarkIdx];
+                  const markedSurvived = markedPlayer && markedPlayer.alive !== false;
+                  if (markedSurvived) {
+                    if (!f.draft || typeof f.draft !== "object") f.draft = {};
+                    f.draft.kaneAbilityUsed = true;
+                    f.draft.kaneAbilityUsedOnNight = f.day || 1;
+                  }
+                }
+              }
+            } catch {}
             try { renderCast(); } catch {}
             try { if (typeof renderNameGrid === "function") renderNameGrid(); } catch {}
             try { saveState(appState); } catch {}
@@ -2996,34 +3035,23 @@
             f.guns = {};
             f.phase = "night";
             f.step = 0;
-            // Kane auto-death (pedarkhande): if Kane successfully identified a Mafia member the previous night,
-            // they are eliminated the following night (تیر غیب).
+            // Kane auto-death (pedarkhande): if Kane successfully revealed a Mafia member this day,
+            // he is eliminated at the end of the next night (تیر غیب). Godfather is not safe from Kane's reveal.
             try {
               if (getDrawScenarioForFlow() === "pedarkhande") {
                 const draw = appState.draw;
                 if (draw && draw.players) {
-                  const prevNightDay = (f.day || 1) - 1;
-                  const kaneEv = (f.events || []).slice().reverse().find((e) => e && e.kind === "night_actions" && e.phase === "night" && e.day === prevNightDay && e.data);
-                  const kanePayload = kaneEv && kaneEv.data ? kaneEv.data : null;
-                  if (kanePayload) {
-                    const kaneMarkRaw = kanePayload.kaneMark;
-                    const kaneMarkIdx = (kaneMarkRaw !== null && kaneMarkRaw !== undefined && Number.isFinite(parseInt(kaneMarkRaw, 10))) ? parseInt(kaneMarkRaw, 10) : null;
-                    if (kaneMarkIdx !== null) {
-                      const markedPlayer = draw.players[kaneMarkIdx];
-                      if (markedPlayer) {
-                        const markedRid = markedPlayer.roleId || "citizen";
-                        const markedTeam = (roles[markedRid] && roles[markedRid].teamFa) ? roles[markedRid].teamFa : "شهر";
-                        if (markedTeam === "مافیا") {
-                          const kaneIdx = draw.players.findIndex((p) => p && p.roleId === "citizenKane");
-                          if (kaneIdx !== -1 && draw.players[kaneIdx].alive !== false) {
-                            setPlayerLife(kaneIdx, { alive: false, reason: "invisible_bullet" });
-                            const draft = f.draft || {};
-                            draft.kaneInvisibleBulletByNight = f.day || 1;
-                            f.draft = draft;
-                            try { renderCast(); } catch {}
-                          }
-                        }
-                      }
+                  const dayKey = String(f.day || 1);
+                  const kaneReveal = (f.draft && f.draft.kaneRevealAppliedByDay && f.draft.kaneRevealAppliedByDay[dayKey]) || null;
+                  const hadKaneReveal = kaneReveal && kaneReveal.revealed === true && kaneReveal.idx != null;
+                  if (hadKaneReveal) {
+                    const kaneIdx = draw.players.findIndex((p) => p && p.roleId === "citizenKane");
+                    if (kaneIdx !== -1 && draw.players[kaneIdx].alive !== false) {
+                      setPlayerLife(kaneIdx, { alive: false, reason: "invisible_bullet" });
+                      const draft = f.draft || {};
+                      draft.kaneInvisibleBulletByNight = f.day || 1;
+                      f.draft = draft;
+                      try { renderCast(); } catch {}
                     }
                   }
                 }

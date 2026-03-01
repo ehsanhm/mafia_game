@@ -112,10 +112,10 @@
 
           f.phase = "day";
           f.day = 2;
-          f.step = 1;
           if (!f.draft) f.draft = {};
           f.draft.dayStepsByDay = f.draft.dayStepsByDay || {};
-          f.draft.dayStepsByDay["2"] = ["day_vote", "day_elim"];
+          f.draft.dayStepsByDay["2"] = ["day_dawn_resolution", "day_vote", "day_elim"];
+          f.step = 2; // day_elim (step 0=dawn, 1=day_vote, 2=day_elim)
           f.draft.voteCandidatesByDay = f.draft.voteCandidatesByDay || {};
           f.draft.voteCandidatesByDay["2"] = [victimIdx];
           f.draft.elimCandidatesByDay = f.draft.elimCandidatesByDay || {};
@@ -308,6 +308,60 @@
 
           prevFlowStep();
           assert(draw[victimIdx].alive !== false, "victim should still be alive after revert (mafia kill was reverted)");
+        },
+      },
+      {
+        name: "night_resolution: Kane ability consumed reverted when going back from Day 2 to Night 1",
+        fn: function ({ assert }) {
+          if (typeof prevFlowStep !== "function" || typeof nextFlowStep !== "function" || typeof addFlowEvent !== "function" || typeof getFlowSteps !== "function") return;
+          appState.ui.scenario = "pedarkhande";
+          appState.draw = {
+            players: [
+              { roleId: "godfather", alive: true },
+              { roleId: "matador", alive: true },
+              { roleId: "watson", alive: true },
+              { roleId: "leon", alive: true },
+              { roleId: "citizenKane", alive: true },
+              { roleId: "constantine", alive: true },
+              { roleId: "nostradamus", alive: true },
+              { roleId: "citizen", alive: true },
+            ],
+            uiAtDraw: { scenario: "pedarkhande" },
+          };
+          appState.god = appState.god || {};
+          appState.god.flow = null;
+          const f = ensureFlow();
+          const draw = appState.draw.players;
+          const citizenIdx = 7;
+          f.phase = "night";
+          f.day = 1;
+          const nightSteps = getFlowSteps({ ...f, phase: "night" });
+          f.step = Math.max(0, nightSteps.length - 1);
+          if (!f.draft) f.draft = {};
+          f.draft.nightActionsByNight = f.draft.nightActionsByNight || {};
+          f.draft.nightActionsByNight["1"] = {
+            godfatherAction: "shoot",
+            mafiaShot: null,
+            matadorDisable: null,
+            doctorSave: null,
+            professionalShot: null,
+            kaneMark: citizenIdx,
+            constantineRevive: null,
+          };
+          addFlowEvent("night_actions", {
+            godfatherAction: "shoot",
+            mafiaShot: null,
+            matadorDisable: null,
+            doctorSave: null,
+            professionalShot: null,
+            kaneMark: citizenIdx,
+            constantineRevive: null,
+          });
+          nextFlowStep();
+          assert(f.draft.kaneAbilityUsed === true, "Kane ability should be consumed when marked player survives");
+          if (f.phase !== "day" || f.day !== 2) return;
+          prevFlowStep();
+          assert(f.draft.kaneAbilityUsed !== true, "Kane ability should be reverted when going back to Night 1");
         },
       },
       {

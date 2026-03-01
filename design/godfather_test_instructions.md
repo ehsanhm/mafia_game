@@ -2,6 +2,10 @@ Create a godfather test file, where it uses default player names, starts the gam
 
 10- runs the Flow
 
+**Citizen Kane rules (must be tested):**
+- Kane can use his ability only once during the game.
+- Unless his marked player dies the same night — in that case his ability comes back and is not wasted (Kane can use it again next night).
+
 
 INTRO DAY:
 ====================================================
@@ -109,7 +113,7 @@ Night 4:
 ====================================================
 385- click "next" until we get to page "Night 4 Step 1 of 5 • Mafia team (Godfather/Matador/Saul)", choose "sixth sense" for mafia night choice and select user with the role "citizen kane", then in the gussed role, choose "citizen kane" too. 
 
-390- click "next", we should not see the page "Night 4, Step 4 of 5 • Citizen Kane", because when "Citizen Kane" found a mafia member, they lose their ability and die that night by an invisible bullet. The Constantine step must show Constantine's revive UI, not Citizen Kane's content. Constantine's ability is usable only once, even if they are still alive. if they're alive and have already used their ability, we can display message "Citizen Kane has already used this ability".
+390- click "next", we should not see the page "Night 4, Step 4 of 5 • Citizen Kane", because when "Citizen Kane" found a mafia member, they lose their ability and die that night by an invisible bullet. The Constantine step must show Constantine's revive UI, not Citizen Kane's content. Constantine's ability is usable only once, even if they are still alive. **When Kane's reveal fails (he marks a non-mafia member), we still show his night step but display "Citizen Kane has already used this ability."**
 
 
 Day 5:

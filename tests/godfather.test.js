@@ -690,6 +690,103 @@
         },
       },
       {
+        name: "Kane ability consumed when marked player survives; Kane step skipped next night",
+        fn: function ({ assert }) {
+          if (typeof nextFlowStep !== "function" || typeof addFlowEvent !== "function" || typeof getFlowSteps !== "function") return;
+          const f = setupPedarkhande();
+          const draw = appState.draw.players;
+          const citizenIdx = 8;
+          // Night 1: Kane marks citizen (wrong guess). Mafia shoots no one.
+          // Marked player (citizen) survives → Kane ability consumed.
+          f.phase = "night";
+          f.day = 1;
+          const nightSteps1 = getFlowSteps({ ...f, phase: "night" });
+          f.step = Math.max(0, nightSteps1.length - 1);
+          if (!f.draft) f.draft = {};
+          f.draft.nightActionsByNight = f.draft.nightActionsByNight || {};
+          f.draft.nightActionsByNight["1"] = {
+            godfatherAction: "shoot",
+            mafiaShot: null,
+            matadorDisable: null,
+            doctorSave: null,
+            professionalShot: null,
+            kaneMark: citizenIdx,
+            constantineRevive: null,
+          };
+          addFlowEvent("night_actions", {
+            godfatherAction: "shoot",
+            mafiaShot: null,
+            matadorDisable: null,
+            doctorSave: null,
+            professionalShot: null,
+            kaneMark: citizenIdx,
+            constantineRevive: null,
+          });
+          nextFlowStep();
+          assert(f.draft.kaneAbilityUsed === true, "Kane ability should be consumed when marked player survives");
+          // Simulate Night 2: Kane step should still appear (with "ability used" message)
+          f.phase = "night";
+          f.day = 2;
+          const night2Steps = getFlowSteps({ ...f, phase: "night" });
+          const hasKaneStep = night2Steps.some((s) => s && (s.id === "night_kane" || String(s.id || "").includes("kane")));
+          assert(hasKaneStep, "Kane step should appear on Night 2 when ability was consumed (marked citizen survived) — shows 'ability used' message");
+          // Verify the step shows "ability used" message (not selection cards)
+          if (typeof showFlowTool === "function") {
+            const kaneStepIdx = night2Steps.findIndex((s) => s && (s.id === "night_kane" || String(s.id || "").includes("kane")));
+            if (kaneStepIdx >= 0) {
+              f.step = kaneStepIdx;
+              showFlowTool();
+              const html = window._lastFlowModalHtml || "";
+              const hasAbilityUsedMsg = html.includes("already used") || html.includes("abilityUsed") || html.includes("ability used") || html.includes("توانایی خود را استفاده");
+              assert(hasAbilityUsedMsg, "Kane step should show 'ability used' message when Kane marked wrong (non-mafia)");
+            }
+          }
+        },
+      },
+      {
+        name: "Kane ability refunded when marked player dies same night; Kane can use again next night",
+        fn: function ({ assert }) {
+          if (typeof nextFlowStep !== "function" || typeof addFlowEvent !== "function" || typeof getFlowSteps !== "function") return;
+          const f = setupPedarkhande();
+          const draw = appState.draw.players;
+          const matadorIdx = 1;
+          // Night 1: Kane marks Matador. Mafia shoots Matador. Marked player dies same night → ability refunded.
+          f.phase = "night";
+          f.day = 1;
+          const nightSteps1 = getFlowSteps({ ...f, phase: "night" });
+          f.step = Math.max(0, nightSteps1.length - 1);
+          if (!f.draft) f.draft = {};
+          f.draft.nightActionsByNight = f.draft.nightActionsByNight || {};
+          f.draft.nightActionsByNight["1"] = {
+            godfatherAction: "shoot",
+            mafiaShot: matadorIdx,
+            matadorDisable: null,
+            doctorSave: null,
+            professionalShot: null,
+            kaneMark: matadorIdx,
+            constantineRevive: null,
+          };
+          addFlowEvent("night_actions", {
+            godfatherAction: "shoot",
+            mafiaShot: matadorIdx,
+            matadorDisable: null,
+            doctorSave: null,
+            professionalShot: null,
+            kaneMark: matadorIdx,
+            constantineRevive: null,
+          });
+          nextFlowStep();
+          assert(draw[matadorIdx].alive === false, "Matador should be dead (mafia shot)");
+          assert(f.draft.kaneAbilityUsed !== true, "Kane ability should NOT be consumed when marked player died same night");
+          // Simulate Night 2: Kane step should appear when ability was refunded
+          f.phase = "night";
+          f.day = 2;
+          const night2Steps = getFlowSteps({ ...f, phase: "night" });
+          const hasKaneStep = night2Steps.some((s) => s && (s.id === "night_kane" || String(s.id || "").includes("kane")));
+          assert(hasKaneStep, "Kane step should appear on Night 2 when marked player died same night (ability refunded)");
+        },
+      },
+      {
         name: "Constantine step shows Constantine content when Kane is dead (not Kane's content)",
         fn: function ({ assert }) {
           if (typeof showFlowTool !== "function" || typeof getFlowSteps !== "function") return;

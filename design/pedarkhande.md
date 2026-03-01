@@ -23,7 +23,7 @@
 |------|-------------|
 | **Dr. Watson** (دکتر واتسون) | Acts as doctor: saves one player per night from mafia shot. Can save self only once per game. Cannot save the same person two nights in a row. |
 | **Leon** (لئون حرفه‌ای) | Has 2 bullets. Can shoot one player at night. If he shoots a citizen, Leon is eliminated (Watson cannot save). Has one vest (survives first mafia shot). |
-| **Citizen Kane** (همشهری کین) | Once per game marks one player. If mafia: host reveals their role next day (they remain in game); Kane is eliminated the following night (تیر غیب). If wrong: nothing happens; Kane loses the ability. If marked player dies at night, the reveal carries to the next night. |
+| **Citizen Kane** (همشهری کین) | Once per game marks one player. If mafia: host reveals their role next day (they remain in game); Kane is eliminated the following night (تیر غیب). If wrong: nothing happens; Kane loses the ability. **If marked player dies the same night, Kane's ability is refunded (not wasted)** — he can use it again. |
 | **Constantine** (کنستانتین) | Once per game can revive one eliminated player (only if role was not revealed — cannot revive sixth-sense or identity-reveal victims). Previous abilities return but do not refresh. |
 | **Simple Citizen** (شهروند ساده) | No night ability. Must help identify mafia during the day. |
 

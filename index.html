@@ -218,6 +218,7 @@
     <script src="flow-engine.js"></script>
     <script src="effect-registry.js"></script>
     <script src="flow-ui.js"></script>
+    <script src="flow-configs/dawn.js"></script>
     <script src="flow-configs/pedarkhande-renderers.js"></script>
     <script>
         const $ = (id) => document.getElementById(id);
@@ -1426,11 +1427,16 @@
                     }
                   }
                   if (mafiaShot !== null) {
+                    const mafiaActuallyShot = godfatherAction === "shoot" || !["sixth_sense", "saul_buy", "yakooza", "guess_role"].includes(godfatherAction);
                     const targetRole = (draw.players[mafiaShot] && draw.players[mafiaShot].roleId) ? draw.players[mafiaShot].roleId : "citizen";
                     const alwaysImmuneToMafiaShot = (targetRole === "zodiac" || targetRole === "invulnerable" || targetRole === "armored" || targetRole === "heir");
                     const savedByDoctor = (doctorSave !== null && doctorSave === mafiaShot);
                     const savedByLecter = (lecterSaveForMafia !== null && lecterSaveForMafia === mafiaShot);
+                    const mafRec = f && f.draft && f.draft.nightMafiaAppliedByDay && f.draft.nightMafiaAppliedByDay[String(eventDay)];
+                    const targetKilledByMafia = mafRec && mafRec.killed != null && parseInt(mafRec.killed, 10) === mafiaShot;
+                    const shieldAbsorbed = mafiaActuallyShot && !savedByDoctor && !savedByLecter && !alwaysImmuneToMafiaShot && !targetKilledByMafia;
                     const mafLabel = appLang === "fa" ? "مافیا" : "Mafia";
+                    const shieldMsg = typeof t === "function" ? t("tool.status.mafiaShotShield") : "His shield is destroyed. He stays in game.";
                     if (savedByDoctor || savedByLecter) {
                       const saverLabel = savedByLecter && !savedByDoctor ? (appLang === "fa" ? "دکتر لکتر" : "Dr. Lecter") : (appLang === "fa" ? "پزشک" : "Doctor");
                       out.push((appLang === "fa")
@@ -1440,6 +1446,10 @@
                       out.push((appLang === "fa")
                         ? `${mafLabel} به ${nameOf(mafiaShot)} شلیک کرد (بدون اثر).`
                         : `${mafLabel} shot ${nameOf(mafiaShot)} (no effect).`);
+                    } else if (shieldAbsorbed) {
+                      out.push((appLang === "fa")
+                        ? `${mafLabel} به ${nameOf(mafiaShot)} شلیک کرد. ${shieldMsg}`
+                        : `${mafLabel} shot ${nameOf(mafiaShot)}. ${shieldMsg}`);
                     } else {
                       out.push((appLang === "fa")
                         ? `${mafLabel} به ${nameOf(mafiaShot)} شلیک کرد.`

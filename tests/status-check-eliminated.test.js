@@ -186,6 +186,18 @@
           assert(saulBuyEntry != null, "Status Check Night 3 must show Changed Roles: citizen Saul bought");
         },
       },
+      {
+        name: "Dawn resolution is first step on Day 2+",
+        fn: function ({ assert }) {
+          if (typeof getFlowSteps !== "function") return;
+          const f = setupPedarkhande();
+          f.phase = "day";
+          f.day = 2;
+          const steps = getFlowSteps(f);
+          const first = steps[0];
+          assert(first && first.id === "day_dawn_resolution", "Day 2 first step must be day_dawn_resolution");
+        },
+      },
     ],
   };
 
