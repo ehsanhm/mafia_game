@@ -181,6 +181,8 @@
             ROLE_RANK: typeof ROLE_RANK !== "undefined" ? ROLE_RANK : {},
             ROLE_I18N: typeof ROLE_I18N !== "undefined" ? ROLE_I18N : {},
             setPlayerLife, saveState, appState,
+            getEliminatedForStatusCheck: typeof getEliminatedForStatusCheck === "function" ? getEliminatedForStatusCheck : (typeof window !== "undefined" && window.getEliminatedForStatusCheck),
+            getRevivedForStatusCheck: typeof getRevivedForStatusCheck === "function" ? getRevivedForStatusCheck : (typeof window !== "undefined" && window.getRevivedForStatusCheck),
           };
           if (window.STEP_RENDERERS && typeof window.STEP_RENDERERS[cur.id] === "function") {
             body = window.STEP_RENDERERS[cur.id](stepCtx);
@@ -5120,7 +5122,7 @@
                 return;
               }
 
-              // Night limits: (user request) no max total; keep max 1 real per night.
+              // Night limits: (user request) no max total; keep max 1 real per night (or per game in Zodiac).
               const d = f.draft || {};
               const nightKey = String(f.day || 1);
               if (!d.nightGunGivesByNight || typeof d.nightGunGivesByNight !== "object") d.nightGunGivesByNight = {};
@@ -5143,10 +5145,29 @@
 
               // Replace/update existing give to same recipient (doesn't consume extra quota).
               const exAt = nightGives.findIndex((x) => x && Number.isFinite(Number(x.to)) && parseInt(x.to, 10) === idx);
-              const realUsed = nightGives.filter((x, i) => x && x.type === "real" && i !== exAt).length;
+              const scenarioGun = typeof getDrawScenarioForFlow === "function" ? getDrawScenarioForFlow() : "";
+              const zodiac1RealPerGame = scenarioGun === "zodiac";
+              const realUsed = zodiac1RealPerGame
+                ? (() => {
+                    let count = 0;
+                    if (d.nightGunGivesByNight && typeof d.nightGunGivesByNight === "object") {
+                      for (const nk of Object.keys(d.nightGunGivesByNight)) {
+                        const arr = Array.isArray(d.nightGunGivesByNight[nk]) ? d.nightGunGivesByNight[nk] : [];
+                        for (let i = 0; i < arr.length; i++) {
+                          const x = arr[i];
+                          if (x && x.type === "real") {
+                            if (nk === nightKey && i === exAt) continue;
+                            count++;
+                          }
+                        }
+                      }
+                    }
+                    return count;
+                  })()
+                : nightGives.filter((x, i) => x && x.type === "real" && i !== exAt).length;
 
               if (type === "real" && realUsed >= 1) {
-                if (note) { note.style.display = "block"; note.textContent = t("tool.flow.guns.limit1Real"); }
+                if (note) { note.style.display = "block"; note.textContent = t(zodiac1RealPerGame ? "tool.flow.guns.limit1RealPerGame" : "tool.flow.guns.limit1Real"); }
                 return;
               }
 
@@ -5269,7 +5290,26 @@
               const nightKey = String(f.day || 1);
               const nightGives = (d.nightGunGivesByNight && Array.isArray(d.nightGunGivesByNight[nightKey])) ? d.nightGunGivesByNight[nightKey] : [];
               const exAt = nightGives.findIndex((x) => x && Number.isFinite(Number(x.to)) && parseInt(x.to, 10) === tidx);
-              const realUsed = nightGives.filter((x, i) => x && x.type === "real" && i !== exAt).length;
+              const scenarioGun = typeof getDrawScenarioForFlow === "function" ? getDrawScenarioForFlow() : "";
+              const zodiac1RealPerGame = scenarioGun === "zodiac";
+              const realUsed = zodiac1RealPerGame
+                ? (() => {
+                    let count = 0;
+                    if (d.nightGunGivesByNight && typeof d.nightGunGivesByNight === "object") {
+                      for (const nk of Object.keys(d.nightGunGivesByNight)) {
+                        const arr = Array.isArray(d.nightGunGivesByNight[nk]) ? d.nightGunGivesByNight[nk] : [];
+                        for (let i = 0; i < arr.length; i++) {
+                          const x = arr[i];
+                          if (x && x.type === "real") {
+                            if (nk === nightKey && i === exAt) continue;
+                            count++;
+                          }
+                        }
+                      }
+                    }
+                    return count;
+                  })()
+                : nightGives.filter((x, i) => x && x.type === "real" && i !== exAt).length;
               // Disable real when self OR already used real quota (except editing existing real entry).
               if (realOpt) realOpt.disabled = !!self || (realUsed >= 1);
               if (self && typeSel.value === "real") typeSel.value = "fake";

@@ -219,6 +219,7 @@
     <script src="effect-registry.js"></script>
     <script src="flow-ui.js"></script>
     <script src="flow-configs/dawn.js"></script>
+    <script src="flow-configs/dusk.js"></script>
     <script src="flow-configs/pedarkhande-renderers.js"></script>
     <script>
         const $ = (id) => document.getElementById(id);
@@ -2364,12 +2365,10 @@
                   } catch {}
                 }
                 // Show block if we have clean lines, or eliminated/revived (even if no events)
-                const eliminated = (typeof getEliminatedForStatusCheck === "function" && f)
-                  ? getEliminatedForStatusCheck(f, g.day, g.phase)
-                  : [];
-                const revived = (typeof getRevivedForStatusCheck === "function" && f)
-                  ? getRevivedForStatusCheck(f, g.day, g.phase)
-                  : [];
+                const getElim = (typeof window !== "undefined" && window.getEliminatedForStatusCheck) || (typeof getEliminatedForStatusCheck === "function" ? getEliminatedForStatusCheck : null);
+                const getRev = (typeof window !== "undefined" && window.getRevivedForStatusCheck) || (typeof getRevivedForStatusCheck === "function" ? getRevivedForStatusCheck : null);
+                const eliminated = (getElim && f) ? getElim(f, g.day, g.phase) : [];
+                const revived = (getRev && f) ? getRev(f, g.day, g.phase) : [];
                 const changedRoles = (typeof getChangedRolesForStatusCheck === "function" && f)
                   ? getChangedRolesForStatusCheck(f, g.day, g.phase)
                   : [];

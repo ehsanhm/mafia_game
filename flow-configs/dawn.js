@@ -8,7 +8,7 @@
   if (typeof window.registerStepRenderer !== "function") return;
 
   function renderDayDawnResolution(ctx) {
-    const { f, names, escapeHtml, t } = ctx;
+    const { f, names, escapeHtml, t, getEliminatedForStatusCheck, getRevivedForStatusCheck } = ctx;
     const prevNightDay = Math.max(1, (f.day || 1) - 1);
     const eliminated = (typeof getEliminatedForStatusCheck === "function" && f)
       ? getEliminatedForStatusCheck(f, prevNightDay, "night")

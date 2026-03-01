@@ -28,7 +28,7 @@
 | **Professional** (حرفه‌ای) | City | 2 shots per game. No vest at night. If shoots Zodiac → no kill. |
 | **Guard** (محافظ) | City | Can sacrifice to diffuse bomb; guesses code. If Magician disabled Guard previous night, Guard cannot diffuse that day. |
 | **Ocean** (اوشن) | City | Like Mason: 2× per game wakes one citizen. If wakes mafia or Zodiac → Ocean dies next morning. |
-| **Gunslinger** (تفنگدار) | City | 1 real + 2 fake guns. Gives 1 gun/night to others. Cannot give to self. Unused guns burn (day_gun_expiry). |
+| **Gunslinger** (تفنگدار) | City | 1 real + 2 fake guns total. Gives 1 gun/night to others. Cannot give more than one real gun per game. Cannot give to self. Unused guns burn (day_gun_expiry). |
 
 ---
 

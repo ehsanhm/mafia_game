@@ -27,7 +27,8 @@ html{
 }
 body{
   margin:0;
-  font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Arial, "Noto Sans Arabic", "Noto Naskh Arabic", sans-serif;
+  /* Vazirmatn first so Farsi names stay readable in English mode; it supports Latin too */
+  font-family: Vazirmatn, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Arial, "Noto Sans Arabic", "Noto Naskh Arabic", sans-serif;
   background: transparent;
   color:var(--text);
   -webkit-tap-highlight-color: transparent;

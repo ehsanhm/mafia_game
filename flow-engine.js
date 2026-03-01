@@ -2076,6 +2076,7 @@
           const tKeys = {
             day_bomb: "tool.flow.bomb.active",
             day_dawn_resolution: "tool.flow.dawn.title",
+            day_dusk_resolution: "tool.flow.dusk.title",
             day_guns: "tool.flow.day.guns",
             day_gun_expiry: "tool.flow.day.gunExpiry",
             day_kane_reveal: "tool.flow.kane.revealTitle",
@@ -2226,6 +2227,12 @@
           return revived;
         }
 
+        // Single source of truth for eliminated/revived lists — expose for Status Check, Dawn, Dusk, etc.
+        if (typeof window !== "undefined") {
+          window.getEliminatedForStatusCheck = getEliminatedForStatusCheck;
+          window.getRevivedForStatusCheck = getRevivedForStatusCheck;
+        }
+
         /** Returns unified array of role-change entries for Status Check.
          * Each entry: { type: "face_off", out, target, outRole, tgtRole } or { type: "saul_buy", idx, newRole }.
          * Face Off: out got tgtRole, target got outRole. Saul Buy: idx became newRole (mafia). */
@@ -2354,11 +2361,18 @@
               }
               return stepObjs;
             };
+            // Dusk resolution: last step every day — shows who left the game during the day.
+            const appendDuskStepIfNeeded = (stepObjs) => {
+              if (!Array.isArray(stepObjs) || stepObjs.length === 0) return stepObjs;
+              const last = stepObjs[stepObjs.length - 1];
+              if (last && last.id === "day_dusk_resolution") return stepObjs;
+              return [...stepObjs, { id: "day_dusk_resolution", title: getStepTitle("day_dusk_resolution") }];
+            };
 
             // Namayande: day1 vs default
             if (scenario === "namayande") {
               const ids = (dayNum === 1 && dayCfg.day1) ? dayCfg.day1 : (dayCfg.default || dayCfg.base);
-              return prependDawnStepIfNeeded(ids.map((id) => ({ id, title: getStepTitle(id) })));
+              return appendDuskStepIfNeeded(prependDawnStepIfNeeded(ids.map((id) => ({ id, title: getStepTitle(id) }))));
             }
             // Kabo: day1 conditional (trust vote → suspect → midday → shoot)
             if (scenario === "kabo") {
@@ -2367,7 +2381,11 @@
                 const ids = hasTrusted && dayCfg.day1
                   ? dayCfg.day1
                   : ["kabo_trust_vote"];
-                return ids.map((id) => ({ id, title: getStepTitle(id) }));
+                const stepObjs = ids.map((id) => ({ id, title: getStepTitle(id) }));
+                // When tie (only trust vote), no Dusk — nothing to show yet; Dusk requires Trusted + flow to complete.
+                return (ids.length === 1 && ids[0] === "kabo_trust_vote")
+                  ? stepObjs
+                  : appendDuskStepIfNeeded(stepObjs);
               }
               // Day 2+: poison status before voting if poison from previous night is pending (victim alive, will resolve at Night 2)
               const prevNightKey = String(Math.max(0, dayNum - 1));
@@ -2377,7 +2395,7 @@
               const poisonPending = !!(poisonIdx != null && victimAlive);
               const baseIds = dayCfg.default || dayCfg.base;
               const ids = poisonPending ? ["day_poison_status", ...baseIds] : baseIds;
-              return prependDawnStepIfNeeded(ids.map((id) => ({ id, title: getStepTitle(id) })));
+              return appendDuskStepIfNeeded(prependDawnStepIfNeeded(ids.map((id) => ({ id, title: getStepTitle(id) }))));
             }
             // Bazras: optional interrogation at start
             if (scenario === "bazras") {
@@ -2388,7 +2406,7 @@
                 const withoutEndCard = snapshotIds.filter((id) => !id || !String(id).startsWith("day_end_card_"));
                 const ids = endCardStep ? [...withoutEndCard, endCardStep.id] : withoutEndCard;
                 const stepObjs = ids.map((id) => ({ id, title: (endCardStep && id === endCardStep.id) ? endCardStep.title : getStepTitle(id) }));
-                return prependDawnStepIfNeeded(stepObjs);
+                return appendDuskStepIfNeeded(prependDawnStepIfNeeded(stepObjs));
               }
               const prevNightKey = String(Math.max(0, dayNum - 1));
               const invTargets = (f.draft && f.draft.investigatorTargetsByNight && f.draft.investigatorTargetsByNight[prevNightKey]) || null;
@@ -2408,7 +2426,7 @@
               const endCardStep = getEndCardActionStepForDay(f);
               if (endCardStep) ids.push(endCardStep.id);
               const stepObjs = ids.map((id) => ({ id, title: (endCardStep && id === endCardStep.id) ? endCardStep.title : getStepTitle(id) }));
-              return prependDawnStepIfNeeded(stepObjs);
+              return appendDuskStepIfNeeded(prependDawnStepIfNeeded(stepObjs));
             }
 
             // Generic day: use snapshot if available, else compute from config + conditionals
@@ -2420,7 +2438,7 @@
               const withoutEndCard = snapshotIds.filter((id) => !id || !String(id).startsWith("day_end_card_"));
               const ids = endCardStep ? [...withoutEndCard, endCardStep.id] : withoutEndCard;
               const stepObjs = ids.map((id) => ({ id, title: (endCardStep && id === endCardStep.id) ? endCardStep.title : getStepTitle(id) }));
-              return prependDawnStepIfNeeded(stepObjs);
+              return appendDuskStepIfNeeded(prependDawnStepIfNeeded(stepObjs));
             }
 
             // Compute steps from config + runtime conditionals
@@ -2483,7 +2501,7 @@
                 if (id === "day_gun_expiry" && !hasUnfiredRealGuns()) continue;
                 steps.push({ id, title: getStepTitle(id) });
               }
-              return prependDawnStepIfNeeded(steps);
+              return appendDuskStepIfNeeded(prependDawnStepIfNeeded(steps));
             }
 
             if (dayCfg.kaneReveal && kaneRevealIdx !== null) {
@@ -2502,7 +2520,7 @@
             }
             const endCardStep = (dayCfg.endCards && getEndCardActionStepForDay(f)) || null;
             if (endCardStep) steps.push(endCardStep);
-            return prependDawnStepIfNeeded(steps);
+            return appendDuskStepIfNeeded(prependDawnStepIfNeeded(steps));
           }
           // Per-role night steps: one step per wake order entry (same order as Wake tool).
           const cfg = getScenarioConfig(scenario);

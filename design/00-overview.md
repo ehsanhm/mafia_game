@@ -16,7 +16,7 @@ The Flow tool advances through a linear sequence of **phases**:
 
 Many scenarios don’t have only **Day** and **Night**: they also have a **Mid-Day Nap** (خواب نیم‌روز) as one or more **steps inside the Day**. So the order is: **Day** (discussion, then optionally Mid-Day Nap steps, then vote/elim) → **Night**. Whether a scenario has a Mid-Day Nap (and what happens in it) is **scenario-dependent**.
 
-Within each **Day**, the first step is always **Dawn resolution** (Day 2+) — a display-only page showing who died and who was revived during the previous night (same data as Status Check). After that, the full list of steps (including any Mid-Day Nap steps) is **scenario-dependent** (see `flow-engine.js` for custom step lists and `scenarios.js` → `dayPhaseConfig.steps`). Examples:
+Within each **Day**, the first step is always **Dawn resolution** (Day 2+) — a display-only page showing who died and who was revived during the previous night (same data as Status Check). After that, the full list of steps (including any Mid-Day Nap steps) is **scenario-dependent**. The last step is always **Dusk resolution** — a display-only page showing who left the game during the day (vote-out, kabo shot, gun expiry, etc.; same data as Status Check Eliminated for day phase). (see `flow-engine.js` for custom step lists and `scenarios.js` → `dayPhaseConfig.steps`). Examples:
 
 - **Classic**: No mid-day. Day = `day_vote` → `day_elim` only.
 - **Bazras**: Day includes **Mid-day** step: Interrogation → **Mid-day** (Cancel/Continue) → Forced Vote → `day_vote` → `day_elim`.

@@ -198,6 +198,18 @@
           assert(first && first.id === "day_dawn_resolution", "Day 2 first step must be day_dawn_resolution");
         },
       },
+      {
+        name: "Dusk resolution is last step on Day 2+",
+        fn: function ({ assert }) {
+          if (typeof getFlowSteps !== "function") return;
+          const f = setupPedarkhande();
+          f.phase = "day";
+          f.day = 2;
+          const steps = getFlowSteps(f);
+          const last = steps[steps.length - 1];
+          assert(last && last.id === "day_dusk_resolution", "Day 2 last step must be day_dusk_resolution");
+        },
+      },
     ],
   };
 
