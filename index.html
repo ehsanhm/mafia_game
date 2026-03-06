@@ -288,6 +288,7 @@
           { key: "don", roleId: "don", group: "mafia" },
           { key: "rebel", roleId: "rebel", group: "mafia" },
           { key: "hacker", roleId: "hacker", group: "mafia" },
+          { key: "hostageTaker", roleId: "hostageTaker", group: "mafia" },
 
           // city
           { key: "detective", roleId: "detective", group: "city" },
@@ -323,6 +324,9 @@
           { key: "minemaker", roleId: "minemaker", group: "city" },
           { key: "lawyer", roleId: "lawyer", group: "city" },
           { key: "bodyguard", roleId: "bodyguard", group: "city" },
+          { key: "soldier", roleId: "soldier", group: "city" },
+          { key: "commando", roleId: "commando", group: "city" },
+          { key: "guardian", roleId: "guardian", group: "city" },
 
           // independent
           { key: "zodiac", roleId: "zodiac", group: "independent" },
@@ -353,6 +357,7 @@
           don: 18,
           rebel: 19,
           hacker: 20,
+          hostageTaker: 21,
           mafia: 999,
 
           // --- city ---
@@ -389,6 +394,9 @@
           bodyguard: 31,
           minemaker: 32,
           lawyer: 33,
+          soldier: 34,
+          commando: 35,
+          guardian: 36,
           citizen: 999,
 
           // --- independent ---
@@ -1351,6 +1359,24 @@
                   const saulBuyTarget = idxFrom(payload.saulBuyTarget);
                   const godfatherAction = (payload.godfatherAction != null) ? String(payload.godfatherAction) : "shoot";
                   const godfatherIdx = findIdxByRole(["godfather", "mafiaBoss"]);
+                  if (godfatherAction === "nato_guess") {
+                    const natoIdx = findIdxByRole(["nato"]);
+                    const natoTarget = idxFrom(payload.natoTarget);
+                    const natoRoleGuess = (payload.natoRoleGuess != null && String(payload.natoRoleGuess).trim()) ? String(payload.natoRoleGuess).trim() : null;
+                    if (natoTarget !== null && natoRoleGuess) {
+                      const natoGuessLabel = (appLang === "fa")
+                        ? ((roles[natoRoleGuess] && roles[natoRoleGuess].faName) ? roles[natoRoleGuess].faName : natoRoleGuess)
+                        : ((typeof ROLE_I18N !== "undefined" && ROLE_I18N[natoRoleGuess] && ROLE_I18N[natoRoleGuess].name) ? ROLE_I18N[natoRoleGuess].name : natoRoleGuess);
+                      const natoName = natoIdx !== null ? nameOf(natoIdx) : (appLang === "fa" ? "ناتو" : "NATO");
+                      out.push((appLang === "fa")
+                        ? `مافیا شلیک نکرد — ${natoName} (ناتو) نقش ${nameOf(natoTarget)} را «${natoGuessLabel}» حدس زد.`
+                        : `Mafia did not shoot — ${natoName} (NATO) guessed ${nameOf(natoTarget)}'s role as "${natoGuessLabel}".`);
+                    } else {
+                      out.push((appLang === "fa")
+                        ? "مافیا شلیک نکرد — ناتو از توانایی حدس نقش استفاده کرد."
+                        : "Mafia did not shoot — NATO used role-guess ability.");
+                    }
+                  }
                   if (godfatherAction === "sixth_sense" && godfatherIdx !== null) {
                     const sixthTarget = idxFrom(payload.sixthSenseTarget);
                     const sixthRole = (payload.sixthSenseRole != null && String(payload.sixthSenseRole).trim()) ? String(payload.sixthSenseRole).trim() : null;
@@ -1428,9 +1454,10 @@
                     }
                   }
                   if (mafiaShot !== null) {
-                    const mafiaActuallyShot = godfatherAction === "shoot" || !["sixth_sense", "saul_buy", "yakooza", "guess_role"].includes(godfatherAction);
+                    const mafiaActuallyShot = godfatherAction === "shoot" || !["sixth_sense", "saul_buy", "yakooza", "guess_role", "nato_guess"].includes(godfatherAction);
                     const targetRole = (draw.players[mafiaShot] && draw.players[mafiaShot].roleId) ? draw.players[mafiaShot].roleId : "citizen";
-                    const alwaysImmuneToMafiaShot = (targetRole === "zodiac" || targetRole === "invulnerable" || targetRole === "armored" || targetRole === "heir");
+                    const nostShieldBroken = !!(f && f.draft && f.draft.nostradamusShieldBroken);
+                    const alwaysImmuneToMafiaShot = (targetRole === "zodiac" || targetRole === "invulnerable" || targetRole === "armored" || targetRole === "heir" || (targetRole === "nostradamus" && !nostShieldBroken));
                     const savedByDoctor = (doctorSave !== null && doctorSave === mafiaShot);
                     const savedByLecter = (lecterSaveForMafia !== null && lecterSaveForMafia === mafiaShot);
                     const mafRec = f && f.draft && f.draft.nightMafiaAppliedByDay && f.draft.nightMafiaAppliedByDay[String(eventDay)];
@@ -1939,6 +1966,58 @@
                   }
                 }
                 }
+                if (shouldAddRole(/guardian/)) {
+                const guardianIdx = findIdxByRole(["guardian"]);
+                const gp1 = idxFrom(payload.guardianProtect1);
+                const gp2 = idxFrom(payload.guardianProtect2);
+                if ((gp1 !== null || gp2 !== null) && guardianIdx !== null) {
+                  const targets = [gp1, gp2].filter((x) => x !== null).map((x) => nameOf(x)).join(appLang === "fa" ? " و " : " and ");
+                  out.push((appLang === "fa")
+                    ? `${plainNameOf(guardianIdx)} (نگهبان) از ${targets} محافظت کرد.`
+                    : `${plainNameOf(guardianIdx)} (Guardian) protected ${targets}.`);
+                }
+                }
+                if (shouldAddRole(/hostageTaker/)) {
+                const htIdx = findIdxByRole(["hostageTaker"]);
+                const htTarget = idxFrom(payload.hostageTakerTarget);
+                if (htTarget !== null && htIdx !== null) {
+                  out.push((appLang === "fa")
+                    ? `${plainNameOf(htIdx)} (گروگانگیر) توانایی ${nameOf(htTarget)} را مسدود کرد.`
+                    : `${plainNameOf(htIdx)} (Hostage-Taker) blocked ${nameOf(htTarget)}'s ability.`);
+                }
+                }
+                if (shouldAddRole(/commando/)) {
+                const commandoIdx2 = findIdxByRole(["commando"]);
+                const commandoShot = idxFrom(payload.commandoShot);
+                if (commandoShot !== null && commandoIdx2 !== null) {
+                  try {
+                    const tr = (draw.players[commandoShot] && draw.players[commandoShot].roleId) ? draw.players[commandoShot].roleId : "citizen";
+                    const teamFa = (roles[tr] && roles[tr].teamFa) ? roles[tr].teamFa : "شهر";
+                    if (teamFa === "مافیا") {
+                      out.push((appLang === "fa")
+                        ? `${plainNameOf(commandoIdx2)} (تکاور) به ${nameOf(commandoShot)} (مافیا) شلیک کرد — هر دو خارج شدند.`
+                        : `${plainNameOf(commandoIdx2)} (Commando) counter-shot ${nameOf(commandoShot)} (Mafia) — both eliminated.`);
+                    } else {
+                      out.push((appLang === "fa")
+                        ? `${plainNameOf(commandoIdx2)} (تکاور) به ${nameOf(commandoShot)} (شهروند) شلیک کرد — فقط تکاور خارج شد.`
+                        : `${plainNameOf(commandoIdx2)} (Commando) counter-shot ${nameOf(commandoShot)} (Citizen) — only Commando eliminated.`);
+                    }
+                  } catch {
+                    out.push((appLang === "fa")
+                      ? `${plainNameOf(commandoIdx2)} (تکاور) به ${nameOf(commandoShot)} شلیک کرد.`
+                      : `${plainNameOf(commandoIdx2)} (Commando) counter-shot ${nameOf(commandoShot)}.`);
+                  }
+                }
+                }
+                if (shouldAddRole(/gunslinger|gunner/)) {
+                const gunslingerIdx = findIdxByRole(["gunslinger"]);
+                const gunnerLive = idxFrom(payload.gunnerLive);
+                if (gunnerLive !== null && gunslingerIdx !== null) {
+                  out.push((appLang === "fa")
+                    ? `${plainNameOf(gunslingerIdx)} (تفنگدار) تیر واقعی را به ${nameOf(gunnerLive)} داد.`
+                    : `${plainNameOf(gunslingerIdx)} (Gunslinger) gave the live bullet to ${nameOf(gunnerLive)}.`);
+                }
+                }
                 if (shouldAddRole(/soldier/)) {
                 // Soldier (namayande)
                 const soldierIdx = findIdxByRole(["soldier"]);
@@ -2153,9 +2232,14 @@
                           ? `${nameOf(outIdx)} (${cardLabel}) ${nameOf(targetIdx)} را دستبند زد.`
                           : `${nameOf(outIdx)} (${cardLabel}) handcuffed ${nameOf(targetIdx)}.`);
                       } else if (cardId === "beautiful_mind" && targetIdx !== null) {
+                        const isSelfPick = targetIdx === outIdx;
                         out.push((appLang === "fa")
-                          ? `${nameOf(outIdx)} (${cardLabel}) نوستراداموس را درست حدس زد؛ بازگشت به بازی با نقش خود، ${nameOf(targetIdx)} خارج شد.`
-                          : `${nameOf(outIdx)} (${cardLabel}) guessed Nostradamus correctly; returned to game with own role, ${nameOf(targetIdx)} eliminated.`);
+                          ? isSelfPick
+                            ? `${nameOf(outIdx)} (${cardLabel}) خودش را انتخاب کرد؛ بازگشت به بازی اما سپر شبانه از بین رفت.`
+                            : `${nameOf(outIdx)} (${cardLabel}) نوستراداموس را درست حدس زد؛ بازگشت به بازی با نقش خود، ${nameOf(targetIdx)} خارج شد.`
+                          : isSelfPick
+                            ? `${nameOf(outIdx)} (${cardLabel}) picked themselves; returned to game but night shield destroyed.`
+                            : `${nameOf(outIdx)} (${cardLabel}) guessed Nostradamus correctly; returned to game with own role, ${nameOf(targetIdx)} eliminated.`);
                       } else if (cardId === "silence_lambs" && targets.length) {
                         const names = targets.map(nameOf).join(appLang === "fa" ? "، " : ", ");
                         out.push((appLang === "fa")

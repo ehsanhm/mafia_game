@@ -17,7 +17,8 @@
     night: ["night_mafia", "night_doctor", "night_detective", "night_negotiator", "night_reporter"],
   });
   FLOW.takavar = Object.assign({}, dayBase, {
-    night: ["night_mafia", "night_doctor", "night_detective", "night_sniper"],
+    day: { steps: ["day_guns?", "day_gun_expiry?", "day_vote", "day_elim"] },
+    night: ["night_guardian", "night_hostageTaker", "night_mafia", "night_detective", "night_commando", "night_doctor", "night_gunner"],
   });
   FLOW.meeting_epic = Object.assign({}, dayBase, {
     night: ["night_natasha", "night_mafia", "night_lecter", "night_doctor", "night_detective", "night_sniper"],

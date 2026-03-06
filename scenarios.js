@@ -93,16 +93,20 @@ const SCENARIO_CONFIGS = {
     id: "takavar",
     name: { fa: "تکاور", en: "Commando" },
     defaults: { nPlayers: 10, mafiaCount: 3 },
-    allowedRoles: ["mafiaBoss", "detective", "doctor", "sniper"],
-    defaultToggles: ["mafiaBoss", "detective", "doctor", "sniper"],
+    allowedRoles: ["mafiaBoss", "nato", "hostageTaker", "guardian", "detective", "doctor", "commando", "gunslinger"],
+    defaultToggles: ["mafiaBoss", "nato", "hostageTaker", "guardian", "detective", "doctor", "commando", "gunslinger"],
     wakeOrder: {
-      fa: ["تیم مافیا", "پزشک", "کارآگاه", "تک‌تیرانداز"],
-      en: ["Mafia team", "Doctor", "Detective", "Sniper"],
+      fa: ["نگهبان", "گروگانگیر", "تیم مافیا (دن + ناتو)", "کارآگاه", "تکاور", "پزشک", "تفنگدار"],
+      en: ["Guardian", "Hostage-Taker", "Mafia team (Don + NATO)", "Detective", "Commando", "Doctor", "Gunner"],
     },
     features: { lastMove: false, endCards: false },
-    dayPhaseConfig: { steps: ["day_vote", "day_elim"] },
+    dayPhaseConfig: { steps: ["day_guns", "day_gun_expiry", "day_vote", "day_elim"] },
     eliminationCards: [],
-    roleOverrides: {},
+    roleOverrides: {
+      mafiaBoss: { descFa: "دن مافیاست؛ شلیک شب را تعیین می‌کند. استعلام برای کارآگاه همیشه «منفی» (شهروند) است." },
+      nato: { descFa: "یک‌بار در بازی نقش یک شهروند را حدس می‌زند؛ درست → آن بازیکن خارج می‌شود؛ غلط → هیچ اتفاقی نمی‌افتد (سکوت). شب استفاده از ناتو معمولاً بدون شلیک مافیاست." },
+      gunslinger: { descFa: "تفنگدار: شب تعدادی گلوله خالی (نامحدود) و ۱ گلوله واقعی به بازیکنان می‌دهد. خودش نمی‌تواند گلوله واقعی را به خودش بدهد. دریافت‌کننده گلوله واقعی می‌تواند روز بعد استفاده کند." },
+    },
   },
   kabo: {
     id: "kabo",
@@ -127,13 +131,13 @@ const SCENARIO_CONFIGS = {
     defaults: { nPlayers: 11, mafiaCount: 3 },
     allowedRoles: ["godfather", "matador", "saulGoodman", "watson", "leon", "citizenKane", "constantine", "nostradamus"],
     defaultToggles: ["godfather", "matador", "saulGoodman", "watson", "leon", "citizenKane", "constantine", "nostradamus"],
-    voteThreshold: "half_minus_one", // نصف منهای یک: defense threshold = (eligible/2) - 1
+    voteThreshold: "half_minus_one", // defense = floor(eligible/2) - 1 (نصف منهای یک); elimination = ceil(eligible/2) (نصف یا بیشتر)
     wakeOrder: {
       fa: ["نوستراداموس (فقط شب معارفه)", "تیم مافیا (پدرخوانده/ماتادور/ساول)", "دکتر واتسون", "لئون", "همشهری کین", "کنستانتین"],
       en: ["Nostradamus (intro night only)", "Mafia team (Godfather/Matador/Saul)", "Dr. Watson", "Leon", "Citizen Kane", "Constantine"],
     },
     features: { lastMove: false, endCards: true },
-    dayPhaseConfig: { steps: ["day_vote", "day_elim"] },
+    dayPhaseConfig: { steps: ["day_vote", "day_elim", "end_card_action"] },
     eliminationCards: [
       { id: "silence_lambs", fa: "سکوت بره‌ها", en: "Silence of the Lambs" },
       { id: "identity_reveal", fa: "افشای هویت", en: "Identity reveal" },

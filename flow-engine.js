@@ -445,32 +445,52 @@
                 if (!d.handcuffedByDay || typeof d.handcuffedByDay !== "object") d.handcuffedByDay = {};
                 d.handcuffedByDay[dayKey] = t;
               } else if (cardId === "beautiful_mind") {
-                const isNostradamus = (pTgt.roleId || "") === "nostradamus";
+                const isSelfPick = t === outIdx; // Nostradamus voted out and picks themselves
+                const isNostradamus = isSelfPick || (pTgt.roleId || "") === "nostradamus";
                 if (isNostradamus) {
                   const prevOutAlive = pOut.alive !== false;
                   const prevTgtAlive = pTgt.alive !== false;
                   const prevOutRole = pOut.roleId || "citizen";
                   const prevTgtRole = pTgt.roleId || "citizen";
-                  // Kill Nostradamus; guesser comes back with their own role (no swap).
-                  try { setPlayerLife(t, { alive: false, reason: "beautiful_mind" }); } catch {}
-                  try { setPlayerLife(outIdx, { alive: true }); } catch {}
-                  // Update day elim record: the "eliminated" for this day is now Nostradamus (t), not voted-out.
-                  const dayKey = String(f.day || 1);
-                  const prevElim = f.draft.dayElimAppliedByDay && f.draft.dayElimAppliedByDay[dayKey];
-                  if (prevElim) {
-                    f.draft.dayElimAppliedByDay[dayKey] = {
-                      out: t,
-                      prevAlive: prevTgtAlive,
-                      chainOut: prevElim.chainOut || null,
-                      chainPrevAlive: prevElim.chainPrevAlive || null,
-                      armoredAbsorbed: prevElim.armoredAbsorbed || false,
-                    };
+                  const prevShieldBroken = !!d.nostradamusShieldBroken;
+                  const bDayKey = String(f.day || 1);
+                  const prevElim = f.draft.dayElimAppliedByDay && f.draft.dayElimAppliedByDay[bDayKey];
+                  if (isSelfPick) {
+                    // Nostradamus voted out, picks themselves: comes back alive but shield is destroyed.
+                    try { setPlayerLife(outIdx, { alive: true }); } catch {}
+                    d.nostradamusShieldBroken = true;
+                    // Update day elim: nobody eliminated this day (Nostradamus survived the vote).
+                    if (prevElim) {
+                      f.draft.dayElimAppliedByDay[bDayKey] = {
+                        out: null,
+                        prevAlive: null,
+                        chainOut: prevElim.chainOut || null,
+                        chainPrevAlive: prevElim.chainPrevAlive || null,
+                        armoredAbsorbed: prevElim.armoredAbsorbed || false,
+                      };
+                    }
+                  } else {
+                    // Correct guess of another player who is Nostradamus: kill them, revive guesser.
+                    try { setPlayerLife(t, { alive: false, reason: "beautiful_mind" }); } catch {}
+                    try { setPlayerLife(outIdx, { alive: true }); } catch {}
+                    // Update day elim record: eliminated is now Nostradamus (t), not voted-out.
+                    if (prevElim) {
+                      f.draft.dayElimAppliedByDay[bDayKey] = {
+                        out: t,
+                        prevAlive: prevTgtAlive,
+                        chainOut: prevElim.chainOut || null,
+                        chainPrevAlive: prevElim.chainPrevAlive || null,
+                        armoredAbsorbed: prevElim.armoredAbsorbed || false,
+                      };
+                    }
                   }
                   appliedRec.prevState = {
                     outAlive: prevOutAlive,
                     tgtAlive: prevTgtAlive,
                     outRole: prevOutRole,
                     tgtRole: prevTgtRole,
+                    isSelfPick,
+                    prevShieldBroken,
                     dayElimOut: outIdx,
                     dayElimPrevAlive: prevElim ? prevElim.prevAlive : true,
                     dayElimChainOut: prevElim ? prevElim.chainOut : null,
@@ -527,14 +547,18 @@
             } else if (cardId === "beautiful_mind" && prev.outAlive != null && prev.tgtAlive != null) {
               if (prev.outAlive) try { setPlayerLife(outIdx, { alive: true }); } catch {}
               else try { setPlayerLife(outIdx, { alive: false }); } catch {}
-              if (prev.tgtAlive) try { setPlayerLife(t, { alive: true }); } catch {}
-              else try { setPlayerLife(t, { alive: false }); } catch {}
+              if (!prev.isSelfPick) {
+                if (prev.tgtAlive) try { setPlayerLife(t, { alive: true }); } catch {}
+                else try { setPlayerLife(t, { alive: false }); } catch {}
+              }
               if (prev.outRole != null && prev.tgtRole != null) {
                 const pOut = draw.players[outIdx];
-                const pTgt = draw.players[t];
+                const pTgt = t != null && draw.players[t] ? draw.players[t] : null;
                 if (pOut) pOut.roleId = prev.outRole;
                 if (pTgt) pTgt.roleId = prev.tgtRole;
               }
+              // Restore shield state.
+              d.nostradamusShieldBroken = prev.prevShieldBroken || false;
               // Restore day elim record.
               if (prev.dayElimOut != null && prev.dayElimPrevAlive != null) {
                 const dayKey = String(f.day || 1);
@@ -749,8 +773,8 @@
                   desiredKill = null;
                 }
               } else if (targetRole === "nostradamus" && scenarioMafia === "pedarkhande") {
-                // Nostradamus has unlimited shields — never dies of night shots.
-                desiredKill = null;
+                // Nostradamus has unlimited shields — unless broken by Beautiful Mind self-pick.
+                if (!f.draft.nostradamusShieldBroken) desiredKill = null;
               }
             }
 
@@ -2033,15 +2057,27 @@
             if (outIdx === null) return null;
             if (parseInt(rec.out, 10) !== outIdx) return null;
             if (!END_CARD_ACTION_IDS.includes(rec.cardId)) return null;
-            // Beautiful Mind: when Nostradamus draws it, no pick step (host does inquiry; Nostradamus loses shield)
-            if (rec.cardId === "beautiful_mind" && scenario === "pedarkhande") {
-              const pOut = (appState.draw && appState.draw.players && appState.draw.players[outIdx]) ? appState.draw.players[outIdx] : null;
-              if (pOut && (pOut.roleId || "") === "nostradamus") return null;
-            }
+            // Beautiful Mind: always show the action page (moderator chose this card deliberately).
+            // When the voted-out player IS Nostradamus, the UI shows an info message instead of a pick.
             const c = endCards.find((x) => x.id === rec.cardId);
             if (!c) return null; // Card not in scenario's eliminationCards (e.g. Duel removed from Godfather)
             const label = appLang === "fa" ? c.fa : c.en;
             return { id: "day_end_card_" + rec.cardId, title: label };
+          } catch { return null; }
+        }
+
+        // Returns {id:"day_end_card_pick"} when scenario supports end cards AND a player was voted out this day.
+        // Stays in the flow even after a card is selected (shows it highlighted); user must click Next to advance.
+        function getEndCardPickStep(f) {
+          try {
+            const scenario = getDrawScenarioForFlow();
+            const cfg = getScenarioConfig(scenario);
+            if (!cfg.features || !cfg.features.endCards) return null;
+            const dayKey = String(f.day || 1);
+            const elimRec = f.draft && f.draft.dayElimAppliedByDay && f.draft.dayElimAppliedByDay[dayKey];
+            const outIdx = (elimRec && elimRec.out != null && Number.isFinite(parseInt(elimRec.out, 10))) ? parseInt(elimRec.out, 10) : null;
+            if (outIdx === null) return null;
+            return { id: "day_end_card_pick", title: getStepTitle("day_end_card_pick") };
           } catch { return null; }
         }
 
@@ -2071,6 +2107,7 @@
             bazras_interrogation: appLang === "fa" ? "بازپرسی" : "Interrogation",
             bazras_midday: appLang === "fa" ? "چرت روز" : "Mid-day",
             bazras_forced_vote: appLang === "fa" ? "رأی‌گیری اجباری" : "Forced Vote",
+            day_end_card_pick: appLang === "fa" ? "انتخاب کارت" : "Choose Card",
           };
           if (titles[stepId]) return titles[stepId];
           const tKeys = {
@@ -2119,6 +2156,10 @@
             night_minemaker: "tool.flow.night.minemaker",
             night_lawyer: "tool.flow.night.lawyer",
             night_nostradamus: "tool.flow.night.nostradamus",
+            night_guardian: "tool.flow.night.guardian",
+            night_hostageTaker: "tool.flow.night.hostageTaker",
+            night_commando: "tool.flow.night.commando",
+            night_gunner: "tool.flow.night.gunner",
             day_end_card_face_change: "tool.flow.endCard.faceOff",
             day_end_card_handcuffs: "tool.flow.endCard.handcuffs",
             day_end_card_beautiful_mind: "tool.flow.endCard.beautifulMind",
@@ -2402,10 +2443,17 @@
               const snapshotIds = (f.draft && f.draft.dayStepsByDay && Array.isArray(f.draft.dayStepsByDay[String(f.day)]))
                 ? f.draft.dayStepsByDay[String(f.day)] : null;
               if (snapshotIds) {
+                const pickStep = getEndCardPickStep(f);
                 const endCardStep = getEndCardActionStepForDay(f);
-                const withoutEndCard = snapshotIds.filter((id) => !id || !String(id).startsWith("day_end_card_"));
-                const ids = endCardStep ? [...withoutEndCard, endCardStep.id] : withoutEndCard;
-                const stepObjs = ids.map((id) => ({ id, title: (endCardStep && id === endCardStep.id) ? endCardStep.title : getStepTitle(id) }));
+                // Strip end-card steps AND dusk from snapshot — dusk is re-added by appendDuskStepIfNeeded so
+                // end-card steps always appear in the correct position (before dusk, not after).
+                const withoutEndCard = snapshotIds.filter((id) => !id || !(id === "day_end_card_pick" || id === "day_dusk_resolution" || String(id).startsWith("day_end_card_")));
+                const ids = [...withoutEndCard, ...(pickStep ? [pickStep.id] : []), ...(endCardStep ? [endCardStep.id] : [])];
+                const stepObjs = ids.map((id) => {
+                  if (pickStep && id === pickStep.id) return pickStep;
+                  if (endCardStep && id === endCardStep.id) return endCardStep;
+                  return { id, title: getStepTitle(id) };
+                });
                 return appendDuskStepIfNeeded(prependDawnStepIfNeeded(stepObjs));
               }
               const prevNightKey = String(Math.max(0, dayNum - 1));
@@ -2423,9 +2471,15 @@
               let ids = [];
               if (showInterrogation && dayCfg.interrogation) ids = ids.concat(dayCfg.interrogation);
               ids = ids.concat(dayCfg.base || ["day_vote", "day_elim"]);
+              const pickStep = getEndCardPickStep(f);
+              if (pickStep) ids.push(pickStep.id);
               const endCardStep = getEndCardActionStepForDay(f);
               if (endCardStep) ids.push(endCardStep.id);
-              const stepObjs = ids.map((id) => ({ id, title: (endCardStep && id === endCardStep.id) ? endCardStep.title : getStepTitle(id) }));
+              const stepObjs = ids.map((id) => {
+                if (pickStep && id === pickStep.id) return pickStep;
+                if (endCardStep && id === endCardStep.id) return endCardStep;
+                return { id, title: getStepTitle(id) };
+              });
               return appendDuskStepIfNeeded(prependDawnStepIfNeeded(stepObjs));
             }
 
@@ -2433,11 +2487,17 @@
             const snapshotIds = (f.draft && f.draft.dayStepsByDay && Array.isArray(f.draft.dayStepsByDay[String(f.day)]))
               ? f.draft.dayStepsByDay[String(f.day)] : null;
             if (snapshotIds) {
+              // Recompute end card steps from live state (avoids stale snapshot when votes change).
+              // Strip dusk as well so end-card steps land before dusk after re-assembly.
+              const pickStep = getEndCardPickStep(f);
               const endCardStep = getEndCardActionStepForDay(f);
-              // Replace any day_end_card_* in snapshot with current day's drawn card (avoids duplicate/wrong card).
-              const withoutEndCard = snapshotIds.filter((id) => !id || !String(id).startsWith("day_end_card_"));
-              const ids = endCardStep ? [...withoutEndCard, endCardStep.id] : withoutEndCard;
-              const stepObjs = ids.map((id) => ({ id, title: (endCardStep && id === endCardStep.id) ? endCardStep.title : getStepTitle(id) }));
+              const withoutEndCard = snapshotIds.filter((id) => !id || !(id === "day_end_card_pick" || id === "day_dusk_resolution" || String(id).startsWith("day_end_card_")));
+              const ids = [...withoutEndCard, ...(pickStep ? [pickStep.id] : []), ...(endCardStep ? [endCardStep.id] : [])];
+              const stepObjs = ids.map((id) => {
+                if (pickStep && id === pickStep.id) return pickStep;
+                if (endCardStep && id === endCardStep.id) return endCardStep;
+                return { id, title: getStepTitle(id) };
+              });
               return appendDuskStepIfNeeded(prependDawnStepIfNeeded(stepObjs));
             }
 
@@ -2491,7 +2551,9 @@
                   continue;
                 }
                 if (id === "end_card_action" || id === "__end_card__") {
-                  const endCardStep = getEndCardActionStepForDay(f) || null;
+                  const pickStep = getEndCardPickStep(f);
+                  if (pickStep) steps.push(pickStep);
+                  const endCardStep = getEndCardActionStepForDay(f);
                   if (endCardStep) steps.push(endCardStep);
                   continue;
                 }
@@ -2518,8 +2580,12 @@
               if (id === "day_gun_expiry" && !hasUnfiredRealGuns()) continue;
               steps.push({ id, title: getStepTitle(id) });
             }
-            const endCardStep = (dayCfg.endCards && getEndCardActionStepForDay(f)) || null;
-            if (endCardStep) steps.push(endCardStep);
+            if (dayCfg.endCards) {
+              const pickStep = getEndCardPickStep(f);
+              if (pickStep) steps.push(pickStep);
+              const endCardStep = getEndCardActionStepForDay(f);
+              if (endCardStep) steps.push(endCardStep);
+            }
             return appendDuskStepIfNeeded(prependDawnStepIfNeeded(steps));
           }
           // Per-role night steps: one step per wake order entry (same order as Wake tool).
@@ -2594,7 +2660,7 @@
               night_researcher: ["researcher"],
               night_swindler: ["swindler"],
               night_natasha: ["natasha"],
-              night_jokermaf: ["jokerMafia"],
+              night_joker_mafia: ["jokerMafia"],
               night_lecter: ["doctorLecter"],
               night_magician: ["magician"],
               night_hacker: ["hacker"],
@@ -2604,7 +2670,7 @@
               night_lawyer: ["lawyer"],
               night_soldier: ["soldier"],
               night_nato: ["nato"],
-              night_investigator: ["investigator"],
+              night_inspector: ["investigator"],
             };
             const roleIds = stepToRoles[sid];
             if (!roleIds) return true;
@@ -2967,7 +3033,7 @@
               applyKaneRevealForDay(f);
               try { renderCast(); } catch {}
             }
-            if (curStep.id && String(curStep.id).startsWith("day_end_card_")) {
+            if (curStep.id && String(curStep.id).startsWith("day_end_card_") && curStep.id !== "day_end_card_pick") {
               applyEndCardActionForDay(f);
               try { renderCast(); } catch {}
             }
@@ -2978,6 +3044,11 @@
                 const payload = ev && ev.data ? ev.data : (f.draft && f.draft.nightActionsByNight && f.draft.nightActionsByNight[String(f.day)]) || null;
                 if (payload && String(payload.godfatherAction || "") === "saul_buy" && (payload.saulBuyTarget !== null && payload.saulBuyTarget !== undefined)) {
                   applyNightSaulBuyFromPayload(f, payload);
+                  // Failed buy (non-citizen target): ability is still consumed permanently per design.
+                  if (!f.draft.saulBuyUsed) {
+                    f.draft.saulBuyUsed = true;
+                    f.draft.saulBuyUsedOnNight = f.day || 1;
+                  }
                   try { renderCast(); } catch {}
                 }
               } catch {}
@@ -3000,7 +3071,11 @@
                 const d2 = f.draft || {};
                 const picks = d2.chaosPicks || {};
                 const aIdxs = draw.players.map((p, i) => ({ p, i })).filter(({ p }) => p && p.alive !== false);
-                const getT = (p) => { const r = roles[p && p.roleId]; return r ? r.teamFa : "شهر"; };
+                const _nostSideChaos = (d2.nostradamusChosenSide === "mafia" || d2.nostradamusChosenSide === "citizen") ? d2.nostradamusChosenSide : null;
+                const getT = (p) => {
+                  if ((p && p.roleId) === "nostradamus" && _nostSideChaos && getDrawScenarioForFlow() === "pedarkhande") return _nostSideChaos === "mafia" ? "مافیا" : "شهر";
+                  const r = roles[p && p.roleId]; return r ? r.teamFa : "شهر";
+                };
                 const aMaf = aIdxs.filter(({ p }) => getT(p) === "مافیا");
                 const aCit = aIdxs.filter(({ p }) => getT(p) === "شهر");
                 const aInd = aIdxs.filter(({ p }) => getT(p) === "مستقل");
@@ -3039,7 +3114,7 @@
             // Apply end card action if we're on last step (end card) — it's not applied in the inner Next branch.
             const steps = getFlowSteps(f);
             const curStep = steps[Math.min(steps.length - 1, Math.max(0, f.step || 0))] || {};
-            if (curStep.id && String(curStep.id).startsWith("day_end_card_")) {
+            if (curStep.id && String(curStep.id).startsWith("day_end_card_") && curStep.id !== "day_end_card_pick") {
               try { applyEndCardActionForDay(f); } catch {}
               try { renderCast(); } catch {}
             }
@@ -3162,6 +3237,10 @@
                 }
               } catch {}
               try { renderCast(); } catch {}
+            } else if (leavingStep.id === "day_end_card_pick") {
+              // Going back from the card-pick step — preserve card selection (selections must survive back-nav).
+              // byDay[dayKey] is only cleared when reverting day_elim (going back past day_elim → day_vote).
+              try { renderCast(); } catch {}
             } else if (leavingStep.id && String(leavingStep.id).startsWith("day_end_card_")) {
               try {
                 if (typeof revertEffect === "function" && typeof hasEffect === "function" && hasEffect("day_end_card_action")) {
@@ -3170,7 +3249,9 @@
                   revertEndCardActionForDay(f);
                 }
               } catch {}
-              // Clear day step snapshot so steps are recomputed when user changes votes and a new card is drawn.
+              // Do NOT clear card selection — preserve it so the pick step shows the selection still highlighted.
+              // byDay[dayKey] is only cleared when reverting day_elim (going back past day_elim → day_vote).
+              // Clear day step snapshot so steps are recomputed.
               try {
                 if (f.draft && f.draft.dayStepsByDay && typeof f.draft.dayStepsByDay === "object") {
                   delete f.draft.dayStepsByDay[String(f.day)];
@@ -3227,7 +3308,7 @@
                 }
               } catch {}
               try { renderCast(); } catch {}
-            } else if (enteringStep.id && String(enteringStep.id).startsWith("day_end_card_")) {
+            } else if (enteringStep.id && String(enteringStep.id).startsWith("day_end_card_") && enteringStep.id !== "day_end_card_pick") {
               try {
                 if (typeof revertEffect === "function" && typeof hasEffect === "function" && hasEffect("day_end_card_action")) {
                   revertEffect("day_end_card_action", { f });
@@ -3319,7 +3400,7 @@
               ? snapshotIds.map((id) => ({ id, title: id }))
               : getFlowSteps({ ...f, phase: "day" });
             const lastDayStepId = daySteps.length > 0 ? (daySteps[daySteps.length - 1] || {}).id : "";
-            const lastStepIsEndCard = lastDayStepId && String(lastDayStepId).startsWith("day_end_card_");
+            const lastStepIsEndCard = lastDayStepId && String(lastDayStepId).startsWith("day_end_card_") && lastDayStepId !== "day_end_card_pick";
             f.phase = "day";
             f.step = Math.max(0, daySteps.length - 1);
             // Only revert day_elim when landing on day_elim (not when landing on end card step).

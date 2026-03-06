@@ -30,6 +30,43 @@
           return Math.floor(eligibleVoters / 2) + 1;
         }
 
+        // Pedarkhande elim threshold = half or more (ceil(n/2)); all other scenarios = more than half (floor(n/2)+1).
+        function getElimThreshold(eligibleVoters) {
+          const scenario = typeof getDrawScenarioForFlow === "function" ? getDrawScenarioForFlow() : (typeof getScenario === "function" ? getScenario() : "");
+          const cfg = typeof getScenarioConfig === "function" ? getScenarioConfig(scenario) : {};
+          if (cfg.voteThreshold === "half_minus_one") {
+            return Math.max(1, Math.ceil(eligibleVoters / 2));
+          }
+          return Math.floor(eligibleVoters / 2) + 1;
+        }
+
+        function pickEndCard(cardId) {
+          try {
+            const f = appState.god && appState.god.flow;
+            if (!f) return;
+            const dayKey = String(f.day || 1);
+            const d = f.draft || {};
+            const elimRec = d.dayElimAppliedByDay && d.dayElimAppliedByDay[dayKey];
+            const outIdx = elimRec && elimRec.out != null && Number.isFinite(parseInt(elimRec.out, 10)) ? parseInt(elimRec.out, 10) : null;
+            if (outIdx === null) return;
+            if (!appState.god) appState.god = {};
+            if (!appState.god.endCards || typeof appState.god.endCards !== "object") appState.god.endCards = { byDay: {}, used: [] };
+            if (!appState.god.endCards.byDay) appState.god.endCards.byDay = {};
+            if (!Array.isArray(appState.god.endCards.used)) appState.god.endCards.used = [];
+            const ec = appState.god.endCards;
+            const existing = ec.byDay[dayKey] && typeof ec.byDay[dayKey] === "object" ? ec.byDay[dayKey] : null;
+            // Remove previously selected card from used list
+            if (existing && existing.cardId && existing.cardId !== cardId) {
+              const idx = ec.used.indexOf(existing.cardId);
+              if (idx >= 0) ec.used.splice(idx, 1);
+            }
+            ec.byDay[dayKey] = { out: outIdx, cardId: cardId, at: Date.now() };
+            if (!ec.used.includes(cardId)) ec.used.push(cardId);
+            try { saveState(appState); } catch {}
+            try { showFlowTool(); } catch {}
+          } catch {}
+        }
+
         function normWake(s) {
           const x = String(s || "").toLowerCase();
           // Specific compound roles must be checked before generic team labels.
@@ -70,6 +107,9 @@
           if (x.includes("minemaker") || x.includes("مین")) return "minemaker";
           if (x.includes("lawyer") || x.includes("وکیل")) return "lawyer";
           if (x.includes("soldier") || x.includes("سرباز")) return "soldier";
+          if (x.includes("hostageTaker") || x.includes("hostage") || x.includes("گروگانگیر")) return "hostageTaker";
+          if (x.includes("commando") || x.includes("تکاور")) return "commando";
+          if (x.includes("guardian") || x.includes("نگهبان")) return "guardian";
           return "other";
         }
 
@@ -792,7 +832,7 @@
             try { saveState(appState); } catch {}
 
             const candIdxs = Array.isArray(d.elimCandidatesByDay[f.day]) ? d.elimCandidatesByDay[f.day] : defenseList;
-            const elimThreshold = defThreshold; // single-defendant: need majority to be out
+            const elimThreshold = getElimThreshold(eligibleVoters); // single-defendant: need half (pedarkhande) or majority (others) to be out
             const isSingleDef = candIdxs.length === 1;
 
             if (!d.elimVotesByDay || typeof d.elimVotesByDay !== "object") d.elimVotesByDay = {};
@@ -918,13 +958,11 @@
                   }
                 }
                 const byDay = appState.god.endCards.byDay;
-                const usedSet = new Set(appState.god.endCards.used || []);
                 const dayKey = String(f.day || 1);
                 const existing = byDay[dayKey] && typeof byDay[dayKey] === "object" ? byDay[dayKey] : null;
                 // If day assignment exists but for a different player, reset it and return card to pool.
                 if (existing && Number.isFinite(Number(existing.out)) && parseInt(existing.out, 10) !== parseInt(pickedOutIdx, 10)) {
                   if (existing.cardId) {
-                    usedSet.delete(existing.cardId);
                     const u = appState.god.endCards.used || [];
                     const idx = u.indexOf(existing.cardId);
                     if (idx >= 0) u.splice(idx, 1);
@@ -932,26 +970,8 @@
                   }
                   delete byDay[dayKey];
                 }
-                let rec = byDay[dayKey] && typeof byDay[dayKey] === "object" ? byDay[dayKey] : null;
-                const isValidCard = rec && rec.cardId && endCards.some((c) => c.id === rec.cardId);
-                if (!rec || !rec.cardId || !isValidCard) {
-                  const remaining = endCards.filter((c) => !usedSet.has(c.id));
-                  const picked = remaining.length ? remaining[Math.floor(Math.random() * remaining.length)] : null;
-                  rec = picked ? { out: parseInt(pickedOutIdx, 10), cardId: picked.id, at: Date.now() } : null;
-                  byDay[dayKey] = rec;
-                  if (picked) {
-                    (appState.god.endCards.used || []).push(picked.id);
-                    appState.god.endCards.used = appState.god.endCards.used || [];
-                  }
-                  saveState(appState);
-                  if (!picked && remaining.length === 0) {
-                    return `<div class="note result" style="margin-top:10px">${escapeHtml(appLang === "fa" ? "همه کارت‌ها استفاده شده‌اند." : "All end cards have been used.")}</div>`;
-                  }
-                }
-                if (!rec || !rec.cardId) return "";
-                const nm = names[pickedOutIdx] || t("common.playerN", { n: pickedOutIdx + 1 });
-                const cardLabel = labelFor(rec.cardId);
-                return `<div class="note result" style="margin-top:10px">${escapeHtml(t("tool.flow.endCards.for", { name: nm, card: cardLabel }))}</div>`;
+                // Card is picked on the day_end_card_pick step — nothing to display here.
+                return "";
               } catch {
                 return "";
               }
@@ -1054,7 +1074,7 @@
               <div class="note" style="margin-top:6px">${escapeHtml(t("tool.flow.elim.hint"))}</div>
               <div style="height:8px"></div>
               <div class="note">${escapeHtml(t((getScenarioConfig(scenario).voteThreshold === "half_minus_one" ? "tool.flow.defense.threshold.halfMinusOne" : "tool.flow.defense.threshold"), { n: defThreshold, v: eligibleVoters }))}</div>
-              ${isSingleDef ? `<div class="note" style="margin-top:6px">${escapeHtml(t((getScenarioConfig(scenario).voteThreshold === "half_minus_one" ? "tool.flow.elim.single.need.halfMinusOne" : "tool.flow.elim.single.need"), { n: elimThreshold, v: eligibleVoters }))}</div>` : ``}
+              ${isSingleDef ? `<div class="note" style="margin-top:6px">${escapeHtml(t((getScenarioConfig(scenario).voteThreshold === "half_minus_one" ? "tool.flow.elim.single.need.half" : "tool.flow.elim.single.need"), { n: elimThreshold, v: eligibleVoters }))}</div>` : ``}
               <div style="margin-top:10px; padding-bottom:10px; border-bottom:1px solid rgba(255,255,255,.08)">
                 <div class="timerCard" style="max-width:none">
                   <div class="tname">${escapeHtml(t("tool.timer.defense"))}</div>
@@ -1093,6 +1113,73 @@
                 ${lastMoveUi}
               </div>
             `;
+          } else if (cur.id === "day_end_card_pick") {
+            const d = f.draft || {};
+            const dayKey = String(f.day || 1);
+            const ec = appState.god && appState.god.endCards;
+            const byDay = ec && ec.byDay ? ec.byDay : {};
+            // usedSet includes all used cards; for cards used on a *previous* day, they stay disabled.
+            // The card used *today* (pickedCardId) is in usedSet but still shown as selected.
+            const usedSet = new Set(Array.isArray(ec && ec.used) ? ec.used : []);
+            const elimRec = d.dayElimAppliedByDay && d.dayElimAppliedByDay[dayKey];
+            const outIdx = elimRec && elimRec.out != null && Number.isFinite(parseInt(elimRec.out, 10)) ? parseInt(elimRec.out, 10) : null;
+            const votedOutName2 = outIdx !== null ? (names[outIdx] || t("common.playerN", { n: outIdx + 1 })) : "";
+            const _scenarioCfg2 = getScenarioConfig(typeof getDrawScenarioForFlow === "function" ? getDrawScenarioForFlow() : getScenario());
+            const endCards2 = _scenarioCfg2.eliminationCards || [];
+            const pickedRec = byDay[dayKey] && typeof byDay[dayKey] === "object" ? byDay[dayKey] : null;
+            const pickedCardId = pickedRec ? pickedRec.cardId : null;
+            const labelFor2 = (id) => {
+              const c = endCards2.find((x) => x.id === id);
+              if (!c) return String(id || "");
+              return appLang === "fa" ? c.fa : c.en;
+            };
+            // Shuffle cards with a stable seed (day number) so order is random but consistent on re-render.
+            // This prevents players from correlating card position with name in the available list.
+            const _shuffleSeed = parseInt(dayKey, 10) * 1664525 + 1013904223;
+            const shuffledCards2 = (() => {
+              const a = [...endCards2];
+              let s = _shuffleSeed;
+              for (let i = a.length - 1; i > 0; i--) {
+                s = (Math.imul(s, 1664525) + 1013904223) | 0;
+                const j = ((s >>> 0) % (i + 1));
+                [a[i], a[j]] = [a[j], a[i]];
+              }
+              return a;
+            })();
+            // All cards: face-down unless picked (identity hidden until chosen). Used-on-prev-days → disabled.
+            const CARD_SQ = `aspect-ratio:1;min-height:unset;`;
+            const CARD_FACEDOWN = `background:rgba(255,255,255,.06);border:2px solid rgba(255,255,255,.12);color:rgba(255,255,255,.55);font-size:22px;`;
+            const CARD_PICKED   = `background:rgba(99,179,237,.25);border:2px solid #63b3ed;color:#fff;font-weight:1100;font-size:13px;`;
+            const CARD_DISABLED = `background:rgba(255,255,255,.03);border:2px dashed rgba(255,255,255,.1);color:rgba(255,255,255,.25);font-size:22px;opacity:.5;pointer-events:none;`;
+            const allCardsHtml = shuffledCards2.length === 0
+              ? `<div class="note">${escapeHtml(appLang === "fa" ? "کارتی تعریف نشده." : "No cards defined.")}</div>`
+              : shuffledCards2.map((c) => {
+                  const isPicked = c.id === pickedCardId;
+                  const isUsedPrev = usedSet.has(c.id) && !isPicked; // used on a previous day
+                  if (isUsedPrev) {
+                    return `<div style="${NIGHT_CARD_BASE}${CARD_SQ}${CARD_DISABLED}" title="${escapeHtml(labelFor2(c.id))}">✕</div>`;
+                  }
+                  const label = isPicked ? escapeHtml(labelFor2(c.id)) : "?";
+                  const style = isPicked ? CARD_PICKED : CARD_FACEDOWN;
+                  return `<button type="button" onclick="pickEndCard('${c.id}')" style="${NIGHT_CARD_BASE}${CARD_SQ}${style}">${label}</button>`;
+                }).join("");
+            // Available cards list sorted alphabetically — different order from displayed cards
+            // so players can't match name to position.
+            const remaining2 = endCards2
+              .filter((c) => !usedSet.has(c.id) || c.id === pickedCardId)
+              .slice()
+              .sort((a, b) => labelFor2(a.id).localeCompare(labelFor2(b.id)));
+            const remainingList = remaining2.length
+              ? remaining2.map((c) => `<span style="display:inline-block;margin:2px 4px;opacity:${c.id === pickedCardId ? "1" : ".7"}">${escapeHtml(labelFor2(c.id))}${c.id === pickedCardId ? " ✓" : ""}</span>`).join("&nbsp;·&nbsp;")
+              : `<span style="opacity:.5">${escapeHtml(appLang === "fa" ? "همه استفاده شده‌اند" : "All used")}</span>`;
+            body = `
+              <div class="note result" style="margin-bottom:14px">${escapeHtml(t("tool.flow.outcome.votedOut"))} <b>${escapeHtml(votedOutName2)}</b></div>
+              <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:4px">${allCardsHtml}</div>
+              <div style="margin-top:16px;padding-top:12px;border-top:1px solid rgba(255,255,255,.08);font-size:12px;color:rgba(255,255,255,.55)">
+                <span style="font-weight:700;margin-bottom:4px;display:block">${escapeHtml(appLang === "fa" ? "کارت‌های موجود:" : "Available cards:")}</span>
+                ${remainingList}
+              </div>
+            `;
           } else if (cur.id && String(cur.id).startsWith("day_end_card_")) {
             const d = f.draft || {};
             const cardId = cur.id.replace("day_end_card_", "");
@@ -1107,16 +1194,28 @@
             const cardInfo = endCards.find((x) => x.id === cardId);
             const cardLabel = cardInfo ? (appLang === "fa" ? cardInfo.fa : cardInfo.en) : cardId;
             if (!d.endCardActionByDay || typeof d.endCardActionByDay !== "object") d.endCardActionByDay = {};
-            const targetIdxs = (draw.players || []).map((_, i) => i).filter((i) => i !== outIdx && draw.players[i] && draw.players[i].alive !== false);
+            // Beautiful Mind: if the voted-out player IS Nostradamus, include them in the pick list so they can self-pick.
+            const outPlayerRole = outIdx !== null && draw.players && draw.players[outIdx] ? (draw.players[outIdx].roleId || "") : "";
+            const bmNostOut = cardId === "beautiful_mind" && outPlayerRole === "nostradamus";
+            const targetIdxs = (draw.players || []).map((_, i) => i).filter((i) => {
+              if (i === outIdx) return bmNostOut; // Nostradamus can self-pick; others cannot
+              return !!(draw.players[i] && draw.players[i].alive !== false);
+            });
             const nPlayers = (draw.players || []).length;
-            const aliveCount = targetIdxs.length; // voted-out is already dead when we're on end card step
+            const aliveCount = targetIdxs.length;
             const isSecondHalf = aliveCount <= nPlayers / 2;
             const hintText = cardId === "face_change"
               ? (appLang === "fa" ? `${votedOutName} می‌تواند نقش خود را با یک بازیکن دیگر عوض کند (ابتدای شب، مخفیانه).` : `${votedOutName} can swap their role with another player (secretly at night start).`)
               : cardId === "handcuffs"
                 ? (appLang === "fa" ? `${votedOutName} یک نفر را دستبند می‌زند؛ آن بازیکن برای یک روز قابلیت‌اش را از دست می‌دهد.` : `${votedOutName} handcuffs one player; they lose their ability for one day.`)
                 : cardId === "beautiful_mind"
-                  ? (appLang === "fa" ? `${votedOutName} یک شانس دارد نوستراداموس را حدس بزند. اگر درست بود، جای او می‌نشیند و نوستراداموس خارج می‌شود.` : `${votedOutName} gets one chance to guess who Nostradamus is. If correct, they replace Nostradamus (who is eliminated).`)
+                  ? bmNostOut
+                    ? (appLang === "fa"
+                      ? `${votedOutName} خودِ نوستراداموس است. خودش را انتخاب کند تا زنده بماند — اما سپر شبانه‌اش از بین می‌رود.`
+                      : `${votedOutName} is Nostradamus. Pick themselves to survive — but their night shield is destroyed.`)
+                    : (appLang === "fa"
+                      ? `${votedOutName} یک شانس دارد نوستراداموس را حدس بزند. اگر درست بود، زنده می‌ماند و نوستراداموس خارج می‌شود.`
+                      : `${votedOutName} gets one chance to guess who Nostradamus is. If correct, they survive and Nostradamus is eliminated.`)
                   : cardId === "silence_lambs"
                     ? (appLang === "fa"
                       ? `${votedOutName} می‌تواند ${isSecondHalf ? "۱ نفر" : "۲ نفر"} را ساکت کند (حق دفاع ندارند).`
@@ -1351,7 +1450,11 @@
             if (!_tmrCh.chaos) _tmrCh.chaos = 120;
             if (_tmrCh.remaining.chaos == null) _tmrCh.remaining.chaos = _tmrCh.chaos;
             const aliveIdxs = (draw.players || []).map((p, i) => ({ p, i })).filter(({ p }) => p && p.alive !== false);
-            const getTeam = (p) => { const r = roles[p.roleId]; return r ? r.teamFa : "شهر"; };
+            const _nostSideCh = (d.nostradamusChosenSide === "mafia" || d.nostradamusChosenSide === "citizen") ? d.nostradamusChosenSide : null;
+            const getTeam = (p) => {
+              if ((p && p.roleId) === "nostradamus" && _nostSideCh && getDrawScenarioForFlow() === "pedarkhande") return _nostSideCh === "mafia" ? "مافیا" : "شهر";
+              const r = roles[p && p.roleId]; return r ? r.teamFa : "شهر";
+            };
             const aliveMafia = aliveIdxs.filter(({ p }) => getTeam(p) === "مافیا");
             const aliveCitizens = aliveIdxs.filter(({ p }) => getTeam(p) === "شهر");
             const aliveIndep = aliveIdxs.filter(({ p }) => getTeam(p) === "مستقل");
@@ -1740,6 +1843,9 @@
                 soldier: ["soldier"],
                 kane: ["citizenKane"],
                 constantine: ["constantine"],
+                hostageTaker: ["hostageTaker"],
+                commando: ["commando"],
+                guardian: ["guardian"],
               };
               const sectionRoleIds = wakeToRoleIds[k] || [k];
               const sectionPlayerIdx = findRolePlayerIdx(sectionRoleIds);
@@ -1748,6 +1854,13 @@
               const sectionDisabled = sectionPlayerIdx !== null
                 && (sectionPlayerIdx === disabledPlayerIdx || sectionPlayerIdx === handcuffedPlayerIdx);
               const sectionDisabledStyle = sectionDisabled ? "opacity:.4; pointer-events:none;" : "";
+              // Index list excluding this role's own player (for roles that target "another player")
+              const selfExcludedIdxs = sectionPlayerIdx !== null ? aliveIdxs.filter((i) => i !== sectionPlayerIdx) : aliveIdxs;
+              // Index list of alive city players only (excludes full mafia team incl. self)
+              const cityOnlyAliveIdxs = aliveIdxs.filter((i) => {
+                const p = draw.players && draw.players[i];
+                return p && !(roles[p.roleId || "citizen"] && roles[p.roleId || "citizen"].teamFa === "مافیا");
+              });
 
               if (k === "mafia") {
                 // Pedarkhande: Godfather choice (shoot / sixth sense / Saul buy), Matador disable, Saul buy target
@@ -2017,6 +2130,29 @@
                     </label>
                   `;
                 })();
+                // Takavar: Don either shoots OR uses NATO (not both)
+                if (scenario === "takavar" && natoPlayerIdx !== null) {
+                  const takavarAction = (savedNight.godfatherAction && String(savedNight.godfatherAction)) ? String(savedNight.godfatherAction) : "shoot";
+                  const shootLabel = appLang === "fa" ? "شلیک" : "Shoot";
+                  const natoLabel = appLang === "fa" ? "حدس ناتو (به‌جای شلیک)" : "NATO guess (instead of shot)";
+                  return `
+                    <div style="font-weight:1100; margin-bottom:6px">${escapeHtml(appLang === "fa" ? "دن مافیا — انتخاب شب" : "Mafia Don — Night choice")}</div>
+                    <label style="display:block; margin-bottom:8px">
+                      <select id="fl_godfather_action" style="font-size:14px; padding:6px; min-width:180px">
+                        <option value="shoot" ${takavarAction === "shoot" ? "selected" : ""}>${escapeHtml(shootLabel)}</option>
+                        <option value="nato_guess" ${takavarAction === "nato_guess" ? "selected" : ""} ${natoUsedNow ? "disabled" : ""}>${escapeHtml(natoLabel)}${natoUsedNow ? (appLang === "fa" ? " (استفاده شد)" : " (used)") : ""}</option>
+                      </select>
+                    </label>
+                    ${takavarAction === "shoot" ? mkNightTargetCards("fl_mafia_shot", savedNight.mafiaShot, t("tool.flow.action.mafiaShot")) : ""}
+                    ${takavarAction === "nato_guess" && !natoUsedNow ? `
+                      <div class="note" style="margin-bottom:6px">${escapeHtml(appLang === "fa" ? "ناتو نقش دقیق یک بازیکن را حدس می‌زند. درست → خارج / غلط → هیچ (سکوت). این شب مافیا شلیک نمی‌کند." : "NATO guesses one player's exact role. Correct → eliminated / Wrong → nothing (silent). Mafia does not shoot this night.")}</div>
+                      ${mkNightTargetCards("fl_nato_target", savedNight.natoTarget, appLang === "fa" ? "هدف حدس ناتو" : "NATO guess target")}
+                      <label style="margin-top:6px">${escapeHtml(appLang === "fa" ? "نقش حدس‌زده شده" : "Guessed role")}
+                        <select id="fl_nato_role_guess">${mkNatoRoleOpts(savedNight.natoRoleGuess)}</select>
+                      </label>
+                    ` : ""}
+                  `;
+                }
                 return `
                   ${mkNightTargetCards("fl_mafia_shot", savedNight.mafiaShot, t("tool.flow.action.mafiaShot"))}
                   ${natoBlock}
@@ -2065,16 +2201,20 @@
                 return `
                   ${detDisabled ? `<div class="note warn" style="margin-top:6px">${escapeHtml(getDisabledNote(sectionPlayerIdx))}</div>` : ""}
                   <div style="${sectionDisabledStyle}">
-                    ${mkNightTargetCards("fl_det_query", savedNight.detectiveQuery, t("tool.flow.action.detectiveQuery"))}
+                    ${mkNightTargetCards("fl_det_query", savedNight.detectiveQuery, t("tool.flow.action.detectiveQuery"), selfExcludedIdxs)}
                     <div id="fl_det_result" class="note result" style="margin-top:6px; ${resultLine ? "" : "display:none"}">${escapeHtml(resultLine || "")}</div>
                   </div>
                 `;
               }
               if (k === "doctor") {
+                const prevDoctorSave = d && d.nightActionsByNight && d.nightActionsByNight[String((f.day || 1) - 1)]
+                  ? d.nightActionsByNight[String((f.day || 1) - 1)].doctorSave : null;
+                const disabledPrevDoctor = (prevDoctorSave !== null && prevDoctorSave !== undefined && Number.isFinite(Number(prevDoctorSave)))
+                  ? new Set([parseInt(prevDoctorSave, 10)]) : new Set();
                 return `
                   ${sectionDisabled ? `<div class="note warn" style="margin-top:6px">${escapeHtml(getDisabledNote(sectionPlayerIdx))}</div>` : ""}
                   <div style="${sectionDisabledStyle}">
-                    ${mkNightTargetCards("fl_doctor_save", savedNight.doctorSave, t("tool.flow.action.doctorSave"))}
+                    ${mkNightTargetCards("fl_doctor_save", savedNight.doctorSave, t("tool.flow.action.doctorSave"), null, disabledPrevDoctor)}
                   </div>
                 `;
               }
@@ -2101,7 +2241,7 @@
               }
               if (k === "magician") {
                 return `
-                  ${mkNightTargetCards("fl_magician_disable", savedNight.magicianDisable, t("tool.flow.action.magicianDisable"))}
+                  ${mkNightTargetCards("fl_magician_disable", savedNight.magicianDisable, t("tool.flow.action.magicianDisable"), cityOnlyAliveIdxs)}
                 `;
               }
               if (k === "zodiac") {
@@ -2110,7 +2250,7 @@
                 return `
                   ${sectionDisabled ? `<div class="note warn" style="margin-top:6px">${escapeHtml(getDisabledNote(sectionPlayerIdx))}</div>` : ""}
                   <div style="${sectionDisabledStyle}">
-                    ${mkNightTargetCards("fl_zodiac_shot", savedNight.zodiacShot, zodiacLabel)}
+                    ${mkNightTargetCards("fl_zodiac_shot", savedNight.zodiacShot, zodiacLabel, selfExcludedIdxs)}
                   </div>
                 `;
               }
@@ -2295,16 +2435,22 @@
                   : `(${jokerUsedCount} of 2 uses — ${jokerRemaining} remaining)`;
                 return `
                   <div class="note">${escapeHtml(quotaText)}</div>
-                  ${jokerRemaining > 0 ? `
+                  ${jokerRemaining > 0 ? (() => {
+                  const prevJokerTarget = d && d.nightActionsByNight && d.nightActionsByNight[String((f.day || 1) - 1)]
+                    ? d.nightActionsByNight[String((f.day || 1) - 1)].jokerTarget : null;
+                  const disabledPrevJoker = (prevJokerTarget !== null && prevJokerTarget !== undefined && Number.isFinite(Number(prevJokerTarget)))
+                    ? new Set([parseInt(prevJokerTarget, 10)]) : new Set();
+                  return `
                   <div style="height:6px"></div>
-                  ${mkNightTargetCards("fl_joker_target", savedNight.jokerTarget, appLang === "fa" ? "هدف جوکر (برعکس‌کردن استعلام)" : "Joker target (flip inquiry)")}
-                  <div class="note" style="margin-top:6px">${escapeHtml(appLang === "fa" ? "استعلام کارآگاه از این نفر، همان شب برعکس می‌شود." : "Detective inquiry on this player is flipped this night.")}</div>
-                  ` : `<div class="note warn" style="margin-top:6px">${escapeHtml(appLang === "fa" ? "جوکر مافیا هر دو بار را استفاده کرده است — دیگر قابلیت ندارد." : "Joker Mafia used both flips — no more uses.")}</div>`}
+                  ${mkNightTargetCards("fl_joker_target", savedNight.jokerTarget, appLang === "fa" ? "هدف جوکر (برعکس‌کردن استعلام)" : "Joker target (flip inquiry)", aliveIdxs, disabledPrevJoker)}
+                  <div class="note" style="margin-top:6px">${escapeHtml(appLang === "fa" ? "استعلام کارآگاه از این نفر، همان شب برعکس می‌شود. نمی‌تواند دو شب پشت‌سرهم یک نفر را هدف بگیرد." : "Detective inquiry on this player is flipped this night. Cannot target the same player on consecutive nights.")}</div>
+                  `;
+                  })() : `<div class="note warn" style="margin-top:6px">${escapeHtml(appLang === "fa" ? "جوکر مافیا هر دو بار را استفاده کرده است — دیگر قابلیت ندارد." : "Joker Mafia used both flips — no more uses.")}</div>`}
                 `;
               }
               if (k === "swindler") {
                 return `
-                  ${mkNightTargetCards("fl_swindler_target", savedNight.swindlerTarget, appLang === "fa" ? "هدف شیاد (برهم‌زنِ استعلام)" : "Swindler target (disrupt inquiry)")}
+                  ${mkNightTargetCards("fl_swindler_target", savedNight.swindlerTarget, appLang === "fa" ? "هدف شیاد (برهم‌زنِ استعلام)" : "Swindler target (disrupt inquiry)", selfExcludedIdxs)}
                   <div class="note" style="margin-top:6px">${escapeHtml(appLang === "fa" ? "اگر کارآگاه این نفر را استعلام کند، نتیجه «شهروند» نمایش می‌یابد." : "If Detective queries this player, the result shows as 'Citizen'.")}</div>
                 `;
               }
@@ -2312,14 +2458,18 @@
                 const isIntroNight = f.phase === "intro_night";
                 return `
                   <div style="font-weight:1100; margin-bottom:6px">${escapeHtml(appLang === "fa" ? "گره محقق (لینک)" : "Researcher link")} ${isIntroNight ? `<span style="color:var(--muted); font-weight:900">(${escapeHtml(appLang === "fa" ? "شب معارفه — محقق لینک نمی‌زند" : "intro night — no link")})</span>` : ""}</div>
-                  ${isIntroNight ? `<input type="hidden" id="fl_researcher_link" value="" disabled><div class="note">${escapeHtml(appLang === "fa" ? "در شب معارفه لینک ثبت نمی‌شود." : "No link on intro night.")}</div>` : mkNightTargetCards("fl_researcher_link", savedNight.researcherLink, appLang === "fa" ? "گره محقق (لینک)" : "Researcher link")}
+                  ${isIntroNight ? `<input type="hidden" id="fl_researcher_link" value="" disabled><div class="note">${escapeHtml(appLang === "fa" ? "در شب معارفه لینک ثبت نمی‌شود." : "No link on intro night.")}</div>` : mkNightTargetCards("fl_researcher_link", savedNight.researcherLink, appLang === "fa" ? "گره محقق (لینک)" : "Researcher link", selfExcludedIdxs)}
                   ${isIntroNight ? "" : `<div class="note" style="margin-top:6px">${escapeHtml(appLang === "fa" ? "اگر محقق با شات شب یا رأی از بازی خارج شود، نفر لینک‌شده هم معمولاً خارج می‌شود (به‌جز رئیس مافیا)." : "If Researcher is eliminated, the linked player usually goes too (except Mafia Boss).")}</div>`}
                 `;
               }
               if (k === "natasha") {
+                const prevNatashaTarget = d && d.nightActionsByNight && d.nightActionsByNight[String((f.day || 1) - 1)]
+                  ? d.nightActionsByNight[String((f.day || 1) - 1)].natashaTarget : null;
+                const disabledPrevNatasha = (prevNatashaTarget !== null && prevNatashaTarget !== undefined && Number.isFinite(Number(prevNatashaTarget)))
+                  ? new Set([parseInt(prevNatashaTarget, 10)]) : new Set();
                 return `
-                  ${mkNightTargetCards("fl_natasha_target", savedNight.natashaTarget, appLang === "fa" ? "هدف سکوت ناتاشا" : "Natasha silence target")}
-                  <div class="note" style="margin-top:6px">${escapeHtml(appLang === "fa" ? "این بازیکن فردا نمی‌تواند صحبت کند (معمولاً تکرار پشت‌سرهم ممنوع)." : "This player cannot speak tomorrow (usually can't be repeated consecutively).")}</div>
+                  ${mkNightTargetCards("fl_natasha_target", savedNight.natashaTarget, appLang === "fa" ? "هدف سکوت ناتاشا" : "Natasha silence target", selfExcludedIdxs, disabledPrevNatasha)}
+                  <div class="note" style="margin-top:6px">${escapeHtml(appLang === "fa" ? "این بازیکن فردا نمی‌تواند صحبت کند. نمی‌تواند دو شب پشت‌سرهم یک نفر را ساکت کند." : "This player cannot speak tomorrow. Cannot silence the same player on consecutive nights.")}</div>
                 `;
               }
               if (k === "sniper") {
@@ -2342,7 +2492,7 @@
                   <div class="note" style="margin-top:2px">${escapeHtml(sniperNote)}</div>
                   ${!sniperUsed ? `
                   <div style="height:6px"></div>
-                  ${mkNightTargetCards("fl_sniper_shot", savedNight.sniperShot, appLang === "fa" ? "هدف تک‌تیرانداز" : "Sniper shot target")}
+                  ${mkNightTargetCards("fl_sniper_shot", savedNight.sniperShot, appLang === "fa" ? "هدف تک‌تیرانداز" : "Sniper shot target", selfExcludedIdxs)}
                   ` : ""}
                 `;
               }
@@ -2350,7 +2500,7 @@
                 return `
                   <div class="note">${escapeHtml(appLang === "fa" ? "در شب معمولی، مذاکره‌کننده اکشن ندارد. فقط در «شب مذاکره» فعال است." : "On regular nights, Negotiator has no action. Only active on the Negotiation Night.")}</div>
                   <div style="height:6px"></div>
-                  ${mkNightTargetCards("fl_negotiator_target", savedNight.negotiatorTarget, appLang === "fa" ? "هدف مذاکره (شهروند برای تبدیل)" : "Negotiation target (citizen to convert)")}
+                  ${mkNightTargetCards("fl_negotiator_target", savedNight.negotiatorTarget, appLang === "fa" ? "هدف مذاکره (شهروند برای تبدیل)" : "Negotiation target (citizen to convert)", cityOnlyAliveIdxs)}
                 `;
               }
               if (k === "kadkhoda") {
@@ -2364,7 +2514,7 @@
                   <div class="note">${escapeHtml(kadQuota)}</div>
                   ${kadRemaining > 0 ? `
                   <div style="height:6px"></div>
-                  ${mkNightTargetCards("fl_kadkhoda_target", savedNight.kadkhodaTarget, appLang === "fa" ? "هدف بیداری کدخدا" : "Village Chief wake target")}
+                  ${mkNightTargetCards("fl_kadkhoda_target", savedNight.kadkhodaTarget, appLang === "fa" ? "هدف بیداری کدخدا" : "Village Chief wake target", selfExcludedIdxs)}
                   <div class="note" style="margin-top:6px">${escapeHtml(appLang === "fa" ? "اگر کدخدا یک مافیا (غیر خبرچین) را بیدار کند، کدخدا از بازی خارج می‌شود." : "If Village Chief wakes a Mafia (except Informant), Village Chief is eliminated.")}</div>
                   ` : `<div class="note warn" style="margin-top:6px">${escapeHtml(appLang === "fa" ? "کدخدا هر دو لینک را استفاده کرده است." : "Village Chief has used both links.")}</div>`}
                 `;
@@ -2441,7 +2591,7 @@
               }
               if (k === "hacker") {
                 return `
-                  ${mkNightTargetCards("fl_hacker_block", savedNight.hackerBlock, appLang === "fa" ? "هدف مسدودسازی هکر" : "Hacker block target")}
+                  ${mkNightTargetCards("fl_hacker_block", savedNight.hackerBlock, appLang === "fa" ? "هدف مسدودسازی هکر" : "Hacker block target", cityOnlyAliveIdxs)}
                   <div class="note" style="margin-top:6px">${escapeHtml(appLang === "fa" ? "آن بازیکن همان شب نمی‌تواند از توانایی شبانه‌اش استفاده کند." : "That player cannot use their night ability this night.")}</div>
                 `;
               }
@@ -2469,7 +2619,7 @@
                   </div>` : "";
                 const guideDisabledSet = Number.isFinite(guidePrevTarget) ? new Set([guidePrevTarget]) : new Set();
                 return `
-                  ${mkNightTargetCards("fl_guide_target", savedNight.guideTarget, appLang === "fa" ? "هدف راهنما" : "Guide target", aliveIdxs, guideDisabledSet)}
+                  ${mkNightTargetCards("fl_guide_target", savedNight.guideTarget, appLang === "fa" ? "هدف راهنما" : "Guide target", selfExcludedIdxs, guideDisabledSet)}
                   <div class="note" style="margin-top:6px">${escapeHtml(appLang === "fa" ? "بازیکن انتخاب‌شده از یک نفر استعلام می‌گیرد. اگر مافیا انتخاب شود، هویت راهنما برای آن مافیا لو می‌رود." : "The chosen player inquires about someone. If mafia is chosen, Guide's identity is revealed to that mafia.")}</div>
                   ${guideRevealWarning}
                   ${guidedInquirySection}
@@ -2477,7 +2627,7 @@
               }
               if (k === "bodyguard") {
                 return `
-                  ${mkNightTargetCards("fl_bodyguard_protect", savedNight.bodyguardProtect, appLang === "fa" ? "هدف محافظت (در برابر ترور)" : "Bodyguard protect target")}
+                  ${mkNightTargetCards("fl_bodyguard_protect", savedNight.bodyguardProtect, appLang === "fa" ? "هدف محافظت (در برابر ترور)" : "Bodyguard protect target", selfExcludedIdxs)}
                   <div class="note" style="margin-top:6px">${escapeHtml(appLang === "fa" ? "اگر یاغی (ترور) آن شب این نفر را هدف قرار دهد، ترور ناموفق است. خودِ محافظ نیز در برابر ترور مصون است." : "If the Rebel assassinates this player, the attempt fails. Bodyguard is also immune to assassination.")}</div>
                 `;
               }
@@ -2513,6 +2663,31 @@
                   <div class="note" style="margin-top:6px">${escapeHtml(appLang === "fa" ? "مافیا → مافیا خارج؛ دون مافیا → هیچ‌کس؛ شهروند → خودش خارج می‌شود. خالی بگذارید اگر شلیک نکرد." : "Mafia → mafia out; Don Mafia → nobody; Citizen → recipient out. Leave blank if they did not shoot.")}</div>
                 `;
               }
+              if (k === "hostageTaker") {
+                const prevHostageTarget = d && d.nightActionsByNight && d.nightActionsByNight[String((f.day || 1) - 1)] ? d.nightActionsByNight[String((f.day || 1) - 1)].hostageTakerTarget : null;
+                const disabledPrevHostage = (prevHostageTarget !== null && prevHostageTarget !== undefined && Number.isFinite(prevHostageTarget)) ? new Set([prevHostageTarget]) : new Set();
+                return `
+                  ${mkNightTargetCards("fl_hostageTaker_target", savedNight.hostageTakerTarget, appLang === "fa" ? "هدف گروگانگیر (مسدودسازی قابلیت)" : "Hostage-Taker block target", cityOnlyAliveIdxs, disabledPrevHostage)}
+                  <div class="note" style="margin-top:6px">${escapeHtml(appLang === "fa" ? "آن بازیکن همان شب نمی‌تواند از توانایی‌اش استفاده کند. نمی‌تواند دو شب پشت‌سرهم یک نفر را هدف قرار دهد." : "That player cannot use their night ability this night. Cannot target same player on consecutive nights.")}</div>
+                `;
+              }
+              if (k === "guardian") {
+                const aliveCount = aliveIdxs.length;
+                const twoTargets = aliveCount >= 8;
+                return `
+                  ${mkNightTargetCards("fl_guardian_protect1", savedNight.guardianProtect1, appLang === "fa" ? "هدف محافظت ۱" : "Protect target 1")}
+                  ${twoTargets ? mkNightTargetCards("fl_guardian_protect2", savedNight.guardianProtect2, appLang === "fa" ? "هدف محافظت ۲" : "Protect target 2") : ""}
+                  <div class="note" style="margin-top:6px">${escapeHtml(appLang === "fa" ? `نگهبان از ${twoTargets ? "۲ نفر" : "۱ نفر"} محافظت می‌کند. اگر گروگانگیر این نفر(ها) را هدف بگیرد، قابلیت گروگانگیر غیرفعال می‌شود.` : `Guardian protects ${twoTargets ? "2 players" : "1 player"} tonight. If Hostage-Taker targets a protected player, Hostage-Taker's block is nullified.`)}</div>
+                `;
+              }
+              if (k === "commando") {
+                const commandoIdx = (draw.players || []).findIndex((p) => p && p.roleId === "commando");
+                const commandoExclude = commandoIdx >= 0 ? new Set([commandoIdx]) : new Set();
+                return `
+                  ${mkNightTargetCards("fl_commando_shot", savedNight.commandoShot, appLang === "fa" ? "شلیک تکاور (اگر مافیا تکاور را کشت)" : "Commando counter-shot (if Mafia killed Commando)", null, commandoExclude)}
+                  <div class="note" style="margin-top:6px">${escapeHtml(appLang === "fa" ? "اگر مافیا تکاور را کشته باشد، تکاور یک نفر را می‌زند. مافیا → هر دو خارج؛ شهروند → فقط تکاور خارج. خالی بگذارید اگر تکاور نمرده." : "Only applies if Mafia killed Commando this night. Hits mafia → both out; hits citizen → only Commando out. Leave blank if Commando survived.")}</div>
+                `;
+              }
               if (k === "gunslinger") {
                 if (!showGunner) return `<div class="note">${escapeHtml(noActionTxt)}</div>`;
                 const gunHolders = Object.keys(guns || {})
@@ -2531,6 +2706,35 @@
                       </div>`;
                     }).join("")
                   : `<div class="note" style="margin-top:6px">${escapeHtml(appLang === "fa" ? "فعلاً کسی تفنگ ندارد." : "No one has a gun yet.")}</div>`;
+                // Takavar: dual picker — real bullet (single) + fake bullets (multi)
+                if (scenario === "takavar") {
+                  const currentRealIdx = (() => {
+                    for (const ki of Object.keys(guns || {})) {
+                      const i = parseInt(ki, 10);
+                      if (Number.isFinite(i) && guns[i] && guns[i].type === "real" && !guns[i].used) return i;
+                    }
+                    return null;
+                  })();
+                  const currentFakeIdxs = Object.keys(guns || {})
+                    .map((ki) => parseInt(ki, 10))
+                    .filter((i) => Number.isFinite(i) && guns[i] && guns[i].type === "fake" && !guns[i].used);
+                  const realEligible = aliveIdxs.filter((i) => i !== gunnerIdx);
+                  const fakeEligible = aliveIdxs.filter((i) => i !== gunnerIdx);
+                  return `
+                    <div class="note" style="margin-top:6px">${escapeHtml(t("tool.flow.guns.gunslingerIs", { name: gunnerName }))}</div>
+                    ${sectionDisabled ? `<div class="note warn" style="margin-top:8px">${escapeHtml(getDisabledNote(sectionPlayerIdx))}</div>` : ""}
+                    <div style="${sectionDisabledStyle}">
+                      ${mkNightTargetCards("fl_gunner_real", currentRealIdx, appLang === "fa" ? "گلوله واقعی → به چه کسی؟" : "Real bullet → who?", realEligible)}
+                      <div style="height:10px"></div>
+                      ${mkNightMultiPickCards("fl_gunner_fakes", currentFakeIdxs, fakeEligible.length, appLang === "fa" ? "گلوله‌های خالی → چه کسانی؟" : "Fake bullets → who?", fakeEligible)}
+                      <div class="note" style="margin-top:6px">${escapeHtml(appLang === "fa" ? "گلوله خالی: بی‌اثر؛ فقط گلوله واقعی می‌کشد." : "Fake bullets are blanks; only the real bullet kills.")}</div>
+                    </div>
+                    <div style="height:12px"></div>
+                    <div style="font-weight:1100">${escapeHtml(t("tool.flow.guns.hasGun"))}</div>
+                    <div style="height:6px"></div>
+                    ${gunsList}
+                  `;
+                }
                 return `
                   <div class="note" style="margin-top:6px">${escapeHtml(t("tool.flow.guns.gunslingerIs", { name: gunnerName }))}</div>
                   ${sectionDisabled ? `<div class="note warn" style="margin-top:8px">${escapeHtml(getDisabledNote(sectionPlayerIdx))}</div>` : ""}
@@ -2597,7 +2801,7 @@
               const players = draw && draw.players;
               if (!players || !players.length) return true;
               const sid = String(stepId || "");
-              const stepToRoles = { night_heir: ["heir"], night_herbalist: ["herbalist"], night_detective: ["detective"], night_armorsmith: ["armorsmith"], night_kadkhoda: ["kadkhoda"], night_doctor: ["doctor", "watson"], night_constantine: ["constantine"], night_kane: ["citizenKane"], night_ocean: ["ocean"], night_bomber: ["bomber"], night_zodiac: ["zodiac"], night_professional: ["professional", "leon"], night_sniper: ["sniper"], night_negotiator: ["negotiator"], night_reporter: ["reporter"], night_researcher: ["researcher"], night_swindler: ["swindler"], night_natasha: ["natasha"], night_jokermaf: ["jokerMafia"], night_lecter: ["doctorLecter"], night_magician: ["magician"], night_hacker: ["hacker"], night_guide: ["guide"], night_bodyguard: ["bodyguard"], night_minemaker: ["minemaker"], night_lawyer: ["lawyer"], night_soldier: ["soldier"], night_nato: ["nato"], night_investigator: ["investigator"] };
+              const stepToRoles = { night_heir: ["heir"], night_herbalist: ["herbalist"], night_detective: ["detective"], night_armorsmith: ["armorsmith"], night_kadkhoda: ["kadkhoda"], night_doctor: ["doctor", "watson"], night_constantine: ["constantine"], night_kane: ["citizenKane"], night_ocean: ["ocean"], night_bomber: ["bomber"], night_zodiac: ["zodiac"], night_professional: ["professional", "leon"], night_sniper: ["sniper"], night_negotiator: ["negotiator"], night_reporter: ["reporter"], night_researcher: ["researcher"], night_swindler: ["swindler"], night_natasha: ["natasha"], night_jokermaf: ["jokerMafia"], night_lecter: ["doctorLecter"], night_magician: ["magician"], night_hacker: ["hacker"], night_guide: ["guide"], night_bodyguard: ["bodyguard"], night_minemaker: ["minemaker"], night_lawyer: ["lawyer"], night_soldier: ["soldier"], night_nato: ["nato"], night_investigator: ["investigator"], night_inspector: ["investigator"], night_guardian: ["guardian"], night_hostageTaker: ["hostageTaker"], night_commando: ["commando"], night_gunner: ["gunslinger"] };
               const roleIds = stepToRoles[sid];
               if (!roleIds) return true;
               if (sid === "night_mafia") return players.some((p) => p && p.roleId && (roles[p.roleId] && roles[p.roleId].teamFa === "مافیا"));
@@ -2818,6 +3022,9 @@
                   minemaker: ["minemaker"],
                   lawyer: ["lawyer"],
                   soldier: ["soldier"],
+                  hostageTaker: ["hostageTaker"],
+                  commando: ["commando"],
+                  guardian: ["guardian"],
                 };
                 let all = [];
                 if (k === "mafia") {
@@ -3259,7 +3466,67 @@
             </div>
           `, { hideBottom: true });
 
+          // Generic input persistence — save/restore all visible form elements keyed by step ID.
+          // This ensures ANY select, input, or textarea survives forward/backward navigation
+          // without needing a specific per-field save handler.
+          const _saveGenericInputs = () => {
+            try {
+              const tb = $("toolBody");
+              if (!tb || !cur || !cur.id) return;
+              const d = f.draft || {};
+              if (!d.stepInputs) d.stepInputs = {};
+              if (!d.stepInputs[cur.id]) d.stepInputs[cur.id] = {};
+              tb.querySelectorAll('select, textarea, input:not([type=hidden]):not([type=button]):not([type=submit]):not([type=reset])').forEach((el) => {
+                if (el.dataset.noPersist === "true") return;
+                const key = el.name || el.id;
+                if (!key) return;
+                d.stepInputs[cur.id][key] = (el.type === "checkbox" || el.type === "radio") ? el.checked : el.value;
+              });
+              f.draft = d;
+            } catch {}
+          };
+          // Restore saved values for this step immediately after render.
+          try {
+            const tb = $("toolBody");
+            if (tb && cur && cur.id) {
+              const d = f.draft || {};
+              const saved = (d.stepInputs && d.stepInputs[cur.id]) ? d.stepInputs[cur.id] : {};
+              if (Object.keys(saved).length) {
+                tb.querySelectorAll('select, textarea, input:not([type=hidden]):not([type=button]):not([type=submit]):not([type=reset])').forEach((el) => {
+                  if (el.dataset.noPersist === "true") return;
+                  const key = el.name || el.id;
+                  if (!key || !(key in saved)) return;
+                  if (el.type === "checkbox" || el.type === "radio") { el.checked = !!saved[key]; }
+                  else if (el.value !== String(saved[key])) { el.value = saved[key]; }
+                });
+              }
+              // Live-save on every change/input so navigation always has the latest values.
+              if (tb._flowInputListener) {
+                tb.removeEventListener("change", tb._flowInputListener);
+                tb.removeEventListener("input", tb._flowInputListener);
+              }
+              tb._flowInputListener = (ev) => {
+                try {
+                  const el = ev.target;
+                  if (!el || el.dataset.noPersist === "true") return;
+                  if (el.type === "hidden" || el.type === "button" || el.type === "submit" || el.type === "reset") return;
+                  const key = el.name || el.id;
+                  if (!key) return;
+                  const d2 = f.draft || {};
+                  if (!d2.stepInputs) d2.stepInputs = {};
+                  if (!d2.stepInputs[cur.id]) d2.stepInputs[cur.id] = {};
+                  d2.stepInputs[cur.id][key] = (el.type === "checkbox" || el.type === "radio") ? el.checked : el.value;
+                  f.draft = d2;
+                } catch {}
+              };
+              tb.addEventListener("change", tb._flowInputListener);
+              tb.addEventListener("input", tb._flowInputListener);
+            }
+          } catch {}
+
           $("fl_prev").onclick = () => {
+            // Save all generic inputs before leaving (catches any text typed without losing focus).
+            _saveGenericInputs();
             // Persist night selections before leaving so they survive back-navigation.
             try {
               const steps = getFlowSteps(f);
@@ -3333,7 +3600,7 @@
               const candIdxs = Array.isArray(d.elimCandidatesByDay && d.elimCandidatesByDay[f.day]) ? d.elimCandidatesByDay[f.day] : [];
               const voters = aliveIdxs.length;
               const eligibleVoters = Math.max(0, voters - 1);
-              const elimThreshold = getDefenseThreshold(eligibleVoters);
+              const elimThreshold = getElimThreshold(eligibleVoters);
               // No defendants (no one reached threshold) => nothing to eliminate, allow advancing.
               if (!candIdxs.length) {
                 d.elimVotesByDay[f.day] = {};
@@ -3444,6 +3711,9 @@
                 document.getElementById("fl_sodagari_target") ||
                 document.getElementById("fl_soldier_target") ||
                 document.getElementById("fl_soldier_gun_shot") ||
+                document.getElementById("fl_hostageTaker_target") ||
+                document.getElementById("fl_guardian_protect1") ||
+                document.getElementById("fl_commando_shot") ||
                 document.getElementById("fl_neutralized_shot") ||
                 document.getElementById("fl_betrayal_rep") ||
                 document.getElementById("fl_betrayal_dir") ||
@@ -3471,6 +3741,8 @@
               if (getDrawScenarioForFlow() === "kabo" && per.godfatherAction && per.godfatherAction !== "shoot") per.mafiaShot = null;
               if (getDrawScenarioForFlow() === "kabo" && per.godfatherAction && per.godfatherAction !== "yakooza") per.kaboYakoozaTarget = null;
               if (getDrawScenarioForFlow() === "kabo" && per.godfatherAction && per.godfatherAction !== "guess_role") { per.executionerTarget = null; per.executionerRoleGuess = null; }
+              if (getDrawScenarioForFlow() === "takavar" && per.godfatherAction && per.godfatherAction !== "shoot") per.mafiaShot = null;
+              if (getDrawScenarioForFlow() === "takavar" && per.godfatherAction && per.godfatherAction !== "nato_guess") { per.natoTarget = null; per.natoRoleGuess = null; }
               if (document.getElementById("fl_doctor_save") || !mergeOnly) per.doctorSave = readNum("fl_doctor_save");
               if (document.getElementById("fl_det_query") || !mergeOnly) per.detectiveQuery = readNum("fl_det_query");
               if (document.getElementById("fl_pro_shot") || !mergeOnly) per.professionalShot = readNum("fl_pro_shot");
@@ -3507,6 +3779,11 @@
               if (document.getElementById("fl_sodagari_target") || !mergeOnly) per.sodagariTarget = readNum("fl_sodagari_target");
               if (document.getElementById("fl_soldier_target") || !mergeOnly) per.soldierTarget = readNum("fl_soldier_target");
               if (document.getElementById("fl_soldier_gun_shot") || !mergeOnly) per.soldierGunShot = readNum("fl_soldier_gun_shot");
+              if (document.getElementById("fl_hostageTaker_target") || !mergeOnly) per.hostageTakerTarget = readNum("fl_hostageTaker_target");
+              if (document.getElementById("fl_guardian_protect1") || !mergeOnly) per.guardianProtect1 = readNum("fl_guardian_protect1");
+              if (document.getElementById("fl_guardian_protect2") || !mergeOnly) per.guardianProtect2 = readNum("fl_guardian_protect2");
+              if (document.getElementById("fl_commando_shot") || !mergeOnly) per.commandoShot = readNum("fl_commando_shot");
+              if (document.getElementById("fl_gunner_live") || !mergeOnly) per.gunnerLive = readNum("fl_gunner_live");
               if (document.getElementById("fl_neutralized_shot") || !mergeOnly) per.neutralizedShot = readCheck("fl_neutralized_shot");
               if (document.getElementById("fl_betrayal_rep") || !mergeOnly) per.betrayalRep = readNum("fl_betrayal_rep");
               if (document.getElementById("fl_betrayal_dir") || !mergeOnly) per.betrayalDir = read("fl_betrayal_dir") || null;
@@ -3981,6 +4258,8 @@
           // Let closing the tool modal auto-save Flow inputs.
           try {
             window.__flowOnClose = () => {
+              // Generic input save — captures any unsaved input before close.
+              try { _saveGenericInputs(); } catch {}
               try {
                 // Night actions: use mergeOnly=true so we only update fields for controls that exist
                 // in the current step's DOM — otherwise we'd overwrite other steps' data with null.
@@ -4111,6 +4390,8 @@
 
           const flNextEl = document.getElementById("fl_next");
           if (flNextEl) flNextEl.onclick = () => {
+            // Save all generic inputs before advancing (catches text typed without losing focus).
+            _saveGenericInputs();
             // Nostradamus choose side: validate selection before advancing
             if (cur && cur.id === "nostradamus_choose_side") {
               try {
@@ -4307,6 +4588,7 @@
                 const dayKey = String(f.day || 1);
                 const pick = (d2.namayandePick && d2.namayandePick[dayKey] != null) ? d2.namayandePick[dayKey] : null;
                 applyDayElimFromPayload(f, { out: pick });
+                try { addFlowEvent("day_elim_out", { out: pick }); } catch {}
                 renderCast();
               } catch {}
               nextFlowStep();
@@ -4876,6 +5158,22 @@
                       saveState(appState);
                       showFlowTool();
                     } catch {}
+                  } else if (field === "fl_gunner_fakes") {
+                    try {
+                      const f = ensureFlow();
+                      if (!f.guns || typeof f.guns !== "object") f.guns = {};
+                      // Clear existing unused fake guns
+                      for (const k of Object.keys(f.guns)) {
+                        const ki = parseInt(k, 10);
+                        if (Number.isFinite(ki) && f.guns[ki] && f.guns[ki].type === "fake" && !f.guns[ki].used) delete f.guns[ki];
+                      }
+                      // Add selected fakes
+                      for (const fakeIdx of arr) {
+                        f.guns[fakeIdx] = { type: "fake", used: false, givenAt: Date.now() };
+                      }
+                      saveState(appState);
+                      showFlowTool();
+                    } catch {}
                   } else {
                     try {
                       const f = ensureFlow();
@@ -4969,6 +5267,24 @@
                     saveState(appState);
                     showFlowTool();
                   } catch {}
+                }
+                if (field === "fl_gunner_real") {
+                  try {
+                    const f = ensureFlow();
+                    if (!f.guns || typeof f.guns !== "object") f.guns = {};
+                    const newRealIdx = idx !== "" ? parseInt(idx, 10) : null;
+                    // Clear existing unused real gun(s)
+                    for (const k of Object.keys(f.guns)) {
+                      const ki = parseInt(k, 10);
+                      if (Number.isFinite(ki) && f.guns[ki] && f.guns[ki].type === "real" && !f.guns[ki].used) delete f.guns[ki];
+                    }
+                    if (newRealIdx !== null && Number.isFinite(newRealIdx)) {
+                      f.guns[newRealIdx] = { type: "real", used: false, givenAt: Date.now() };
+                    }
+                    saveState(appState);
+                    showFlowTool();
+                  } catch {}
+                  return;
                 }
                 if (field === "fl_mafia_shot" && idx !== "") {
                   const natoT = document.getElementById("fl_nato_target");

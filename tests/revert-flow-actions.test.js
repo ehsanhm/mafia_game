@@ -157,10 +157,10 @@
           f.draft.dayElimAppliedByDay = f.draft.dayElimAppliedByDay || {};
           f.draft.dayElimAppliedByDay["1"] = { out: votedOutIdx, prevAlive: true };
           f.draft.dayStepsByDay = f.draft.dayStepsByDay || {};
-          f.draft.dayStepsByDay["1"] = ["day_vote", "day_elim", "day_end_card_beautiful_mind"];
+          f.draft.dayStepsByDay["1"] = ["day_vote", "day_elim", "day_end_card_pick", "day_end_card_beautiful_mind"];
           f.phase = "day";
           f.day = 1;
-          f.step = 2;
+          f.step = 3; // on day_end_card_beautiful_mind (pick is at 2, action at 3)
           f.draft.endCardActionByDay = f.draft.endCardActionByDay || {};
           f.draft.endCardActionByDay["1"] = { target: nostradamusIdx };
           f.draft.endCardActionAppliedByDay = f.draft.endCardActionAppliedByDay || {};
@@ -186,11 +186,12 @@
           assert(draw[votedOutIdx].alive === true, "voted-out should be alive after Beautiful Mind");
           assert(draw[nostradamusIdx].alive === false, "Nostradamus should be dead");
 
-          prevFlowStep();
+          prevFlowStep(); // BM action → pick step (BM reverted)
           assert(draw[votedOutIdx].alive === false, "voted-out should be dead after reverting Beautiful Mind");
           assert(draw[nostradamusIdx].alive === true, "Nostradamus should be alive");
 
-          prevFlowStep();
+          prevFlowStep(); // pick step → day_elim (no game state change)
+          prevFlowStep(); // day_elim → day_vote (elim reverted)
           assert(draw[votedOutIdx].alive === true, "voted-out should be alive again after reverting day_elim");
         },
       },

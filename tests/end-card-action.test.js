@@ -59,14 +59,15 @@
         },
       })),
       {
-        name: "Beautiful Mind: no action step when Nostradamus draws it (pedarkhande)",
+        name: "Beautiful Mind: action step shows when Nostradamus draws it (self-pick allowed)",
         fn: function ({ assert }) {
           if (typeof getFlowSteps !== "function") return;
           const nostradamusIdx = 3;
           const f = setupPedarkhandeWithElimAndCard(nostradamusIdx, "beautiful_mind");
           const steps = getFlowSteps(f);
           const hasStep = steps.some((s) => s && s.id === "day_end_card_beautiful_mind");
-          assert(!hasStep, "Beautiful Mind should NOT show action step when Nostradamus draws it");
+          // Nostradamus can self-pick (shield destroyed but survives), so action page always shows.
+          assert(hasStep, "Beautiful Mind should show action step even when Nostradamus draws it");
         },
       },
       {
@@ -93,8 +94,8 @@
           f.draft.dayElimAppliedByDay = f.draft.dayElimAppliedByDay || {};
           f.draft.dayElimAppliedByDay["1"] = { out: votedOutIdx, prevAlive: true };
           f.draft.dayStepsByDay = f.draft.dayStepsByDay || {};
-          f.draft.dayStepsByDay["1"] = ["day_vote", "day_elim", "day_end_card_beautiful_mind"];
-          f.step = 2;
+          f.draft.dayStepsByDay["1"] = ["day_vote", "day_elim", "day_end_card_pick", "day_end_card_beautiful_mind"];
+          f.step = 3; // on day_end_card_beautiful_mind (pick is at 2, action at 3)
           if (!f.draft.endCardActionByDay) f.draft.endCardActionByDay = {};
           f.draft.endCardActionByDay["1"] = { target: nostradamusIdx };
           f.draft.endCardActionAppliedByDay = f.draft.endCardActionAppliedByDay || {};
@@ -118,10 +119,11 @@
           const draw = appState.draw.players;
           assert(draw[votedOutIdx].alive === true, "voted-out should be alive after Beautiful Mind");
           assert(draw[nostradamusIdx].alive === false, "Nostradamus should be dead");
-          prevFlowStep();
+          prevFlowStep(); // BM action → pick step (BM reverted)
           assert(draw[votedOutIdx].alive === false, "voted-out should be dead after reverting Beautiful Mind");
           assert(draw[nostradamusIdx].alive === true, "Nostradamus should be alive");
-          prevFlowStep();
+          prevFlowStep(); // pick step → day_elim (no game state change)
+          prevFlowStep(); // day_elim → day_vote (elim reverted)
           assert(draw[votedOutIdx].alive === true, "voted-out should be alive again after reverting day_elim");
         },
       },

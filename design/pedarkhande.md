@@ -54,7 +54,7 @@ Everyone is awake. Each player speaks ~40 seconds, introduces themselves, shows 
 
 1. **Talk** — Players take turns (~50 seconds each); discussion and accusations. Challenge: current speaker can give 30 seconds to a challenger.
 2. **Vote for defense** — Players who get **half minus one** (نصف منهای یک) of eligible votes reach defense. Eligible = alive − 1.
-3. **Defense and elimination** — Defenders speak. Second vote: player with **most votes** is eliminated. Tie = death lottery (قرعه مرگ).
+3. **Defense and elimination** — Defenders speak. Second vote: player who reaches **half** (نصف) of eligible votes is eliminated. Tie = death lottery (قرعه مرگ).
 
 **Elimination cards:** When a player is eliminated, one **elimination card** is drawn. No will (وصیت). Flow: `day_kane_reveal?` → `day_vote` → `day_elim` → `end_card_action?` (when applicable).
 

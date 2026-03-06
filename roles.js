@@ -69,6 +69,11 @@ const roles = {
   constantine: { faName: "کنستانتین", teamFa: "شهر", hintFa: "بازگردانی", descFa: "یک‌بار در کل بازی می‌تواند یک بازیکنِ اخراج‌شده را به بازی برگرداند — فقط اگر نقش آن بازیکن هنوز توسط گرداننده اعلام نشده باشد." },
   citizenKane: { faName: "همشهری کین", teamFa: "شهر", hintFa: "افشا", descFa: "یک‌بار در کل بازی یک نفر را نشان می‌دهد؛ اگر مافیا باشد، گرداننده روز بعد نقشش را افشا می‌کند (در بازی می‌ماند) و همان شب کین با تیر غیب خارج می‌شود. اگر اشتباه: اتفاقی نمی‌افتد." },
   nostradamus: { faName: "نوستراداموس", teamFa: "مستقل", hintFa: "شب معارفه", descFa: "فقط شب معارفه بیدار می‌شود. ۳ نفر را نشان می‌دهد و گرداننده تعداد مافیاهای داخل آن ۳ را اعلام می‌کند. نوستراداموس بر اساس این اطلاعات ساید خود را انتخاب می‌کند (اگر ۲ نفر از ۳ مافیا باشند، معمولاً مجبور است ساید مافیا را انتخاب کند)." },
+
+  // --- Takavar / TV ---
+  hostageTaker: { faName: "گروگانگیر", teamFa: "مافیا", hintFa: "مسدودکردن قابلیت", descFa: "هر شب مستقل بیدار می‌شود و قابلیت یک شهروند را مسدود می‌کند؛ آن شهروند همان شب نمی‌تواند از توانایی‌اش استفاده کند. نمی‌تواند دو شب پشت‌سرهم یک نفر را هدف قرار دهد. اگر نگهبان همان نفرِ هدف را محافظت کند، مسدودسازی خنثی می‌شود." },
+  commando: { faName: "تکاور", teamFa: "شهر", hintFa: "شلیک پس از مرگ", descFa: "اگر مافیا در شب تکاور را شات کند، تکاور بلافاصله یک نفر را شات می‌کند. اگر به مافیا اصابت کند، آن مافیا هم خارج می‌شود. اگر اشتباه بزند، فقط تکاور خارج می‌شود." },
+  guardian: { faName: "نگهبان", teamFa: "شهر", hintFa: "محافظت از قابلیت", descFa: "هر شب یک یا دو نفر را محافظت می‌کند (۸+ بازیکن: ۲ نفر؛ ۷ بازیکن یا کمتر: ۱ نفر). اگر گروگانگیر نگهبان را هدف قرار دهد، قابلیت گروگانگیر آن شب غیرفعال می‌شود." },
 };
 
 // English role labels (UI only). If a role isn't present here, it falls back to Persian.
@@ -127,6 +132,11 @@ const ROLE_I18N = {
   constantine: { name: "Constantine", hint: "Revive", desc: "Once per game can revive an eliminated player — only if that player's role has not yet been announced by the host." },
   citizenKane: { name: "Citizen Kane", hint: "Reveal", desc: "Once per game marks a player; if mafia, host reveals their role next day (they remain in game) and Kane is eliminated the following night (invisible bullet). If wrong, nothing happens." },
   nostradamus: { name: "Nostradamus", hint: "Intro night", desc: "Wakes only on the intro night. Marks 3 players; host reveals how many are mafia. Nostradamus chooses their side based on this — if 2 of 3 are mafia, usually must join the mafia side." },
+
+  // --- Takavar / TV ---
+  hostageTaker: { name: "Hostage-Taker", hint: "Block ability (solo)", desc: "Wakes independently each night and blocks one citizen's night ability. Cannot target the same player on consecutive nights. If the Guardian protects the Hostage-Taker's target, the block is nullified." },
+  commando: { name: "Commando", hint: "Counter-shot on death", desc: "If Mafia kills Commando at night, Commando immediately fires one counter-shot. Hitting a Mafia member → both die; hitting a citizen → only Commando dies." },
+  guardian: { name: "Guardian", hint: "Protect ability", desc: "Each night protects 1–2 players (2 if 8+ alive; 1 if 7 or fewer). Protected players cannot be blocked by the Hostage-Taker. If Hostage-Taker targets Guardian directly, the block is also nullified." },
 
   don: { name: "Don", hint: "Leader + betrayal vote", desc: "Mafia leader; always shows 'citizen' to Detective. Once per day may secretly add or subtract 1 vote from any representative's tally. Cannot use this power on themselves if elected representative." },
   rebel: { name: "Rebel", hint: "2nd-in-command / Assassin", desc: "Second-in-command. If the Don or Hacker is eliminated, becomes the Assassin — may eliminate one player before the daily vote. Cannot target the Bodyguard or protected players." },
