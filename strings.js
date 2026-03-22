@@ -1,4 +1,5 @@
 const STR = {
+  version: "2.0.0",
   fa: {
     "doc.title": "اپلیکیشن بازی مافیا",
     "app.title": "اپلیکیشن بازی مافیا",
@@ -17,6 +18,8 @@ const STR = {
     "setup.savedGame": "یک بازی ذخیره شده است.",
     "setup.resume": "ادامه بازی",
     "setup.delete": "حذف",
+    "setup.fairRoles": "توزیع عادلانه نقش‌ها",
+    "setup.fairRolesNote": "بر اساس سابقه بازی، احتمال مافیا برای کسانی که اخیراً مافیا بوده‌اند کمتر و احتمال نقش‌های ویژه (مثل پزشک) برای کسانی که آن نقش را نداشته‌اند بیشتر می‌شود.",
 
     "players.title": "بازیکنان",
     "players.namesModeAria": "حالت نام‌ها",
@@ -28,6 +31,8 @@ const STR = {
 
     "cards.title": "تقسیم نقش",
     "cards.hint": "بازیکن یک کارت را انتخاب می‌کند و نقش خودش را می‌بیند.",
+    "cards.hintFair": "نقش از قبل به طور عادلانه تخصیص داده شده است. روی دکمه زیر بزنید تا نقش خود را ببینید.",
+    "cards.revealRole": "نمایش نقش من",
     "cards.back": "بازگشت",
     "cards.autoAssign": "اختصاص اتومات نقش‌ها",
     "cards.next": "برو مرحله بعد!",
@@ -350,6 +355,8 @@ const STR = {
     "setup.savedGame": "A saved game is available.",
     "setup.resume": "Resume",
     "setup.delete": "Delete",
+    "setup.fairRoles": "Fair role distribution",
+    "setup.fairRolesNote": "Based on past games: lower mafia chance for recent mafia players; higher chance for special roles (e.g. Doctor) for those who haven't had them.",
 
     "players.title": "Players",
     "players.namesModeAria": "Names mode",
@@ -361,6 +368,8 @@ const STR = {
 
     "cards.title": "Deal",
     "cards.hint": "Each player picks a card and sees their role.",
+    "cards.hintFair": "Your role was fairly assigned in advance. Click the button below to reveal it.",
+    "cards.revealRole": "Reveal my role",
     "cards.back": "Back",
     "cards.autoAssign": "Auto-assign roles",
     "cards.next": "Next step",

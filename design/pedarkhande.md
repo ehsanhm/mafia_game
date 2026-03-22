@@ -97,6 +97,8 @@ Order: Mafia team → Watson → Leon → Kane → Constantine.
 - **City wins** when all mafia are eliminated.
 - **Nostradamus** wins with whichever side they chose.
 
+**Important:** When counting for game-over (mafia vs citizen), Nostradamus **always** counts as citizen, regardless of their chosen side. Their chosen side only affects the winner announcement (who they win with), not whether the game ends.
+
 ---
 
 ## Notes

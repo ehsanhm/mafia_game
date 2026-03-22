@@ -38,6 +38,8 @@
 - **City:** All mafia and Zodiac eliminated.
 - **Mafia:** Zodiac eliminated and mafia ≥ city.
 
+**Important:** When counting for game-over (mafia vs city), Zodiac **always** counts as city, regardless of being an independent role. This prevents the game from ending prematurely when mafia and Zodiac outnumber citizens.
+
 ---
 
 ## Notes

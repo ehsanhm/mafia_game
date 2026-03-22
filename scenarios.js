@@ -11,6 +11,7 @@
 //   wakeOrder       – { fa[], en[] } narrator wake-up order shown in the Wake tool
 //   features        – { lastMove, endCards } boolean flags for scenario-exclusive UI
 //   eliminationCards– [] or array of { id, fa, en } cards drawn on elimination
+//   (Day step order comes from flow-configs/*.js, not from here.)
 //   roleOverrides   – { roleId: { descFa } } per-scenario role description overrides
 
 const SCENARIO_CONFIGS = {
@@ -25,7 +26,6 @@ const SCENARIO_CONFIGS = {
       en: ["Mafia team", "Doctor", "Detective"],
     },
     features: { lastMove: false, endCards: false },
-    dayPhaseConfig: { steps: ["day_vote", "day_elim"] },
     eliminationCards: [],
     roleOverrides: {},
   },
@@ -40,7 +40,6 @@ const SCENARIO_CONFIGS = {
       en: ["Researcher", "Mafia team", "Charlatan", "Doctor", "Sniper", "Detective", "Inspector"],
     },
     features: { lastMove: false, endCards: false },
-    dayPhaseConfig: { steps: ["day_vote", "day_elim"] },
     eliminationCards: [],
     roleOverrides: {
       doctor: { descFa: "هر شب می‌تواند جان یک نفر را از شلیک نجات دهد. نمی‌تواند دو شب پشت‌سرهم یک نفر را نجات دهد. در سناریو بازپرس، نجات خودش دو بار در کل بازی مجاز است." },
@@ -64,7 +63,6 @@ const SCENARIO_CONFIGS = {
       en: ["Hacker", "Mafia team (Don)", "Guide", "Doctor", "Bodyguard", "Soldier", "Minemaker", "Lawyer"],
     },
     features: { lastMove: false, endCards: false },
-    dayPhaseConfig: { steps: ["day_vote", "day_elim"] },
     eliminationCards: [],
     roleOverrides: {
       doctor: { descFa: "هر شب می‌تواند جان یک نفر را نجات دهد. نمی‌تواند دو شب پشت‌سرهم یک نفر را نجات دهد. در سناریو نماینده، نجات خودش دو بار در کل بازی مجاز است." },
@@ -83,7 +81,6 @@ const SCENARIO_CONFIGS = {
       en: ["Mafia team", "Doctor", "Detective", "Negotiator", "Reporter"],
     },
     features: { lastMove: false, endCards: false },
-    dayPhaseConfig: { steps: ["day_vote", "day_elim"] },
     eliminationCards: [],
     roleOverrides: {
       negotiator: { descFa: "اگر یک یا دو نفر از اعضای مافیا از بازی خارج شده باشند، مذاکره‌کننده می‌تواند در شب مذاکره انجام دهد و یک شهروند ساده یا زره‌پوشِ زره‌دار را به مافیای ساده تبدیل کند. اگر نقش دیگری را انتخاب کند مذاکره شکست می‌خورد. در شب مذاکره، مافیا حق شلیک ندارد." },
@@ -100,7 +97,6 @@ const SCENARIO_CONFIGS = {
       en: ["Guardian", "Hostage-Taker", "Mafia team (Don + NATO)", "Detective", "Commando", "Doctor", "Gunner"],
     },
     features: { lastMove: false, endCards: false },
-    dayPhaseConfig: { steps: ["day_guns", "day_gun_expiry", "day_vote", "day_elim"] },
     eliminationCards: [],
     roleOverrides: {
       mafiaBoss: { descFa: "دن مافیاست؛ شلیک شب را تعیین می‌کند. استعلام برای کارآگاه همیشه «منفی» (شهروند) است." },
@@ -119,7 +115,6 @@ const SCENARIO_CONFIGS = {
       en: ["Heir", "Herbalist", "Mafia team (Witch/Don/Executioner)", "Detective", "Armorsmith", "Village Chief"],
     },
     features: { lastMove: false, endCards: false },
-    dayPhaseConfig: { steps: ["day_vote", "day_elim"] },
     eliminationCards: [],
     roleOverrides: {
       danMafia: { descFa: "رهبر تیم مافیا در سناریو کاپو. تفنگ کاپو: هر شب ترتیب صف گلوله را بین مظنون‌ها تعیین می‌کند. صبح روز بعد (از روز ۲ به بعد) نفر اول صف یک‌بار دفاع می‌کند، سپس کاپو شلیک می‌کند یا رها می‌کند." },
@@ -137,7 +132,6 @@ const SCENARIO_CONFIGS = {
       en: ["Nostradamus (intro night only)", "Mafia team (Godfather/Matador/Saul)", "Dr. Watson", "Leon", "Citizen Kane", "Constantine"],
     },
     features: { lastMove: false, endCards: true },
-    dayPhaseConfig: { steps: ["day_vote", "day_elim", "end_card_action"] },
     eliminationCards: [
       { id: "silence_lambs", fa: "سکوت بره‌ها", en: "Silence of the Lambs" },
       { id: "identity_reveal", fa: "افشای هویت", en: "Identity reveal" },
@@ -167,7 +161,6 @@ const SCENARIO_CONFIGS = {
       en: ["Mafia team", "Magician", "Bomber", "Professional", "Doctor", "Detective", "Gunslinger", "Ocean", "Zodiac"],
     },
     features: { lastMove: false, endCards: false },
-    dayPhaseConfig: { steps: ["day_guns", "day_gun_expiry", "day_vote", "day_elim"] },
     eliminationCards: [],
     roleOverrides: {},
   },
@@ -182,7 +175,6 @@ const SCENARIO_CONFIGS = {
       en: ["Natasha", "Mafia team (Boss/NATO)", "Dr. Lecter", "Doctor", "Detective", "Sniper"],
     },
     features: { lastMove: false, endCards: false },
-    dayPhaseConfig: { steps: ["day_vote", "day_elim"] },
     eliminationCards: [],
     roleOverrides: {},
   },
@@ -197,7 +189,6 @@ const SCENARIO_CONFIGS = {
       en: ["Researcher", "Charlatan", "Natasha", "Mafia team", "Dr. Lecter", "Mafia Joker", "Professional", "Doctor", "Detective", "Sniper"],
     },
     features: { lastMove: false, endCards: false },
-    dayPhaseConfig: { steps: ["day_vote", "day_elim"] },
     eliminationCards: [],
     roleOverrides: {},
   },
@@ -212,7 +203,6 @@ const SCENARIO_CONFIGS = {
       en: ["Mafia team", "Dr. Lecter", "Mafia Joker", "Detective", "Professional", "Doctor"],
     },
     features: { lastMove: true, endCards: false },
-    dayPhaseConfig: { steps: ["day_vote", "day_elim"] },
     eliminationCards: [
       { id: "insomnia", fa: "بی‌خوابی", en: "Insomnia" },
       { id: "final_shot", fa: "شلیک نهایی", en: "Final Shot" },

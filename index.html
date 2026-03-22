@@ -11,6 +11,13 @@
     <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;500;700;900&display=swap" rel="stylesheet">
   </head>
   <body>
+    <div id="fairTestPanel" style="display:none; position:fixed; top:10px; right:10px; z-index:9999; background:rgba(26,29,33,.98); padding:14px; border-radius:10px; border:1px solid rgba(255,255,255,.15); max-width:320px;">
+      <div style="font-weight:700; margin-bottom:8px;">Fair Distribution E2E</div>
+      <button type="button" id="fairTestRunBtn" style="padding:8px 14px; margin:4px 4px 4px 0; cursor:pointer; background:#3b82f6; color:white; border:none; border-radius:6px;">Run 100 games</button>
+      <button type="button" id="fairTestClearBtn" style="padding:8px 14px; margin:4px; cursor:pointer; background:#64748b; color:white; border:none; border-radius:6px;">Clear history</button>
+      <div id="fairTestStatus" style="font-size:12px; color:#94a3b8; margin-top:8px; min-height:1.2em;"></div>
+      <div id="fairTestTable" style="margin-top:12px; font-size:12px; max-height:200px; overflow:auto;"></div>
+    </div>
     <div class="app">
       <div class="topbar">
         <div class="title" id="appTitle">اپلیکیشن بازی مافیا</div>
@@ -228,6 +235,9 @@
         const LAST_NAMES_KEY = "mafia_v2_simple_web_last_names_v1";
 
         const LANG_KEY = "mafia_v2_simple_web_lang_v1";
+        const FAIRNESS_HISTORY_KEY = "mafia_v2_fairness_history_v2";
+        const FAIRNESS_ROTATION_KEY = "mafia_v2_fairness_rotation_v1";
+        const FAIRNESS_HISTORY_MAX_GAMES = 50;
         let appLang = "fa"; // "fa" | "en"
 
 
@@ -416,6 +426,132 @@
             [arr[i], arr[j]] = [arr[j], arr[i]];
           }
           return arr;
+        }
+
+        // ── Fair role assignment (localStorage history) ─────────────────────
+        function loadFairnessHistory() {
+          try {
+            if (!shouldPersist()) return {};
+            const raw = localStorage.getItem(FAIRNESS_HISTORY_KEY);
+            return raw ? JSON.parse(raw) : {};
+          } catch { return {}; }
+        }
+        function saveFairnessHistory(h) {
+          try {
+            if (!shouldPersist()) return;
+            localStorage.setItem(FAIRNESS_HISTORY_KEY, JSON.stringify(h || {}));
+          } catch {}
+        }
+        function recordFairnessHistory(draw, playerNames) {
+          if (!draw || !draw.players || !Array.isArray(playerNames)) return;
+          const h = loadFairnessHistory();
+          const maxGames = FAIRNESS_HISTORY_MAX_GAMES;
+          const n = Math.min(draw.players.length, playerNames.length);
+          for (let i = 0; i < n; i++) {
+            const name = String((playerNames[i] || "")).trim() || ("__p" + (i + 1));
+            const roleId = (draw.players[i] && draw.players[i].roleId) || "citizen";
+            if (!h[name]) {
+              const num = String(i + 1);
+              const legacyEn = "Player " + num;
+              const legacyFa = "بازیکن " + (typeof toFarsiNum === "function" ? toFarsiNum(i + 1) : num);
+              const enGames = (h[legacyEn] && h[legacyEn].recentGames) || [];
+              const faGames = (h[legacyFa] && h[legacyFa].recentGames) || [];
+              const merged = [...enGames, ...faGames].slice(-maxGames);
+              h[name] = { recentGames: merged };
+              if (h[legacyEn]) delete h[legacyEn];
+              if (h[legacyFa]) delete h[legacyFa];
+            }
+            const rec = h[name];
+            if (!Array.isArray(rec.recentGames)) rec.recentGames = [];
+            rec.recentGames.push({ roleId });
+            if (rec.recentGames.length > maxGames) rec.recentGames = rec.recentGames.slice(-maxGames);
+          }
+          saveFairnessHistory(h);
+        }
+        function buildFairAssignment(pool, playerNames) {
+          const n = pool.length;
+          if (!n || !playerNames || playerNames.length < n) return null;
+          const h = loadFairnessHistory();
+          const teamFa = (rid) => (roles[rid] && roles[rid].teamFa) ? roles[rid].teamFa : "شهر";
+          const isMafia = (rid) => teamFa(rid) === "مافیا";
+          const getRec = (name) => {
+            const nm = String((name || "")).trim() || "";
+            let rec = h[nm];
+            if (!rec && nm.startsWith("__p")) {
+              const num = nm.replace(/^__p/, "");
+              const legacyEn = "Player " + num;
+              const legacyFa = "بازیکن " + (typeof toFarsiNum === "function" ? toFarsiNum(parseInt(num, 10)) : num);
+              rec = h[legacyEn] || h[legacyFa];
+            }
+            return rec || { recentGames: [] };
+          };
+          function getMafiaStats(idx) {
+            const name = String((playerNames[idx] || "")).trim() || ("__p" + (idx + 1));
+            const games = Array.isArray(getRec(name).recentGames) ? getRec(name).recentGames : [];
+            const mafiaCount = games.filter((g) => isMafia(g && g.roleId)).length;
+            let lastGamesWereMafia = 0;
+            for (let i = games.length - 1; i >= 0; i--) {
+              if (!isMafia(games[i] && games[i].roleId)) break;
+              lastGamesWereMafia++;
+            }
+            return { mafiaCount, lastGamesWereMafia };
+          }
+          const mafiaRoles = pool.filter(isMafia);
+          const nonMafiaRoles = pool.filter((r) => !isMafia(r));
+          const assignment = Array(n).fill(null);
+          const available = new Set(Array.from({ length: n }, (_, i) => i));
+          let rotation = 0;
+          try {
+            const r = localStorage.getItem(FAIRNESS_ROTATION_KEY);
+            if (r != null) rotation = Math.max(0, parseInt(r, 10) || 0);
+          } catch {}
+          const assignMafiaTo = (candidates, mafiaPickIndex) => {
+            const withStats = candidates.map((i) => ({ i, ...getMafiaStats(i) }));
+            withStats.sort((a, b) => {
+              if (a.mafiaCount !== b.mafiaCount) return a.mafiaCount - b.mafiaCount;
+              if (a.lastGamesWereMafia !== b.lastGamesWereMafia) return a.lastGamesWereMafia - b.lastGamesWereMafia;
+              return a.i - b.i;
+            });
+            const minCount = withStats[0].mafiaCount;
+            const minConj = withStats[0].lastGamesWereMafia;
+            const tier = withStats.filter((x) => x.mafiaCount === minCount && x.lastGamesWereMafia === minConj);
+            const pos = (rotation + mafiaPickIndex) % Math.max(1, tier.length);
+            return tier[pos].i;
+          };
+          let mafiaPickIndex = 0;
+          for (const roleId of mafiaRoles) {
+            const candidates = Array.from(available);
+            if (candidates.length === 0) return null;
+            const chosen = assignMafiaTo(candidates, mafiaPickIndex);
+            mafiaPickIndex++;
+            assignment[chosen] = roleId;
+            available.delete(chosen);
+          }
+          try {
+            localStorage.setItem(FAIRNESS_ROTATION_KEY, String((rotation + 1) % Math.max(1, n)));
+          } catch {}
+          const roleCounts = {};
+          function getHad(idx, rid) {
+            const name = String((playerNames[idx] || "")).trim() || ("__p" + (idx + 1));
+            const games = Array.isArray(getRec(name).recentGames) ? getRec(name).recentGames : [];
+            return games.filter((g) => (g && g.roleId) === rid).length;
+          }
+          for (const roleId of nonMafiaRoles) {
+            const candidates = Array.from(available);
+            if (candidates.length === 0) return null;
+            const weights = candidates.map((i) => ({ i, w: 1 / (1 + 0.2 * getHad(i, roleId)) }));
+            const tot = weights.reduce((s, x) => s + x.w, 0);
+            if (tot <= 0) return null;
+            let r = Math.random() * tot;
+            let chosen = weights[0].i;
+            for (const { i, w } of weights) {
+              r -= w;
+              if (r <= 0) { chosen = i; break; }
+            }
+            assignment[chosen] = roleId;
+            available.delete(chosen);
+          }
+          return assignment;
         }
 
         function computeSuggestedMafia(nPlayers) {
@@ -3297,6 +3433,7 @@
             nPlayers: s.nPlayers,
             mafiaCount: s.mafiaCount,
             toggles: s.toggles,
+            fairRoles: true,
             playerNames: appState.ui.playerNames || [],
             namesMode: appState.ui.namesMode || "default",
             customized: !!(appState.ui && appState.ui.customized),
@@ -3794,6 +3931,17 @@
         }
 
         function startDeal() {
+          const prevDraw = appState.draw;
+          const prevNames = (prevDraw && prevDraw.uiAtDraw && prevDraw.uiAtDraw.playerNames)
+            ? prevDraw.uiAtDraw.playerNames
+            : (appState.ui && appState.ui.playerNames);
+          if (prevDraw && prevDraw.players && prevDraw.players.length > 0 && prevNames && prevNames.length >= prevDraw.players.length) {
+            if (typeof recordFairnessHistory === "function" && !prevDraw.fairnessRecorded) {
+              recordFairnessHistory(prevDraw, prevNames);
+              prevDraw.fairnessRecorded = true;
+              try { saveState(appState); } catch {}
+            }
+          }
           const s = readUIState();
           const res = buildRolePool(s.nPlayers, s.mafiaCount, s.toggles);
           if (!res.ok) {
@@ -3807,18 +3955,38 @@
             return false;
           }
           appState.ui.playerNames = names;
+          appState.ui.fairRoles = true;
           saveLastNames(names);
           setError("");
           syncUIToState();
           ensureNamesLength(appState.ui.nPlayers);
 
-          const deck = res.pool.slice(); // already shuffled
-          const n = deck.length;
+          const n = res.pool.length;
+          let deck;
+          if (appState.ui.fairRoles) {
+            const assign = buildFairAssignment(res.pool, names);
+            if (!assign) {
+              deck = res.pool.slice();
+              shuffle(deck);
+            } else {
+              deck = assign;
+            }
+          } else {
+            deck = res.pool.slice();
+            shuffle(deck);
+          }
           appState.draw = {
             deck,
             usedCards: Array(n).fill(false),
-            players: Array(n).fill(0).map(() => ({ roleId: null, revealed: false, cardIdx: null, alive: true, deathReason: null })),
+            players: Array(n).fill(0).map((_, i) => ({
+              roleId: appState.ui.fairRoles && deck[i] ? deck[i] : null,
+              revealed: false,
+              cardIdx: appState.ui.fairRoles ? i : null,
+              alive: true,
+              deathReason: null,
+            })),
             currentIdx: 0,
+            fairMode: !!appState.ui.fairRoles,
             createdAt: Date.now(),
             uiAtDraw: { ...appState.ui, mode: "cards" },
           };
@@ -3837,21 +4005,16 @@
           if (draw.usedCards && draw.usedCards[cardIdx]) return;
 
           const who = (appState.ui.playerNames && appState.ui.playerNames[cur]) ? appState.ui.playerNames[cur] : `بازیکن ${cur + 1}`;
-          const roleId = draw.deck[cardIdx];
+          const roleId = draw.fairMode ? (draw.deck[cur] || draw.deck[cardIdx]) : draw.deck[cardIdx];
 
-          // Record the pick immediately (no need to click "Seen").
           draw.usedCards[cardIdx] = true;
           const prev = draw.players[cur] || {};
-          draw.players[cur] = { ...prev, roleId, revealed: true, cardIdx, alive: prev.alive !== false, deathReason: prev.deathReason || null };
+          draw.players[cur] = { ...prev, roleId, revealed: true, cardIdx: draw.fairMode ? cur : cardIdx, alive: prev.alive !== false, deathReason: prev.deathReason || null };
           draw.currentIdx = cur + 1;
           saveState(appState);
           renderCards();
 
-          openRoleModal({
-            who,
-            roleId,
-            onConfirm: null,
-          });
+          openRoleModal({ who, roleId, onConfirm: null });
         }
 
         function autoAssignAllRemaining() {
@@ -3864,26 +4027,44 @@
             return;
           }
 
-          const remainingCardIdxs = [];
-          for (let i = 0; i < n; i++) {
-            if (!draw.usedCards[i]) remainingCardIdxs.push(i);
-          }
-          shuffle(remainingCardIdxs);
+          if (draw.fairMode) {
+            // Fair mode: deck[i] is the intended role for player i — assign by player index
+            while (cur < n) {
+              const roleId = draw.deck[cur] || draw.deck[0];
+              draw.usedCards[cur] = true;
+              const prev = draw.players[cur] || {};
+              draw.players[cur] = {
+                ...prev,
+                roleId,
+                revealed: true,
+                cardIdx: cur,
+                alive: prev.alive !== false,
+                deathReason: prev.deathReason || null,
+              };
+              cur++;
+            }
+          } else {
+            const remainingCardIdxs = [];
+            for (let i = 0; i < n; i++) {
+              if (!draw.usedCards[i]) remainingCardIdxs.push(i);
+            }
+            shuffle(remainingCardIdxs);
 
-          while (cur < n && remainingCardIdxs.length) {
-            const cardIdx = remainingCardIdxs.shift();
-            const roleId = draw.deck[cardIdx];
-            draw.usedCards[cardIdx] = true;
-            const prev = draw.players[cur] || {};
-            draw.players[cur] = {
-              ...prev,
-              roleId,
-              revealed: true,
-              cardIdx,
-              alive: prev.alive !== false,
-              deathReason: prev.deathReason || null,
-            };
-            cur++;
+            while (cur < n && remainingCardIdxs.length) {
+              const cardIdx = remainingCardIdxs.shift();
+              const roleId = draw.deck[cardIdx];
+              draw.usedCards[cardIdx] = true;
+              const prev = draw.players[cur] || {};
+              draw.players[cur] = {
+                ...prev,
+                roleId,
+                revealed: true,
+                cardIdx,
+                alive: prev.alive !== false,
+                deathReason: prev.deathReason || null,
+              };
+              cur++;
+            }
           }
 
           draw.currentIdx = n;
@@ -4541,6 +4722,91 @@
         // final persist ui
         syncUIToState();
         if (shouldPersist()) saveState(appState);
+
+        // Test hook for fair-distribution E2E (only when ?testMode=1)
+        // Runs the EXACT UI flow 100×: scenario default → start game → deal → auto-assign → next
+        const isTestMode = typeof window !== "undefined" && window.location && window.location.search && window.location.search.includes("testMode=1");
+        if (isTestMode) {
+          const testNames = ["مهدی (Mehdi)", "ناصر (Nasser)", "مهسا (Mahsa)", "سپیده (Sepideh)", "تینا (Tina)", "فرزانه (Farzaneh)", "آرش (Arash)", "گلسا (Golsa)", "آرتین (Artin)", "محمد (Mohammad)", "مهتاب (Mehtab)"];
+          const panel = $("fairTestPanel");
+          if (panel) panel.style.display = "block";
+          const roleLabel = (rid) => (roles[rid] && roles[rid].faName) ? roles[rid].faName : rid;
+          window.__runFairTestGame = function (playerNames) {
+            const prevDraw = appState.draw;
+            if (prevDraw && prevDraw.players && !prevDraw.fairnessRecorded && typeof recordFairnessHistory === "function") {
+              const prevNames = (prevDraw.uiAtDraw && prevDraw.uiAtDraw.playerNames) || (appState.ui && appState.ui.playerNames);
+              if (prevNames && prevNames.length >= prevDraw.players.length) {
+                recordFairnessHistory(prevDraw, prevNames);
+                prevDraw.fairnessRecorded = true;
+              }
+            }
+            const scenarioSel = $("scenario");
+            const defaultsBtn = $("scenarioDefaultsBtn");
+            const startBtn = $("startGameBtn");
+            const dealBtn = $("dealBtn");
+            const autoAssignBtn = $("autoAssignBtn");
+            const nextBtn = $("cardsNextBtn");
+            const castBackBtn = $("castBackBtn");
+            if (prevDraw) castBackBtn && castBackBtn.click();
+            showSetup();
+            if (scenarioSel) scenarioSel.value = "pedarkhande";
+            appState.ui.scenario = "pedarkhande";
+            defaultsBtn && defaultsBtn.click();
+            appState.ui.fairRoles = true;
+            startBtn && startBtn.click();
+            ensureNamesLength(playerNames.length);
+            appState.ui.playerNames = playerNames.slice();
+            renderNameGrid();
+            for (let i = 0; i < playerNames.length; i++) {
+              const el = $("nm_" + i);
+              if (el) el.value = playerNames[i] || "";
+            }
+            syncUIToState();
+            dealBtn && dealBtn.click();
+            autoAssignBtn && autoAssignBtn.click();
+            nextBtn && nextBtn.click();
+            const draw = appState.draw;
+            const names = (draw && draw.uiAtDraw && draw.uiAtDraw.playerNames) ? draw.uiAtDraw.playerNames : (appState.ui && appState.ui.playerNames);
+            const roles = (draw && draw.players) ? draw.players.map((p) => (p && p.roleId) || "citizen") : [];
+            return { playerNames: names || [], roles };
+          };
+          const runBtn = $("fairTestRunBtn");
+          const clearBtn = $("fairTestClearBtn");
+          const statusEl = $("fairTestStatus");
+          const tableEl = $("fairTestTable");
+          if (runBtn) runBtn.addEventListener("click", function () {
+            runBtn.disabled = true;
+            statusEl.textContent = "Running 100 games...";
+            const results = {};
+            for (const n of testNames) results[n] = {};
+            let failed = 0;
+            for (let g = 0; g < 100; g++) {
+              const out = window.__runFairTestGame(testNames);
+              if (!out || !out.roles || out.roles.length < testNames.length) { failed++; continue; }
+              const names = out.playerNames || [];
+              for (let i = 0; i < out.roles.length; i++) {
+                const name = names[i] || ("P" + (i + 1));
+                const rid = out.roles[i] || "citizen";
+                if (!results[name]) results[name] = {};
+                results[name][rid] = (results[name][rid] || 0) + 1;
+              }
+              statusEl.textContent = "Game " + (g + 1) + "/100";
+            }
+            const mafiaIds = ["godfather", "matador", "saulGoodman"];
+            const rows = Object.keys(results).map((n) => ({ name: n, count: mafiaIds.reduce((s, r) => s + (results[n][r] || 0), 0) }));
+            rows.sort((a, b) => b.count - a.count);
+            let html = "<table style='width:100%;font-size:11px'><tr><th>Name</th><th>Mafia</th></tr>";
+            for (const r of rows) html += "<tr><td>" + r.name + "</td><td>" + r.count + "</td></tr>";
+            html += "</table>";
+            tableEl.innerHTML = html;
+            statusEl.textContent = "Done. 100 games. Spread: " + (rows[0].count - rows[rows.length - 1].count);
+            runBtn.disabled = false;
+          });
+          if (clearBtn) clearBtn.addEventListener("click", function () {
+            try { localStorage.removeItem("mafia_v2_fairness_history_v2"); localStorage.removeItem("mafia_v2_fairness_rotation_v1"); } catch {}
+            statusEl.textContent = "History cleared.";
+          });
+        }
     </script>
   </body>
 </html>

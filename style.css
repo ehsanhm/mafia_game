@@ -436,6 +436,24 @@ option:disabled{
   font-weight:750;
 }
 .note b{ color: var(--text); }
+/* Flow: moderator-only info vs script to say aloud */
+.fl-moderator-info {
+  font-size:11px;
+  line-height:1.5;
+  color: var(--muted);
+  font-weight:700;
+  opacity:.9;
+}
+.fl-script {
+  font-size:14px;
+  font-weight:950;
+  padding:10px 12px;
+  border-left:3px solid rgba(110,168,255,.5);
+  background: rgba(110,168,255,.08);
+  border-radius:0 10px 10px 0;
+  margin:8px 0;
+  color: var(--text);
+}
 /* Feedback variants — success=green, unsuccessful=orange, no white for dynamic messages */
 .note.pass   { color: var(--good); font-weight:900; }
 .note.warn   { color: rgba(255,160,80,1); font-weight:900; }

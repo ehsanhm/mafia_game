@@ -97,7 +97,7 @@
         }).join("")
       : `<div class="note">${escapeHtml(appLang === "fa" ? "مافیایی در بازی نیست." : "No mafia players.")}</div>`;
     return `
-      <div class="note" style="margin-bottom:8px">${escapeHtml(appLang === "fa" ? "گرداننده تیم مافیا را بیدار می‌کند و از هر کدام می‌خواهد با نشان دادن ژست «لایک» تأیید کند که نقش خود را می‌شناسد. هیچ اکشنی در شب معارفه ثبت نمی‌شود." : "God wakes the mafia team and asks each to show a \"Like\" hand gesture to confirm they know who is mafia. No actions on intro night.")}</div>
+      <div class="note fl-moderator-info" style="margin-bottom:8px">${escapeHtml(appLang === "fa" ? "گرداننده تیم مافیا را بیدار می‌کند و از هر کدام می‌خواهد با نشان دادن ژست «لایک» تأیید کند که نقش خود را می‌شناسد. هیچ اکشنی در شب معارفه ثبت نمی‌شود." : "God wakes the mafia team and asks each to show a \"Like\" hand gesture to confirm they know who is mafia. No actions on intro night.")}</div>
       ${mafiaListHtml}
     `;
   }
@@ -117,7 +117,7 @@
       return `<div style="padding:4px 0">${escapeHtml(label)} — ${escapeHtml(nm)}</div>`;
     }).join("");
     return `
-      <div class="note" style="margin-bottom:8px">${escapeHtml(appLang === "fa" ? "گرداننده این نقش‌ها را به ترتیب بیدار می‌کند و از هر کدام می‌خواهد با نشان دادن ژست «لایک» تأیید کند که از نقش خود آگاه است. هیچ اکشنی در شب معارفه ثبت نمی‌شود." : "God wakes these roles in order and asks each to show a \"Like\" hand gesture to confirm they are aware of their role. No actions on intro night.")}</div>
+      <div class="note fl-moderator-info" style="margin-bottom:8px">${escapeHtml(appLang === "fa" ? "گرداننده این نقش‌ها را به ترتیب بیدار می‌کند و از هر کدام می‌خواهد با نشان دادن ژست «لایک» تأیید کند که از نقش خود آگاه است. هیچ اکشنی در شب معارفه ثبت نمی‌شود." : "God wakes these roles in order and asks each to show a \"Like\" hand gesture to confirm they are aware of their role. No actions on intro night.")}</div>
       ${wakeList}
     `;
   }

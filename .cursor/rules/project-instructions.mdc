@@ -10,17 +10,27 @@ alwaysApply: true
 - **Design docs** in `design/` are the single source of truth for intended behavior.
 - When fixing a bug: open the scenario's design file, confirm intended behavior, then align code with the doc.
 - When adding a feature: update the design doc first, then implement.
-- When adding a new scenario: add entry in `scenarios.js` and `00-overview.md`, then create `design/<scenario_id>.md` from `template.md`.
+- When adding a new scenario: add entry in `scenarios.js`, add flow-config in `flow-configs/<scenario_id>.js`, add row in `00-overview.md`, then create `design/<scenario_id>.md` from `template.md`.
+
+## Version
+
+- **Location:** `STR.version` in `strings.js` (single source of truth).
+- **Rule:** Bump the version when making any code change (feature, fix, refactor). Users see it on the Help page.
+- **Format:** Semantic versioning `MAJOR.MINOR.PATCH`:
+  - **PATCH** — Bug fixes, small tweaks, doc-only.
+  - **MINOR** — New features, scenario changes, backward-compatible.
+  - **MAJOR** — Breaking changes, major refactors.
 
 ## Key Files
 
 | File | Purpose |
 |------|---------|
-| `scenarios.js` | Single source of truth for scenario configs (allowedRoles, wakeOrder, features, etc.) |
+| `scenarios.js` | Single source of truth for scenario configs (allowedRoles, wakeOrder, features, etc.); day steps come from flow-configs |
 | `flow-engine.js` | Flow logic, state, back-navigation, night resolution |
 | `flow-ui.js` | UI rendering for flow steps |
 | `effect-registry.js` | Central apply/revert for flow steps — register effects here instead of scattering logic |
 | `design/*.md` | Human-readable game flow design — one per scenario |
+| `strings.js` | `STR.version` — bump on every code change; shown on Help page |
 
 ## Effect Registry and Testing
 

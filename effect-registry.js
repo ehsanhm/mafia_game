@@ -64,27 +64,16 @@
 
     if (typeof applyDayElimFromPayload !== "function") return;
 
-    window.registerEffect("day_elim", {
-      apply: function (ctx) {
-        return applyDayElimFromPayload(ctx.f, ctx.payload || {});
-      },
-      revert: function (ctx) {
-        return applyDayElimFromPayload(ctx.f, { out: null });
-      },
-    });
-    window.registerEffect("namayande_vote", {
-      apply: function (ctx) {
-        return applyDayElimFromPayload(ctx.f, ctx.payload || {});
-      },
-      revert: function (ctx) {
-        return applyDayElimFromPayload(ctx.f, { out: null });
-      },
-    });
-    window.registerEffect("kabo_shoot", {
-      revert: function (ctx) {
-        return applyDayElimFromPayload(ctx.f, { out: null });
-      },
-    });
+    function makeElimEffect(hasApply) {
+      return {
+        apply: hasApply ? function (ctx) { return applyDayElimFromPayload(ctx.f, ctx.payload || {}); } : null,
+        revert: function (ctx) { return applyDayElimFromPayload(ctx.f, { out: null }); },
+      };
+    }
+
+    window.registerEffect("day_elim", makeElimEffect(true));
+    window.registerEffect("namayande_vote", makeElimEffect(true));
+    window.registerEffect("kabo_shoot", makeElimEffect(false));
 
     if (typeof applyBazrasInterrogationFromPayload === "function") {
       window.registerEffect("bazras_forced_vote", {

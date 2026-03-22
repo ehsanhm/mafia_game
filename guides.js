@@ -1111,11 +1111,11 @@ function showScenarioGuide(scenarioId) {
   const cfg = getScenarioConfig(scenarioId);
   const lang = typeof appLang !== 'undefined' ? appLang : 'fa';
   const guide = SCENARIO_GUIDES[scenarioId];
-  const title = lang === 'fa'
-    ? ('راهنمای سناریو: ' + cfg.name.fa)
-    : ('Scenario Guide: ' + cfg.name.en);
-  const body = guide
-    ? (guide[lang] || guide.fa)
-    : '<div class="toolBox">' + (lang === 'fa' ? 'راهنمایی برای این سناریو موجود نیست.' : 'No guide available for this scenario.') + '</div>';
+  const version = (typeof STR !== 'undefined' && STR.version) ? STR.version : '1.0.0';
+  const appName = (typeof t === 'function' && t('app.title')) ? t('app.title') : (lang === 'fa' ? 'اپلیکیشن بازی مافیا' : 'Mafia Game Assistant');
+  const title = appName + ': v' + version;
+  let body = guide ? (guide[lang] || guide.fa) : '<div class="toolBox">' + (lang === 'fa' ? 'راهنمایی برای این سناریو موجود نیست.' : 'No guide available for this scenario.') + '</div>';
+  const scenarioLabel = lang === 'fa' ? ('راهنمای سناریو: ' + cfg.name.fa) : ('Scenario Guide: ' + cfg.name.en);
+  body = '<div class="note" style="margin-bottom:12px; font-weight:600">' + scenarioLabel + '</div>' + body;
   openToolModal(title, body);
 }

@@ -453,10 +453,10 @@
             ensureTimers();
             const _tmrV = appState.god.timers;
             body = `
-              <div class="note" style="margin-bottom:8px; font-size:15px; font-weight:1100">${escapeHtml(appLang === "fa"
+              <div class="fl-script" style="margin-bottom:8px; font-size:15px; font-weight:1100">${escapeHtml(appLang === "fa"
                 ? `بازپرسی: ${t1Name} و ${t2Name}`
                 : `Interrogation: ${t1Name} and ${t2Name}`)}</div>
-              <div class="note" style="margin-bottom:10px">${escapeHtml(appLang === "fa"
+              <div class="note fl-moderator-info" style="margin-bottom:10px">${escapeHtml(appLang === "fa"
                 ? "هر کدام دو نوبت صحبت می‌کنند. در حین بازپرسی لایک/دیسلایک ممنوع است."
                 : "Each speaks twice. No liking/disliking during interrogation.")}</div>
               ${!invAlive ? `<div class="note warn" style="margin-bottom:10px">${escapeHtml(appLang === "fa"
@@ -488,7 +488,7 @@
               ? "background:rgba(99,179,237,.22);  border:2px solid #63b3ed;              color:#fff;"
               : "background:rgba(255,255,255,.06); border:2px solid rgba(255,255,255,.18); color:rgba(255,255,255,.6);";
             body = `
-              <div class="note" style="margin-bottom:14px">${escapeHtml(appLang === "fa"
+              <div class="note fl-moderator-info" style="margin-bottom:14px">${escapeHtml(appLang === "fa"
                 ? "همه می‌خوابند. بازپرس باید تصمیم بگیرد."
                 : "Everyone sleeps. The Inspector must decide.")}</div>
               <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px">
@@ -573,7 +573,7 @@
 
           } else if (cur.id === "day_poison_status") {
             body = `
-              <div class="note" style="margin-top:12px; padding:16px; font-size:18px; font-weight:1100; text-align:center; background:rgba(255,75,75,.12); border-radius:12px; border:1px solid rgba(255,75,75,.3)">
+              <div class="fl-script" style="margin-top:12px; padding:16px; font-size:18px; font-weight:1100; text-align:center; background:rgba(255,75,75,.12); border-radius:12px; border-left:4px solid rgba(255,75,75,.6)">
                 ${escapeHtml(t("tool.flow.poisonStatus.message"))}
               </div>
             `;
@@ -593,10 +593,10 @@
             const _plSvg = `<svg viewBox="0 0 20 20" width="14" height="14" fill="currentColor"><rect x="3" y="9" width="14" height="2" rx="1"/><rect x="9" y="3" width="2" height="14" rx="1"/></svg>`;
             const cardStyle = "border-radius:14px; padding:14px; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:8px; box-shadow:0 2px 8px rgba(0,0,0,.2); background:rgba(255,255,255,.05); border:2px solid rgba(255,255,255,.12);";
             body = `
-              <div class="note" style="margin-top:12px; padding:16px; font-size:18px; font-weight:1100; text-align:center; background:rgba(255,75,75,.12); border-radius:12px; border:1px solid rgba(255,75,75,.3)">
+              <div class="fl-script" style="margin-top:12px; padding:16px; font-size:18px; font-weight:1100; text-align:center; background:rgba(255,75,75,.12); border-radius:12px; border-left:4px solid rgba(255,75,75,.6)">
                 ${escapeHtml(t("tool.flow.poisonedPlayer.victim", { name: victimName }))}
               </div>
-              <div class="note" style="margin-top:12px">${escapeHtml(t("tool.flow.poisonedPlayer.voteHint"))}</div>
+              <div class="note fl-moderator-info" style="margin-top:12px">${escapeHtml(t("tool.flow.poisonedPlayer.voteHint"))}</div>
               <div style="margin-top:14px; display:grid; grid-template-columns:1fr 1fr; gap:12px">
                 <div class="poison_antidote_card" data-vote="agree" style="${cardStyle} border-color:rgba(74,222,128,.35); background:rgba(74,222,128,.08)">
                   <div style="font-weight:1100; font-size:14px">${escapeHtml(t("tool.flow.poisonedPlayer.agree"))}</div>
@@ -615,7 +615,7 @@
                   </div>
                 </div>
               </div>
-              ${voteResult ? `<div class="note result" id="fl_poison_vote_result" style="margin-top:14px; padding:12px; font-weight:1100">${escapeHtml(voteResult)}</div>` : `<div id="fl_poison_vote_result" style="margin-top:14px; min-height:24px"></div>`}
+              ${voteResult ? `<div class="fl-script" id="fl_poison_vote_result" style="margin-top:14px; padding:12px; font-weight:1100">${escapeHtml(voteResult)}</div>` : `<div id="fl_poison_vote_result" style="margin-top:14px; min-height:24px"></div>`}
             `;
           } else if (cur.id === "night_herbalist_antidote") {
             const prevNightKey = String(Math.max(0, (f.day || 1) - 1));
@@ -630,8 +630,8 @@
             const giveSel = giveAntidote ? "background:rgba(74,222,128,.2); border-color:#4ade80;" : "background:rgba(255,255,255,.05); border-color:rgba(255,255,255,.15); color:rgba(255,255,255,.85);";
             const withholdSel = !giveAntidote ? "background:rgba(255,75,75,.15); border-color:rgba(255,75,75,.5);" : "background:rgba(255,255,255,.05); border-color:rgba(255,255,255,.15); color:rgba(255,255,255,.85);";
             body = `
-              <div class="note" style="margin-top:12px">${escapeHtml(t("tool.flow.herbalistAntidote.hint"))}</div>
-              <div class="note" style="margin-top:8px">${escapeHtml(appLang === "fa" ? `مسموم شده: ${victimName}` : `Poisoned: ${victimName}`)}</div>
+              <div class="note fl-moderator-info" style="margin-top:12px">${escapeHtml(t("tool.flow.herbalistAntidote.hint"))}</div>
+              <div class="fl-script" style="margin-top:8px; margin-bottom:8px">${escapeHtml(appLang === "fa" ? `مسموم شده: ${victimName}` : `Poisoned: ${victimName}`)}</div>
               <div style="margin-top:14px; display:grid; grid-template-columns:1fr 1fr; gap:12px">
                 <button class="herbalist_antidote_card" type="button" data-value="give" style="${herbCardStyle}${giveSel}">${escapeHtml(t("tool.flow.herbalistAntidote.give"))}</button>
                 <button class="herbalist_antidote_card" type="button" data-value="withhold" style="${herbCardStyle}${withholdSel}">${escapeHtml(t("tool.flow.herbalistAntidote.withhold"))}</button>
@@ -652,7 +652,7 @@
             if (!antidoteGiven && victimRole === "witch" && d.witchHasAntidoteFromDon) antidoteGiven = true;
             const msg = antidoteGiven ? t("tool.flow.poisonResult.fixed") : t("tool.flow.poisonResult.worked", { name: victimName });
             body = `
-              <div class="note" style="margin-top:12px; padding:16px; font-size:18px; font-weight:1100; text-align:center; background:${antidoteGiven ? "rgba(74,222,128,.15)" : "rgba(255,75,75,.12)"}; border-radius:12px; border:1px solid ${antidoteGiven ? "rgba(74,222,128,.4)" : "rgba(255,75,75,.3)"}">
+              <div class="fl-script" style="margin-top:12px; padding:16px; font-size:18px; font-weight:1100; text-align:center; background:${antidoteGiven ? "rgba(74,222,128,.15)" : "rgba(255,75,75,.12)"}; border-radius:12px; border-left:4px solid ${antidoteGiven ? "rgba(74,222,128,.6)" : "rgba(255,75,75,.6)"}">
                 ${escapeHtml(msg)}
               </div>
             `;
@@ -700,8 +700,8 @@
             ensureTimers();
             const _tmrV = appState.god.timers;
             body = `
-              <div class="note" style="margin-top:6px">${escapeHtml(appLang === "fa" ? "برای دفاع، بازیکنان نامزدشده را انتخاب کنید." : "Tap the players who have been nominated to defend themselves.")}</div>
-              <div class="note" style="margin-top:4px">${escapeHtml(appLang === "fa" ? "اگر چالش خود را استفاده کرده‌اند، آیکون «چالش» را بزنید." : "Tap the \"Challenge\" icon if they've already used their challenge.")}</div>
+              <div class="note fl-moderator-info" style="margin-top:6px">${escapeHtml(appLang === "fa" ? "برای دفاع، بازیکنان نامزدشده را انتخاب کنید." : "Tap the players who have been nominated to defend themselves.")}</div>
+              <div class="note fl-moderator-info" style="margin-top:4px">${escapeHtml(appLang === "fa" ? "اگر چالش خود را استفاده کرده‌اند، آیکون «چالش» را بزنید." : "Tap the \"Challenge\" icon if they've already used their challenge.")}</div>
               ${showBombWarn ? `<div class="note warn" style="margin-top:10px">${escapeHtml(t("tool.flow.bomb.active"))}</div>` : ``}
               <div class="timerRow" style="margin-top:10px; padding-bottom:10px; border-bottom:1px solid rgba(255,255,255,.08)">
                 <div class="timerCard">
@@ -1071,9 +1071,9 @@
             })();
 
             body = `
-              <div class="note" style="margin-top:6px">${escapeHtml(t("tool.flow.elim.hint"))}</div>
+              <div class="note fl-moderator-info" style="margin-top:6px">${escapeHtml(t("tool.flow.elim.hint"))}</div>
               <div style="height:8px"></div>
-              <div class="note">${escapeHtml(t((getScenarioConfig(scenario).voteThreshold === "half_minus_one" ? "tool.flow.defense.threshold.halfMinusOne" : "tool.flow.defense.threshold"), { n: defThreshold, v: eligibleVoters }))}</div>
+              <div class="note fl-moderator-info">${escapeHtml(t((getScenarioConfig(scenario).voteThreshold === "half_minus_one" ? "tool.flow.defense.threshold.halfMinusOne" : "tool.flow.defense.threshold"), { n: defThreshold, v: eligibleVoters }))}</div>
               ${isSingleDef ? `<div class="note" style="margin-top:6px">${escapeHtml(t((getScenarioConfig(scenario).voteThreshold === "half_minus_one" ? "tool.flow.elim.single.need.half" : "tool.flow.elim.single.need"), { n: elimThreshold, v: eligibleVoters }))}</div>` : ``}
               <div style="margin-top:10px; padding-bottom:10px; border-bottom:1px solid rgba(255,255,255,.08)">
                 <div class="timerCard" style="max-width:none">
@@ -1102,12 +1102,12 @@
               </div>
               <div style="margin-top:14px; padding-top:12px; border-top:1px solid rgba(255,255,255,.08)">
                 ${pickedOutIdx !== null
-                  ? `<div id="fl_elim_result_line" class="note result">${escapeHtml(t("tool.flow.outcome.votedOut"))} <b>${escapeHtml(names[pickedOutIdx] || t("common.playerN", { n: pickedOutIdx + 1 }))}</b></div>`
+                  ? `<div id="fl_elim_result_line" class="fl-script">${escapeHtml(t("tool.flow.outcome.votedOut"))} <b>${escapeHtml(names[pickedOutIdx] || t("common.playerN", { n: pickedOutIdx + 1 }))}</b></div>`
                   : (tieLine
-                      ? `<div id="fl_elim_result_line" class="note result">${escapeHtml(tieLine)}</div>`
+                      ? `<div id="fl_elim_result_line" class="fl-script">${escapeHtml(tieLine)}</div>`
                       : (singleLine
-                          ? `<div id="fl_elim_result_line" class="note result">${escapeHtml(singleLine)}</div>`
-                          : `<div id="fl_elim_result_line" class="note result">${escapeHtml(t("tool.flow.outcome.none"))}</div>`))}
+                          ? `<div id="fl_elim_result_line" class="fl-script">${escapeHtml(singleLine)}</div>`
+                          : `<div id="fl_elim_result_line" class="fl-script">${escapeHtml(t("tool.flow.outcome.none"))}</div>`))}
                 ${endCardLine}
                 ${researcherChainLine}
                 ${lastMoveUi}
@@ -1173,7 +1173,7 @@
               ? remaining2.map((c) => `<span style="display:inline-block;margin:2px 4px;opacity:${c.id === pickedCardId ? "1" : ".7"}">${escapeHtml(labelFor2(c.id))}${c.id === pickedCardId ? " ✓" : ""}</span>`).join("&nbsp;·&nbsp;")
               : `<span style="opacity:.5">${escapeHtml(appLang === "fa" ? "همه استفاده شده‌اند" : "All used")}</span>`;
             body = `
-              <div class="note result" style="margin-bottom:14px">${escapeHtml(t("tool.flow.outcome.votedOut"))} <b>${escapeHtml(votedOutName2)}</b></div>
+              <div class="fl-script" style="margin-bottom:14px">${escapeHtml(t("tool.flow.outcome.votedOut"))} <b>${escapeHtml(votedOutName2)}</b></div>
               <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:4px">${allCardsHtml}</div>
               <div style="margin-top:16px;padding-top:12px;border-top:1px solid rgba(255,255,255,.08);font-size:12px;color:rgba(255,255,255,.55)">
                 <span style="font-weight:700;margin-bottom:4px;display:block">${escapeHtml(appLang === "fa" ? "کارت‌های موجود:" : "Available cards:")}</span>
@@ -1232,7 +1232,7 @@
             }
             body = `
               <div class="note" style="margin-bottom:10px">${escapeHtml(hintText)}</div>
-              <div class="note result" style="margin-bottom:8px">${escapeHtml(t("tool.flow.outcome.votedOut"))} <b>${escapeHtml(votedOutName)}</b> — ${escapeHtml(cardLabel)}</div>
+              <div class="fl-script" style="margin-bottom:8px">${escapeHtml(t("tool.flow.outcome.votedOut"))} <b>${escapeHtml(votedOutName)}</b> — ${escapeHtml(cardLabel)}</div>
               ${cardsHtml}
             `;
           } else if (cur.id === "kabo_trust_vote") {
@@ -1451,8 +1451,10 @@
             if (_tmrCh.remaining.chaos == null) _tmrCh.remaining.chaos = _tmrCh.chaos;
             const aliveIdxs = (draw.players || []).map((p, i) => ({ p, i })).filter(({ p }) => p && p.alive !== false);
             const _nostSideCh = (d.nostradamusChosenSide === "mafia" || d.nostradamusChosenSide === "citizen") ? d.nostradamusChosenSide : null;
+            const _scenarioCh = getDrawScenarioForFlow();
             const getTeam = (p) => {
-              if ((p && p.roleId) === "nostradamus" && _nostSideCh && getDrawScenarioForFlow() === "pedarkhande") return _nostSideCh === "mafia" ? "مافیا" : "شهر";
+              if ((p && p.roleId) === "nostradamus" && _nostSideCh && _scenarioCh === "pedarkhande") return _nostSideCh === "mafia" ? "مافیا" : "شهر";
+              if ((p && p.roleId) === "zodiac" && _scenarioCh === "zodiac") return "شهر";
               const r = roles[p && p.roleId]; return r ? r.teamFa : "شهر";
             };
             const aliveMafia = aliveIdxs.filter(({ p }) => getTeam(p) === "مافیا");
@@ -1509,6 +1511,11 @@
               ${winnerLabel ? `<div style="margin-top:14px; padding:12px; border-radius:10px; background:rgba(255,255,255,.06); text-align:center; font-weight:1100; font-size:1.1em">${escapeHtml(winnerLabel)}</div>` : ""}
             </div>`;
           } else if (cur.id === "winner_run") {
+            if (typeof recordFairnessHistory === "function" && appState.draw && !appState.draw.fairnessRecorded) {
+              recordFairnessHistory(appState.draw, (appState.ui && appState.ui.playerNames) ? appState.ui.playerNames : []);
+              appState.draw.fairnessRecorded = true;
+              if (typeof saveState === "function") saveState(appState);
+            }
             const d = f.draft || {};
             const winnerTeam = d.winnerTeam || null;
             const winnerLabelMap = {
@@ -1902,7 +1909,7 @@
                         return opts.join("");
                       };
                       return `
-                        <div class="note" style="margin-top:6px">${escapeHtml(appLang === "fa" ? "پدرخوانده یک بازیکن را انتخاب و نقشش را حدس می‌زند. درست → خارج (واتسون نمی‌تواند نجات دهد). غلط → هیچ." : "Godfather picks a player and guesses their role. Correct → eliminated (Watson cannot save). Wrong → nothing.")}</div>
+                        <div class="note fl-moderator-info" style="margin-top:6px">${escapeHtml(appLang === "fa" ? "پدرخوانده یک بازیکن را انتخاب و نقشش را حدس می‌زند. درست → خارج (واتسون نمی‌تواند نجات دهد). غلط → هیچ." : "Godfather picks a player and guesses their role. Correct → eliminated (Watson cannot save). Wrong → nothing.")}</div>
                         <div style="height:6px"></div>
                         ${mkNightTargetCards("fl_sixth_sense_target", savedNight.sixthSenseTarget, appLang === "fa" ? "بازیکن حدس‌زده‌شده" : "Guessed player")}
                         <label style="margin-top:6px">${escapeHtml(appLang === "fa" ? "نقش حدس‌زده شده" : "Guessed role")}
@@ -1911,7 +1918,7 @@
                       `;
                     })() : ""}
                     ${godfatherAction === "saul_buy" && saulBuyAllowed ? `
-                      <div class="note" style="margin-top:6px">${escapeHtml(appLang === "fa" ? "هدف‌ها شامل همه بازیکنان زنده غیرمافیا. فقط شهروند ساده موفق می‌شود؛ بقیه «خرید ناموفق»." : "Targets include all alive (non-mafia) players. Only simple citizen succeeds; others show 'Saul buy failed'.")}</div>
+                      <div class="note fl-moderator-info" style="margin-top:6px">${escapeHtml(appLang === "fa" ? "هدف‌ها شامل همه بازیکنان زنده غیرمافیا. فقط شهروند ساده موفق می‌شود؛ بقیه «خرید ناموفق»." : "Targets include all alive (non-mafia) players. Only simple citizen succeeds; others show 'Saul buy failed'.")}</div>
                       ${saulBuyTargetIdxs.length ? mkNightTargetCards("fl_saul_buy_target", savedNight.saulBuyTarget, appLang === "fa" ? "هدف خرید ساول" : "Saul buy target", saulBuyTargetIdxs) : `<div class="note warn">${escapeHtml(appLang === "fa" ? "هیچ بازیکن غیرمافیایی زنده نیست." : "No alive non-mafia player.")}</div>`}
                       ${(() => {
                         const tIdx = (savedNight.saulBuyTarget !== null && savedNight.saulBuyTarget !== undefined && Number.isFinite(Number(savedNight.saulBuyTarget))) ? parseInt(savedNight.saulBuyTarget, 10) : null;
@@ -1932,7 +1939,7 @@
                       return `
                     <div style="height:14px"></div>
                     <div style="font-weight:1100; margin-bottom:6px">${escapeHtml(appLang === "fa" ? "ماتادور — غیرفعال‌کردن توان شب" : "Matador — Disable night ability")}</div>
-                    <div class="note" style="margin-bottom:6px; font-size:12px">${escapeHtml(appLang === "fa" ? "ماتادور نمی‌تواند دو شب متوالی یک نفر را انتخاب کند." : "Matador cannot choose the same player two consecutive nights.")}</div>
+                    <div class="note fl-moderator-info" style="margin-bottom:6px; font-size:12px">${escapeHtml(appLang === "fa" ? "ماتادور نمی‌تواند دو شب متوالی یک نفر را انتخاب کند." : "Matador cannot choose the same player two consecutive nights.")}</div>
                     ${mkNightTargetCards("fl_matador_disable", savedNight.matadorDisable, appLang === "fa" ? "بازیکن غیرفعال‌شده" : "Disabled player", matadorTargetIdxs, new Set())}
                       `;
                     })()}
@@ -2034,7 +2041,7 @@
                   <div style="height:10px"></div>
                   <div style="font-weight:1100; border-top:1px solid rgba(255,255,255,.15); padding-top:10px">${escapeHtml(appLang === "fa" ? "ناتو — حدس نقش (یک‌بار در کل بازی)" : "NATO — Role Guess (once per game)")}</div>
                   ${natoUsedNow ? `<div class="note warn" style="margin-top:6px">${escapeHtml(appLang === "fa" ? "ناتو قبلاً از قابلیت حدس نقش استفاده کرده است." : "NATO already used the role-guess ability.")}</div>` : `
-                  <div class="note" style="margin-top:6px">${escapeHtml(appLang === "fa" ? "می‌تواند به‌جای شلیک، نقش دقیق یک نفر را حدس بزند. درست → خارج / غلط → هیچ." : "Can guess one player's exact role instead of shooting. Correct → out / Wrong → nothing.")}</div>
+                  <div class="note fl-moderator-info" style="margin-top:6px">${escapeHtml(appLang === "fa" ? "می‌تواند به‌جای شلیک، نقش دقیق یک نفر را حدس بزند. درست → خارج / غلط → هیچ." : "Can guess one player's exact role instead of shooting. Correct → out / Wrong → nothing.")}</div>
                   <div style="height:6px"></div>
                   ${mkNightTargetCards("fl_nato_target", savedNight.natoTarget, appLang === "fa" ? "هدف حدس ناتو" : "NATO guess target")}
                   <label style="margin-top:6px">${escapeHtml(appLang === "fa" ? "نقش حدس‌زده شده" : "Guessed role")}
@@ -3049,12 +3056,16 @@
               const isDeadBlock = a.alive.length === 0;
               const deadBadge = isDeadBlock ? ` • ${appLang === "fa" ? "مرده" : "dead"}` : "";
               const headerTxt = `${_wakeNum}. ${String(w || "")}${wakeActorSuffix(w)}${deadBadge}`;
+              const deadNotice = isDeadBlock
+                ? `<div class="fl-dead-notice" style="font-weight:1100; margin-bottom:8px; color:var(--muted)">${escapeHtml(appLang === "fa" ? "⛔ این نقش/تیم مرده است و اکشن ندارد." : "⛔ This role/team is dead and has no action.")}</div>`
+                : "";
               return `
-                <div style="padding:10px 0; border-bottom:1px solid rgba(255,255,255,.06); ${isDeadBlock ? "opacity:.55; filter:saturate(.2);" : ""}">
+                <div style="padding:10px 0; border-bottom:1px solid rgba(255,255,255,.06); ${isDeadBlock ? "opacity:.7; filter:saturate(.3);" : ""}">
                   <div style="font-weight:1100">${escapeHtml(headerTxt)}</div>
                   <div style="height:8px"></div>
                   <div class="row one">
-                    ${isDeadBlock ? `<div class="note">${escapeHtml(appLang === "fa" ? "این نقش/تیم قبل از امشب مرده است و اکشن ندارد." : "This role/team is dead before tonight and has no action.")}</div>` : sectionFor(w)}
+                    ${deadNotice}
+                    ${isDeadBlock ? `<div style="pointer-events:none; opacity:.85">${sectionFor(w)}</div>` : sectionFor(w)}
                   </div>
                 </div>
               `;

@@ -139,6 +139,22 @@
           t.assert(appState.draw.players[guardIdx].alive !== false, "guard must survive (zodiac dies instead)");
         },
       },
+      {
+        name: "Zodiac alive: game must NOT end as mafia win (Zodiac must be eliminated first)",
+        fn: function (t) {
+          if (typeof nextFlowStep !== "function" || typeof getFlowSteps !== "function") return;
+          var draw = ["alcapone", "magician", "zodiac", "doctor"];
+          var f = SH.setup("zodiac", draw);
+          f.phase = "night";
+          f.day = 1;
+          SH.atNight(f, 1, { mafiaShot: null, doctorSave: null, detectiveQuery: null, zodiacShot: null, professionalShot: null });
+          nextFlowStep();
+          t.assert(
+            f.phase !== "winner" || f.draft.winnerTeam !== "mafia",
+            "With 2 mafia + Zodiac + 1 citizen, mafia must NOT win while Zodiac is alive (design: Mafia wins only when Zodiac eliminated)"
+          );
+        },
+      },
     ],
   };
 

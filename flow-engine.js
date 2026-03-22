@@ -2501,11 +2501,8 @@
               return appendDuskStepIfNeeded(prependDawnStepIfNeeded(stepObjs));
             }
 
-            // Compute steps from config + runtime conditionals
-            const cfg = getScenarioConfig(scenario);
-            const allowed = (cfg.dayPhaseConfig && Array.isArray(cfg.dayPhaseConfig.steps))
-              ? cfg.dayPhaseConfig.steps
-              : ["day_guns", "day_vote", "day_elim"];
+            // Compute steps from config + runtime conditionals.
+            // Flow-config (dayCfg.steps or dayCfg.base) is the single source of truth — presence of day_guns/day_gun_expiry means scenario supports them.
             const steps = [];
             const hasBombForStep = (() => {
               try {
@@ -2557,9 +2554,7 @@
                   if (endCardStep) steps.push(endCardStep);
                   continue;
                 }
-                if (id === "day_guns" && !(allowed.includes("day_guns") || allowed.includes("day_bomb"))) continue;
                 if (id === "day_guns" && !(hasUsableDayGuns() || hasBombForStep)) continue;
-                if (id === "day_gun_expiry" && !allowed.includes("day_gun_expiry")) continue;
                 if (id === "day_gun_expiry" && !hasUnfiredRealGuns()) continue;
                 steps.push({ id, title: getStepTitle(id) });
               }
@@ -2574,9 +2569,7 @@
               steps.push({ id: "day_poison_status", title: getStepTitle("day_poison_status") });
             }
             for (const id of baseIds) {
-              if (id === "day_guns" && !(allowed.includes("day_guns") || allowed.includes("day_bomb"))) continue;
               if (id === "day_guns" && !(hasUsableDayGuns() || hasBombForStep)) continue;
-              if (id === "day_gun_expiry" && !allowed.includes("day_gun_expiry")) continue;
               if (id === "day_gun_expiry" && !hasUnfiredRealGuns()) continue;
               steps.push({ id, title: getStepTitle(id) });
             }
@@ -2935,11 +2928,12 @@
             const alive = draw.players
               .map((p, i) => ({ p, i }))
               .filter(({ p }) => p && p.alive !== false);
-            const nostSide = (f.draft && (f.draft.nostradamusChosenSide === "mafia" || f.draft.nostradamusChosenSide === "citizen")) ? f.draft.nostradamusChosenSide : null;
+            const scenario = getDrawScenarioForFlow();
+            // For win-condition counting: Nostradamus (pedarkhande) and Zodiac (zodiac) always count as citizen.
+            // Their chosen side / independent status affects winner announcement only, not game-over threshold.
             const getTeam = (p) => {
-              if ((p && p.roleId) === "nostradamus" && nostSide && getDrawScenarioForFlow() === "pedarkhande") {
-                return nostSide === "mafia" ? "مافیا" : "شهر";
-              }
+              if ((p && p.roleId) === "nostradamus" && scenario === "pedarkhande") return "شهر";
+              if ((p && p.roleId) === "zodiac" && scenario === "zodiac") return "شهر";
               const r = roles[p && p.roleId];
               return r ? r.teamFa : "شهر";
             };
@@ -2948,16 +2942,17 @@
             const nCitizen = alive.filter(({ p }) => getTeam(p) === "شهر").length;
             const total    = alive.length;
             if (!f.draft || typeof f.draft !== "object") f.draft = {};
-            // Mafia win: mafia ≥ all non-mafia
-            if (nMafia > 0 && nMafia >= nCitizen + nIndep) {
+            const zodiacAlive = scenario === "zodiac" && alive.some(({ p }) => (p && p.roleId) === "zodiac");
+            // Mafia win: mafia ≥ all non-mafia. Zodiac scenario: Mafia wins only when Zodiac is eliminated.
+            if (nMafia > 0 && nMafia >= nCitizen + nIndep && !zodiacAlive) {
               f.draft.winnerBack      = { phase: backPhase, day: backDay, step: backStep };
               f.draft.winnerFromChaos = false;
               f.draft.winnerTeam      = "mafia";
               f.phase = "winner"; f.step = 0;
               return true;
             }
-            // Citizens win: no mafia and no independents
-            if (nMafia === 0 && nIndep === 0) {
+            // Citizens win: no mafia and no independents. Zodiac scenario: City wins only when Zodiac is eliminated.
+            if (nMafia === 0 && nIndep === 0 && !zodiacAlive) {
               f.draft.winnerBack      = { phase: backPhase, day: backDay, step: backStep };
               f.draft.winnerFromChaos = false;
               f.draft.winnerTeam      = "citizens";
@@ -3072,8 +3067,10 @@
                 const picks = d2.chaosPicks || {};
                 const aIdxs = draw.players.map((p, i) => ({ p, i })).filter(({ p }) => p && p.alive !== false);
                 const _nostSideChaos = (d2.nostradamusChosenSide === "mafia" || d2.nostradamusChosenSide === "citizen") ? d2.nostradamusChosenSide : null;
+                const _scenarioChaos = getDrawScenarioForFlow();
                 const getT = (p) => {
-                  if ((p && p.roleId) === "nostradamus" && _nostSideChaos && getDrawScenarioForFlow() === "pedarkhande") return _nostSideChaos === "mafia" ? "مافیا" : "شهر";
+                  if ((p && p.roleId) === "nostradamus" && _nostSideChaos && _scenarioChaos === "pedarkhande") return _nostSideChaos === "mafia" ? "مافیا" : "شهر";
+                  if ((p && p.roleId) === "zodiac" && _scenarioChaos === "zodiac") return "شهر";
                   const r = roles[p && p.roleId]; return r ? r.teamFa : "شهر";
                 };
                 const aMaf = aIdxs.filter(({ p }) => getT(p) === "مافیا");

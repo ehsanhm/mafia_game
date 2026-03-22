@@ -1043,6 +1043,43 @@
           assert(side === "citizen", "Nostradamus chosen side should persist after Back then Next (instruction 60)");
         },
       },
+      // Win-condition: Nostradamus always counts as citizen when deciding game-over
+      {
+        name: "Nostradamus counts as citizen for game-over even when chose mafia",
+        fn: function ({ assert }) {
+          if (typeof nextFlowStep !== "function" || typeof getFlowSteps !== "function") return;
+          appState.ui.scenario = "pedarkhande";
+          appState.draw = {
+            players: [
+              { roleId: "godfather", alive: true },
+              { roleId: "matador", alive: true },
+              { roleId: "watson", alive: true },
+              { roleId: "leon", alive: true },
+              { roleId: "nostradamus", alive: true },
+              { roleId: "citizen", alive: true },
+            ],
+            uiAtDraw: { scenario: "pedarkhande" },
+          };
+          appState.god = appState.god || {};
+          appState.god.flow = {
+            phase: "night",
+            day: 1,
+            step: 0,
+            draft: {
+              nostradamusChosenSide: "mafia",
+              nightActionsByNight: {},
+            },
+          };
+          const f = ensureFlow();
+          const nightSteps = getFlowSteps({ ...f, phase: "night" });
+          f.step = Math.max(0, nightSteps.length - 1);
+          nextFlowStep();
+          assert(
+            f.phase !== "winner" || f.draft.winnerTeam !== "mafia",
+            "With 2 mafia + Nostradamus (chose mafia) + 3 citizens, game must NOT end as mafia win (Nostradamus counts as citizen for game-over)"
+          );
+        },
+      },
       // Instruction 50: When 2 guessed are mafia, Mafia must be only choice
       {
         name: "Nostradamus choose side: 2 mafia in pick3 forces Mafia-only choice",
