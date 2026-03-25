@@ -8,7 +8,7 @@
   if (typeof window.registerStepRenderer !== "function") return;
 
   function renderDayDuskResolution(ctx) {
-    const { f, names, draw, escapeHtml, t, ROLE_I18N, getEliminatedForStatusCheck } = ctx;
+    const { f, names, draw, escapeHtml, t, roles, appLang, ROLE_I18N, getEliminatedForStatusCheck } = ctx;
     const currentDay = f.day || 1;
     const eliminated = (typeof getEliminatedForStatusCheck === "function" && f)
       ? getEliminatedForStatusCheck(f, currentDay, "day")
@@ -17,8 +17,12 @@
     const roleNameOf = (idx) => {
       const players = draw && draw.players;
       const roleId = players && players[idx] && players[idx].roleId;
-      const ri = roleId && ROLE_I18N && ROLE_I18N[roleId];
-      return ri ? ri.name : "";
+      if (!roleId) return "";
+      const r = roles && roles[roleId];
+      if (r) {
+        return (appLang === "fa" && r.faName) ? r.faName : (ROLE_I18N && ROLE_I18N[roleId] && ROLE_I18N[roleId].name) ? ROLE_I18N[roleId].name : roleId;
+      }
+      return (ROLE_I18N && ROLE_I18N[roleId] && ROLE_I18N[roleId].name) ? ROLE_I18N[roleId].name : roleId;
     };
     const elimLabel = t("tool.flow.dusk.eliminated");
     const noneLabel = t("tool.flow.dusk.none");
@@ -32,7 +36,7 @@
       : `<div>${escapeHtml(noneLabel)}</div>`;
     return `
       <div style="text-align:center; padding:20px 0 10px">
-        <div style="font-size:13px; font-weight:950; color:var(--muted); margin-bottom:18px; text-transform:uppercase; letter-spacing:.05em">${escapeHtml(t("tool.flow.dusk.title"))}</div>
+        <div style="font-size:13px; font-weight:950; color:var(--muted); margin-bottom:18px; ${isRtl ? "" : "text-transform:uppercase; letter-spacing:.05em;"}">${escapeHtml(t("tool.flow.dusk.title"))}</div>
         <div style="text-align:${isRtl ? "right" : "left"}; margin:0 auto; max-width:320px; padding:14px 18px; background:rgba(255,255,255,.06); border-radius:12px; border:1px solid rgba(255,255,255,.12)">
           <div style="color:rgba(255,110,70,.95); font-weight:1000; margin-bottom:8px">${escapeHtml(elimLabel)}</div>
           <div style="color:rgba(255,255,255,.9)">${elimRows}</div>

@@ -11,9 +11,17 @@
     <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;500;700;900&display=swap" rel="stylesheet">
   </head>
   <body>
-    <div id="fairTestPanel" style="display:none; position:fixed; top:10px; right:10px; z-index:9999; background:rgba(26,29,33,.98); padding:14px; border-radius:10px; border:1px solid rgba(255,255,255,.15); max-width:320px;">
+    <div id="fairTestPanel" style="display:none; position:fixed; top:10px; right:10px; z-index:9999; background:rgba(26,29,33,.98); padding:14px; border-radius:10px; border:1px solid rgba(255,255,255,.15); max-width:340px;">
       <div style="font-weight:700; margin-bottom:8px;">Fair Distribution E2E</div>
-      <button type="button" id="fairTestRunBtn" style="padding:8px 14px; margin:4px 4px 4px 0; cursor:pointer; background:#3b82f6; color:white; border:none; border-radius:6px;">Run 100 games</button>
+      <label style="display:block; font-size:12px; color:#94a3b8; margin-bottom:10px;">
+        <span style="display:block; margin-bottom:4px;">Scenario</span>
+        <select id="fairTestScenario" style="width:100%; padding:6px 8px; border-radius:6px; border:1px solid rgba(255,255,255,.15); background:#111827; color:#e2e8f0; font-size:13px;"></select>
+      </label>
+      <label style="display:flex; align-items:center; gap:8px; font-size:12px; color:#94a3b8; margin-bottom:10px; flex-wrap:wrap;">
+        <span>Runs</span>
+        <input type="number" id="fairTestRunCount" min="1" max="100000" value="100" style="width:72px; padding:6px 8px; border-radius:6px; border:1px solid rgba(255,255,255,.15); background:#111827; color:#e2e8f0; font-size:13px;" title="How many full deal cycles to run">
+      </label>
+      <button type="button" id="fairTestRunBtn" style="padding:8px 14px; margin:4px 4px 4px 0; cursor:pointer; background:#3b82f6; color:white; border:none; border-radius:6px;"><span id="fairTestRunBtnLabel">Run batch (100)</span></button>
       <button type="button" id="fairTestClearBtn" style="padding:8px 14px; margin:4px; cursor:pointer; background:#64748b; color:white; border:none; border-radius:6px;">Clear history</button>
       <div id="fairTestStatus" style="font-size:12px; color:#94a3b8; margin-top:8px; min-height:1.2em;"></div>
       <div id="fairTestTable" style="margin-top:12px; font-size:12px; max-height:200px; overflow:auto;"></div>
@@ -211,6 +219,7 @@
 
     <script src="strings.js"></script>
     <script src="roles.js"></script>
+    <script src="mafia-role-assigner.js"></script>
     <script src="scenarios.js"></script>
     <script src="flow-configs/classic.js"></script>
     <script src="flow-configs/pedarkhande.js"></script>
@@ -236,7 +245,6 @@
 
         const LANG_KEY = "mafia_v2_simple_web_lang_v1";
         const FAIRNESS_HISTORY_KEY = "mafia_v2_fairness_history_v2";
-        const FAIRNESS_ROTATION_KEY = "mafia_v2_fairness_rotation_v1";
         const FAIRNESS_HISTORY_MAX_GAMES = 50;
         let appLang = "fa"; // "fa" | "en"
 
@@ -468,90 +476,40 @@
           }
           saveFairnessHistory(h);
         }
-        function buildFairAssignment(pool, playerNames) {
-          const n = pool.length;
-          if (!n || !playerNames || playerNames.length < n) return null;
+
+        /** When every player has a role, persist fairness history. Without this, history only saved on a second Deal click or Flow winner — a single completed deal left {} in localStorage. */
+        function tryRecordFairnessHistoryWhenDealComplete() {
+          const draw = appState.draw;
+          if (!draw || !draw.players || !draw.fairMode || draw.fairnessRecorded) return;
+          const n = draw.players.length;
+          if (n === 0) return;
+          if ((draw.currentIdx || 0) < n) return;
+          const names = (appState.ui && appState.ui.playerNames) ? appState.ui.playerNames : [];
+          if (!names || names.length < n) return;
+          if (!draw.players.every((p) => p && p.roleId)) return;
+          if (typeof recordFairnessHistory !== "function") return;
+          recordFairnessHistory(draw, names);
+          draw.fairnessRecorded = true;
+          try { saveState(appState); } catch (e) {}
+        }
+
+        function getFairnessRecordForName(name) {
           const h = loadFairnessHistory();
-          const teamFa = (rid) => (roles[rid] && roles[rid].teamFa) ? roles[rid].teamFa : "شهر";
-          const isMafia = (rid) => teamFa(rid) === "مافیا";
-          const getRec = (name) => {
-            const nm = String((name || "")).trim() || "";
-            let rec = h[nm];
-            if (!rec && nm.startsWith("__p")) {
-              const num = nm.replace(/^__p/, "");
-              const legacyEn = "Player " + num;
-              const legacyFa = "بازیکن " + (typeof toFarsiNum === "function" ? toFarsiNum(parseInt(num, 10)) : num);
-              rec = h[legacyEn] || h[legacyFa];
-            }
-            return rec || { recentGames: [] };
-          };
-          function getMafiaStats(idx) {
-            const name = String((playerNames[idx] || "")).trim() || ("__p" + (idx + 1));
-            const games = Array.isArray(getRec(name).recentGames) ? getRec(name).recentGames : [];
-            const mafiaCount = games.filter((g) => isMafia(g && g.roleId)).length;
-            let lastGamesWereMafia = 0;
-            for (let i = games.length - 1; i >= 0; i--) {
-              if (!isMafia(games[i] && games[i].roleId)) break;
-              lastGamesWereMafia++;
-            }
-            return { mafiaCount, lastGamesWereMafia };
+          const nm = String((name || "")).trim() || "";
+          let rec = h[nm];
+          if (!rec && nm.startsWith("__p")) {
+            const num = nm.replace(/^__p/, "");
+            const legacyEn = "Player " + num;
+            const legacyFa = "بازیکن " + (typeof toFarsiNum === "function" ? toFarsiNum(parseInt(num, 10)) : num);
+            rec = h[legacyEn] || h[legacyFa];
           }
-          const mafiaRoles = pool.filter(isMafia);
-          const nonMafiaRoles = pool.filter((r) => !isMafia(r));
-          const assignment = Array(n).fill(null);
-          const available = new Set(Array.from({ length: n }, (_, i) => i));
-          let rotation = 0;
-          try {
-            const r = localStorage.getItem(FAIRNESS_ROTATION_KEY);
-            if (r != null) rotation = Math.max(0, parseInt(r, 10) || 0);
-          } catch {}
-          const assignMafiaTo = (candidates, mafiaPickIndex) => {
-            const withStats = candidates.map((i) => ({ i, ...getMafiaStats(i) }));
-            withStats.sort((a, b) => {
-              if (a.mafiaCount !== b.mafiaCount) return a.mafiaCount - b.mafiaCount;
-              if (a.lastGamesWereMafia !== b.lastGamesWereMafia) return a.lastGamesWereMafia - b.lastGamesWereMafia;
-              return a.i - b.i;
-            });
-            const minCount = withStats[0].mafiaCount;
-            const minConj = withStats[0].lastGamesWereMafia;
-            const tier = withStats.filter((x) => x.mafiaCount === minCount && x.lastGamesWereMafia === minConj);
-            const pos = (rotation + mafiaPickIndex) % Math.max(1, tier.length);
-            return tier[pos].i;
-          };
-          let mafiaPickIndex = 0;
-          for (const roleId of mafiaRoles) {
-            const candidates = Array.from(available);
-            if (candidates.length === 0) return null;
-            const chosen = assignMafiaTo(candidates, mafiaPickIndex);
-            mafiaPickIndex++;
-            assignment[chosen] = roleId;
-            available.delete(chosen);
-          }
-          try {
-            localStorage.setItem(FAIRNESS_ROTATION_KEY, String((rotation + 1) % Math.max(1, n)));
-          } catch {}
-          const roleCounts = {};
-          function getHad(idx, rid) {
-            const name = String((playerNames[idx] || "")).trim() || ("__p" + (idx + 1));
-            const games = Array.isArray(getRec(name).recentGames) ? getRec(name).recentGames : [];
-            return games.filter((g) => (g && g.roleId) === rid).length;
-          }
-          for (const roleId of nonMafiaRoles) {
-            const candidates = Array.from(available);
-            if (candidates.length === 0) return null;
-            const weights = candidates.map((i) => ({ i, w: 1 / (1 + 0.2 * getHad(i, roleId)) }));
-            const tot = weights.reduce((s, x) => s + x.w, 0);
-            if (tot <= 0) return null;
-            let r = Math.random() * tot;
-            let chosen = weights[0].i;
-            for (const { i, w } of weights) {
-              r -= w;
-              if (r <= 0) { chosen = i; break; }
-            }
-            assignment[chosen] = roleId;
-            available.delete(chosen);
-          }
-          return assignment;
+          return rec || { recentGames: [] };
+        }
+
+        MafiaFairAssign.init({ getLegacyRecord: getFairnessRecordForName });
+
+        function buildFairAssignment(pool, playerNames) {
+          return MafiaFairAssign.buildAssignment(pool, playerNames, { roles });
         }
 
         function computeSuggestedMafia(nPlayers) {
@@ -3968,6 +3926,9 @@
             if (!assign) {
               deck = res.pool.slice();
               shuffle(deck);
+              try {
+                window.__mafiaFairAssignShuffleCount = (window.__mafiaFairAssignShuffleCount || 0) + 1;
+              } catch (e) {}
             } else {
               deck = assign;
             }
@@ -4013,6 +3974,7 @@
           draw.currentIdx = cur + 1;
           saveState(appState);
           renderCards();
+          tryRecordFairnessHistoryWhenDealComplete();
 
           openRoleModal({ who, roleId, onConfirm: null });
         }
@@ -4070,6 +4032,7 @@
           draw.currentIdx = n;
           saveState(appState);
           renderCards();
+          tryRecordFairnessHistoryWhenDealComplete();
         }
 
         function setPlayerLife(idx, { alive, reason }) {
@@ -4614,6 +4577,18 @@
         $("toolOkBtn").addEventListener("click", closeToolModal);
         $("toolModal").addEventListener("click", (e) => {
           if (e.target === $("toolModal")) closeToolModal();
+          const clearFairnessBtn = e.target && e.target.closest && e.target.closest("#helpClearFairnessHistoryBtn");
+          if (clearFairnessBtn) {
+            e.preventDefault();
+            try {
+              localStorage.removeItem(FAIRNESS_HISTORY_KEY);
+            } catch (err) {}
+            const fb = $("fairnessClearFeedback");
+            if (fb && typeof t === "function") {
+              fb.textContent = t("help.clearFairnessHistoryDone");
+              fb.style.display = "block";
+            }
+          }
         });
 
         // GOD tools
@@ -4730,8 +4705,67 @@
           const testNames = ["مهدی (Mehdi)", "ناصر (Nasser)", "مهسا (Mahsa)", "سپیده (Sepideh)", "تینا (Tina)", "فرزانه (Farzaneh)", "آرش (Arash)", "گلسا (Golsa)", "آرتین (Artin)", "محمد (Mohammad)", "مهتاب (Mehtab)"];
           const panel = $("fairTestPanel");
           if (panel) panel.style.display = "block";
-          const roleLabel = (rid) => (roles[rid] && roles[rid].faName) ? roles[rid].faName : rid;
+          const fairTestScenarioSel = $("fairTestScenario");
+          const mainScenarioSel = $("scenario");
+          if (fairTestScenarioSel && mainScenarioSel) {
+            fairTestScenarioSel.innerHTML = "";
+            const opts = mainScenarioSel.querySelectorAll("option");
+            for (let oi = 0; oi < opts.length; oi++) {
+              const opt = opts[oi];
+              const n = document.createElement("option");
+              n.value = opt.value;
+              n.textContent = opt.textContent;
+              fairTestScenarioSel.appendChild(n);
+            }
+            fairTestScenarioSel.value = "pedarkhande";
+          }
+          /** Expected pool for scenario + table size — city (good) vs non–city (bad) slot counts only. */
+          function fairTestExpectedPool(scenario, nPlayers) {
+            const def = computeScenarioDefaultCounts(scenario);
+            let mafiaCount = def.mafiaCount;
+            const toggles = def.toggles;
+            const maxM = Math.max(1, Math.floor((nPlayers - 1) / 2));
+            mafiaCount = clamp(mafiaCount, 1, maxM);
+            const ms = countEnabledMafiaSpecials(toggles);
+            if (ms > mafiaCount) mafiaCount = ms;
+            mafiaCount = clamp(mafiaCount, 1, maxM);
+            let r = buildRolePool(nPlayers, mafiaCount, toggles);
+            if (!r.ok) {
+              for (let m = mafiaCount + 1; m <= maxM; m++) {
+                r = buildRolePool(nPlayers, m, toggles);
+                if (r.ok) break;
+              }
+            }
+            if (!r.ok || !r.pool) return { pool: [], citySlots: 0, badSlots: 0 };
+            const pool = r.pool;
+            const citySlots = pool.filter(function (rid) {
+              return roles[rid] && roles[rid].teamFa === "شهر";
+            }).length;
+            const badSlots = pool.filter(function (rid) {
+              return !(roles[rid] && roles[rid].teamFa === "شهر");
+            }).length;
+            return { pool: pool, citySlots: citySlots, badSlots: badSlots };
+          }
+          /** Same rule as mafia-role-assigner isTownRole: city only if teamFa === "شهر". */
+          function fairTestCountSides(rec) {
+            let good = 0;
+            let bad = 0;
+            const keys = Object.keys(rec || {});
+            for (let ki = 0; ki < keys.length; ki++) {
+              const rid = keys[ki];
+              const c = rec[rid] || 0;
+              if (!c) continue;
+              if (roles[rid] && roles[rid].teamFa === "شهر") good += c;
+              else bad += c;
+            }
+            return { good: good, bad: bad };
+          }
           window.__runFairTestGame = function (playerNames) {
+            try {
+              if (typeof MafiaFairAssign !== "undefined" && MafiaFairAssign && typeof MafiaFairAssign.configure === "function") {
+                MafiaFairAssign.configure({ groupPickMode: "deficit" });
+              }
+            } catch (e) {}
             const prevDraw = appState.draw;
             if (prevDraw && prevDraw.players && !prevDraw.fairnessRecorded && typeof recordFairnessHistory === "function") {
               const prevNames = (prevDraw.uiAtDraw && prevDraw.uiAtDraw.playerNames) || (appState.ui && appState.ui.playerNames);
@@ -4749,10 +4783,32 @@
             const castBackBtn = $("castBackBtn");
             if (prevDraw) castBackBtn && castBackBtn.click();
             showSetup();
-            if (scenarioSel) scenarioSel.value = "pedarkhande";
-            appState.ui.scenario = "pedarkhande";
+            const fs = $("fairTestScenario");
+            const scenarioRun = (fs && fs.value) ? fs.value : "pedarkhande";
+            if (scenarioSel) scenarioSel.value = scenarioRun;
+            appState.ui.scenario = scenarioRun;
             defaultsBtn && defaultsBtn.click();
             appState.ui.fairRoles = true;
+            // Scenario defaults often use a different nPlayers than the fixed test name list (e.g. bazras=10 vs 11 names).
+            // Align player count to the test list so deal/buildRolePool/readNamesFromInputs all agree.
+            const wantN = playerNames.length;
+            if (wantN >= 5 && wantN <= 30) {
+              appState.ui.nPlayers = wantN;
+              const pc = $("playersCount");
+              if (pc) pc.value = String(wantN);
+              fillMafiaSelect(wantN, computeSuggestedMafia(wantN));
+              const maxM = Math.max(1, Math.floor((wantN - 1) / 2));
+              let mc = clamp(parseInt($("mafiaCount").value, 10) || appState.ui.mafiaCount, 1, maxM);
+              const ms = countEnabledMafiaSpecials(appState.ui.toggles);
+              if (ms > mc) mc = ms;
+              mc = clamp(mc, 1, maxM);
+              appState.ui.mafiaCount = mc;
+              $("mafiaCount").value = String(mc);
+              applyToggles(appState.ui.toggles, { disableMafiaBoss: mc <= 0, disableSwindler: mc <= 1 });
+              ensureNamesLength(wantN);
+              renderNameGrid();
+              regenerateFromUI();
+            }
             startBtn && startBtn.click();
             ensureNamesLength(playerNames.length);
             appState.ui.playerNames = playerNames.slice();
@@ -4767,20 +4823,39 @@
             nextBtn && nextBtn.click();
             const draw = appState.draw;
             const names = (draw && draw.uiAtDraw && draw.uiAtDraw.playerNames) ? draw.uiAtDraw.playerNames : (appState.ui && appState.ui.playerNames);
-            const roles = (draw && draw.players) ? draw.players.map((p) => (p && p.roleId) || "citizen") : [];
-            return { playerNames: names || [], roles };
+            const roleIds = (draw && draw.players) ? draw.players.map((p) => (p && p.roleId) || "citizen") : [];
+            return { playerNames: names || [], roles: roleIds };
           };
           const runBtn = $("fairTestRunBtn");
           const clearBtn = $("fairTestClearBtn");
           const statusEl = $("fairTestStatus");
           const tableEl = $("fairTestTable");
+          const runCountInput = $("fairTestRunCount");
+          const runBtnLabel = $("fairTestRunBtnLabel");
+          function parseFairTestRunCount() {
+            let n = runCountInput ? parseInt(runCountInput.value, 10) : 100;
+            if (!Number.isFinite(n) || n < 1) n = 1;
+            if (n > 100000) n = 100000;
+            return n;
+          }
+          function syncFairTestRunBtnLabel() {
+            const n = parseFairTestRunCount();
+            if (runBtnLabel) runBtnLabel.textContent = "Run batch (" + n + ")";
+          }
+          if (runCountInput) {
+            runCountInput.addEventListener("input", syncFairTestRunBtnLabel);
+            runCountInput.addEventListener("change", syncFairTestRunBtnLabel);
+          }
+          syncFairTestRunBtnLabel();
           if (runBtn) runBtn.addEventListener("click", function () {
+            const nRuns = parseFairTestRunCount();
             runBtn.disabled = true;
-            statusEl.textContent = "Running 100 games...";
+            statusEl.textContent = "Running " + nRuns + " games...";
+            try { window.__mafiaFairAssignShuffleCount = 0; } catch (e) {}
             const results = {};
             for (const n of testNames) results[n] = {};
             let failed = 0;
-            for (let g = 0; g < 100; g++) {
+            for (let g = 0; g < nRuns; g++) {
               const out = window.__runFairTestGame(testNames);
               if (!out || !out.roles || out.roles.length < testNames.length) { failed++; continue; }
               const names = out.playerNames || [];
@@ -4790,20 +4865,37 @@
                 if (!results[name]) results[name] = {};
                 results[name][rid] = (results[name][rid] || 0) + 1;
               }
-              statusEl.textContent = "Game " + (g + 1) + "/100";
+              statusEl.textContent = "Game " + (g + 1) + "/" + nRuns;
             }
-            const mafiaIds = ["godfather", "matador", "saulGoodman"];
-            const rows = Object.keys(results).map((n) => ({ name: n, count: mafiaIds.reduce((s, r) => s + (results[n][r] || 0), 0) }));
-            rows.sort((a, b) => b.count - a.count);
-            let html = "<table style='width:100%;font-size:11px'><tr><th>Name</th><th>Mafia</th></tr>";
-            for (const r of rows) html += "<tr><td>" + r.name + "</td><td>" + r.count + "</td></tr>";
+            const fsSc = $("fairTestScenario");
+            const scenarioStats = (fsSc && fsSc.value) ? fsSc.value : "pedarkhande";
+            const expected = fairTestExpectedPool(scenarioStats, testNames.length);
+            const rows = Object.keys(results).map(function (n) {
+              const rec = results[n] || {};
+              const sides = fairTestCountSides(rec);
+              return { name: n, good: sides.good, bad: sides.bad };
+            });
+            rows.sort(function (a, b) { return b.bad - a.bad; });
+            let html = "<table style='width:100%;font-size:11px;border-collapse:collapse'><tr><th style='text-align:left'>Name</th><th title=\"شهر — city team\">Good (city)</th><th title=\"مافیا + مستقل — non-city\">Bad (non-city)</th></tr>";
+            for (let ri = 0; ri < rows.length; ri++) {
+              const r = rows[ri];
+              html += "<tr><td>" + r.name + "</td><td style='text-align:center'>" + r.good + "</td><td style='text-align:center'>" + r.bad + "</td></tr>";
+            }
             html += "</table>";
+            const poolNote = expected.pool && expected.pool.length
+              ? ("Scenario <strong>" + escapeHtml(String(scenarioStats)) + "</strong> · pool: " + expected.citySlots + " city / " + expected.badSlots + " non-city slots")
+              : "Could not build role pool for this scenario.";
+            html += "<div style='margin-top:8px;font-size:10px;color:#64748b;line-height:1.45'>" + poolNote + ". Counts are by side only (not specific roles). Good + Bad = " + nRuns + " per player. Try many runs to judge fairness.</div>";
             tableEl.innerHTML = html;
-            statusEl.textContent = "Done. 100 games. Spread: " + (rows[0].count - rows[rows.length - 1].count);
+            const spreadBad = rows.length ? (rows[0].bad - rows[rows.length - 1].bad) : 0;
+            const shuf = typeof window.__mafiaFairAssignShuffleCount === "number" ? window.__mafiaFairAssignShuffleCount : 0;
+            let statusLine = "Done. " + nRuns + " games." + (failed ? " Failed: " + failed + "." : "") + " Spread (bad / non-city): " + spreadBad;
+            if (shuf > 0) statusLine += " · Fair assign fell back to shuffle " + shuf + "× (check pool/names).";
+            statusEl.textContent = statusLine;
             runBtn.disabled = false;
           });
           if (clearBtn) clearBtn.addEventListener("click", function () {
-            try { localStorage.removeItem("mafia_v2_fairness_history_v2"); localStorage.removeItem("mafia_v2_fairness_rotation_v1"); } catch {}
+            try { localStorage.removeItem("mafia_v2_fairness_history_v2"); } catch {}
             statusEl.textContent = "History cleared.";
           });
         }

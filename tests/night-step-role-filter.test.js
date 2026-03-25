@@ -132,6 +132,31 @@
         },
       },
       {
+        name: "Classic without Mafia Boss (simple mafia only): night_mafia step is still in flow",
+        fn: function ({ assert }) {
+          if (typeof getFlowSteps !== "function") return;
+          appState.ui.scenario = "classic";
+          appState.draw = {
+            players: [
+              { roleId: "mafia", alive: true },
+              { roleId: "mafia", alive: true },
+              { roleId: "mafia", alive: true },
+              { roleId: "detective", alive: true },
+              { roleId: "doctor", alive: true },
+            ],
+            uiAtDraw: { scenario: "classic" },
+          };
+          appState.god = appState.god || {};
+          appState.god.flow = null;
+          const f = ensureFlow();
+          f.phase = "night";
+          f.day = 1;
+          const steps = getFlowSteps({ ...f, phase: "night" });
+          const mafiaStep = steps.find((s) => s && s.id === "night_mafia");
+          assert(mafiaStep !== undefined, "night_mafia step must appear when simple mafia (no boss) are in the game");
+        },
+      },
+      {
         name: "Kabo without Armorsmith: night_armorsmith step is not shown",
         fn: function ({ assert }) {
           if (typeof getFlowSteps !== "function") return;

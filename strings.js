@@ -1,5 +1,5 @@
 const STR = {
-  version: "2.0.0",
+  version: "2.0.1",
   fa: {
     "doc.title": "اپلیکیشن بازی مافیا",
     "app.title": "اپلیکیشن بازی مافیا",
@@ -19,7 +19,7 @@ const STR = {
     "setup.resume": "ادامه بازی",
     "setup.delete": "حذف",
     "setup.fairRoles": "توزیع عادلانه نقش‌ها",
-    "setup.fairRolesNote": "بر اساس سابقه بازی، احتمال مافیا برای کسانی که اخیراً مافیا بوده‌اند کمتر و احتمال نقش‌های ویژه (مثل پزشک) برای کسانی که آن نقش را نداشته‌اند بیشتر می‌شود.",
+    "setup.fairRolesNote": "سهم بد و خوب بر اساس تاریخچه عادلانه است؛ برای هر نقش مشخص هم سهم دیده می‌شود تا در چند بازی اخیر تقریباً همه نقش‌های موجود را تجربه کنید (با کمی تصادف). مافیا و مستقل سمت غیرشهرند. هر نقش در هر راند یک‌بار به یک نفر می‌رسد.",
 
     "players.title": "بازیکنان",
     "players.namesModeAria": "حالت نام‌ها",
@@ -85,6 +85,10 @@ const STR = {
 3) «شروع بازی» را بزنید و اسامی را وارد کنید.<br />
 4) «تقسیم نقش» را بزنید؛ هر بازیکن یک کارت انتخاب می‌کند و «دیدم» را می‌زند.<br />
 5) در «فهرست شخصیت‌ها»، راوی می‌تواند ابزارها (تایمر/قرعه/تغییر نقش/وضعیت) را استفاده کند.`,
+
+    "help.clearFairnessHistoryHint": "با «توزیع عادلانه نقش‌ها»، برای هر نام بازیکن تاریخچهٔ نقش‌های قبلی ذخیره می‌شود. برای شروع از نو (مثلاً میز جدید)، می‌توانید این تاریخچه را پاک کنید.",
+    "help.clearFairnessHistory": "پاک کردن تاریخچه توزیع عادلانه",
+    "help.clearFairnessHistoryDone": "تاریخچهٔ توزیع نقش پاک شد.",
 
     "tool.wake.title": "ترتیب بیداری",
     "tool.wake.scenario": "سناریو: {name}",
@@ -356,7 +360,7 @@ const STR = {
     "setup.resume": "Resume",
     "setup.delete": "Delete",
     "setup.fairRoles": "Fair role distribution",
-    "setup.fairRolesNote": "Based on past games: lower mafia chance for recent mafia players; higher chance for special roles (e.g. Doctor) for those who haven't had them.",
+    "setup.fairRolesNote": "Good/bad sides are balanced from recent history; each specific role also trends toward fair share so over several games players tend to see almost every role in the pool (with some randomness). Mafia and independents count as non-town. Each role slot goes to one player per deal.",
 
     "players.title": "Players",
     "players.namesModeAria": "Names mode",
@@ -422,6 +426,10 @@ const STR = {
 3) Tap “Start game” and enter player names.<br />
 4) Tap “Deal roles”: each player picks a card and taps “Seen”.<br />
 5) In “Cast list”, the narrator can use tools (Timer/Draw/Role change/Status).`,
+
+    "help.clearFairnessHistoryHint": "With “Fair role distribution”, each player name’s past roles are stored. Clear this history to reset fairness from scratch (e.g. a new table).",
+    "help.clearFairnessHistory": "Clear fairness history",
+    "help.clearFairnessHistoryDone": "Fairness history cleared.",
 
     "tool.wake.title": "Wake order",
     "tool.wake.scenario": "Scenario: {name}",

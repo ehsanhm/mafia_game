@@ -58,6 +58,17 @@
 
 ---
 
+## Per-role coverage (implemented in `mafia-role-assigner.js`)
+
+After **who is town vs non-town** is fixed (fair-share deficit for bad side), each **concrete role slot** (godfather, citizen, watson, …) is assigned with weighted random **without** replacement inside each group.
+
+1. **Recency:** Recently had the **same** `roleId` → lower weight (same-role penalty + decay).
+2. **Fair share per role:** Over the last `balanceWindow` games, if this `roleId` appears `k` times in the **current** pool, each player’s expected count of that role is `(g × k) / n`. Players **below** that expectation get a **higher** weight for this slot; players **above** get a **lower** weight. This pushes everyone toward having played **almost every** role in the pool over a modest number of games, with randomness from weighted picks and shuffled slot order.
+
+Config: `roleCoverageMode`, `roleCoverageBoost`, `roleCoveragePenalty` (see `mafia-role-assigner.js`).
+
+---
+
 ## History Schema (localStorage)
 
 Only the **last 50 games** per player are kept to limit storage and weight recent history.
@@ -101,6 +112,8 @@ Option A is cleaner for "reveal" semantics. Let's go with: when fair mode is on,
 - Add toggle in Setup or Players step: "توزیع عادلانه نقش" / "Fair role distribution"
 - When ON: use fair assignment, reveal-only cards UI
 - When OFF: current behavior (random pool, pick cards)
+
+**Clear history:** Help (راهنما) modal includes a control to remove `mafia_v2_fairness_history_v2` from localStorage so fairness starts fresh (e.g. new group).
 
 ---
 

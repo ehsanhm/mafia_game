@@ -2634,6 +2634,10 @@
             const draw = appState.draw;
             if (!draw || !draw.players) return true;
             const sid = String(stepId || "");
+            if (sid === "night_mafia") {
+              const hasMafia = draw.players.some((p) => p && p.roleId && (roles[p.roleId] && roles[p.roleId].teamFa === "مافیا"));
+              return hasMafia;
+            }
             const stepToRoles = {
               night_heir: ["heir"],
               night_herbalist: ["herbalist"],
@@ -2667,10 +2671,6 @@
             };
             const roleIds = stepToRoles[sid];
             if (!roleIds) return true;
-            if (sid === "night_mafia") {
-              const hasMafia = draw.players.some((p) => p && p.roleId && (roles[p.roleId] && roles[p.roleId].teamFa === "مافیا"));
-              return hasMafia;
-            }
             const hasRole = draw.players.some((p) => p && roleIds.includes(p.roleId));
             return hasRole;
           };

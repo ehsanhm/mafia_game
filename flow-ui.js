@@ -1820,8 +1820,9 @@
               ? "اکشنی برای ثبت ندارد."
               : "No action to record.";
 
-            const sectionFor = (wakeLabel) => {
-              const k = normWake(wakeLabel);
+            const sectionFor = (wakeLabel, stepIdHint) => {
+              // Step id is authoritative: some wake labels omit "mafia"/"مافیا" (e.g. Don-only phrasing) and would otherwise map to normWake "other" → empty mafia block.
+              const k = (stepIdHint === "night_mafia" || stepIdHint === "night_mafia_team") ? "mafia" : normWake(wakeLabel);
               // Config-driven disable: if this section's player is disabled (Magician/Matador) or handcuffed, grey out.
               const wakeToRoleIds = {
                 doctor: ["doctor", "watson"],
@@ -2809,15 +2810,16 @@
               if (!players || !players.length) return true;
               const sid = String(stepId || "");
               const stepToRoles = { night_heir: ["heir"], night_herbalist: ["herbalist"], night_detective: ["detective"], night_armorsmith: ["armorsmith"], night_kadkhoda: ["kadkhoda"], night_doctor: ["doctor", "watson"], night_constantine: ["constantine"], night_kane: ["citizenKane"], night_ocean: ["ocean"], night_bomber: ["bomber"], night_zodiac: ["zodiac"], night_professional: ["professional", "leon"], night_sniper: ["sniper"], night_negotiator: ["negotiator"], night_reporter: ["reporter"], night_researcher: ["researcher"], night_swindler: ["swindler"], night_natasha: ["natasha"], night_jokermaf: ["jokerMafia"], night_lecter: ["doctorLecter"], night_magician: ["magician"], night_hacker: ["hacker"], night_guide: ["guide"], night_bodyguard: ["bodyguard"], night_minemaker: ["minemaker"], night_lawyer: ["lawyer"], night_soldier: ["soldier"], night_nato: ["nato"], night_investigator: ["investigator"], night_inspector: ["investigator"], night_guardian: ["guardian"], night_hostageTaker: ["hostageTaker"], night_commando: ["commando"], night_gunner: ["gunslinger"] };
+              if (sid === "night_mafia") return players.some((p) => p && p.roleId && (roles[p.roleId] && roles[p.roleId].teamFa === "مافیا"));
               const roleIds = stepToRoles[sid];
               if (!roleIds) return true;
-              if (sid === "night_mafia") return players.some((p) => p && p.roleId && (roles[p.roleId] && roles[p.roleId].teamFa === "مافیا"));
               return players.some((p) => p && roleIds.includes(p.roleId));
             };
             const flowCfg = (typeof getFlowConfig === "function") ? getFlowConfig(scenario) : null;
             const nightStepIds = Array.isArray(flowCfg && flowCfg.night) ? flowCfg.night : null;
             // Build ordered with same filters as flow-engine; iterate over wake with original index for stepId.
             const ordered = [];
+            const orderedStepIds = [];
             for (let i = 0; i < orderedRaw.length; i++) {
               const w = orderedRaw[i];
               const x = String(w || "").toLowerCase();
@@ -2827,6 +2829,7 @@
               const stepId = (nightStepIds && i < nightStepIds.length) ? String(nightStepIds[i]) : null;
               if (stepId && !keepRoleInDraw(stepId)) continue;
               ordered.push(w);
+              orderedStepIds.push(stepId);
             }
             // Death timing helpers (see `setPlayerLife` -> `deadAtByIdx`)
             const deathRec = (idx) => {
@@ -2880,9 +2883,9 @@
                 return null;
               }
             };
-            const wakeActorSuffix = (wakeLabel) => {
+            const wakeActorSuffix = (wakeLabel, stepIdHint) => {
               try {
-                const k = normWake(wakeLabel);
+                const k = (stepIdHint === "night_mafia" || stepIdHint === "night_mafia_team") ? "mafia" : normWake(wakeLabel);
                 const joiner = (appLang === "fa") ? "، " : ", ";
                 const deadTag = (appLang === "fa") ? "مرده" : "dead";
                 const pendingTag = (appLang === "fa") ? "در انتظار صبح" : "pending";
@@ -2971,9 +2974,9 @@
                 return "";
               }
             };
-            const wakeActors = (wakeLabel) => {
+            const wakeActors = (wakeLabel, stepIdHint) => {
               try {
-                const k = normWake(wakeLabel);
+                const k = (stepIdHint === "night_mafia" || stepIdHint === "night_mafia_team") ? "mafia" : normWake(wakeLabel);
                 const alive = (idx) => aliveTonight(idx);
                 const idxsByRole = (roleIds) => {
                   const out = [];
@@ -3046,8 +3049,8 @@
               }
             };
             let _wakeNum = 0;
-            const oneBlock = (w) => {
-              const a = wakeActors(w);
+            const oneBlock = (w, stepIdHint) => {
+              const a = wakeActors(w, stepIdHint);
               if (!a.all.length) return "";
               const _introOnly = normWake(w);
               if (_introOnly === "heir") return "";
@@ -3055,7 +3058,7 @@
               _wakeNum++;
               const isDeadBlock = a.alive.length === 0;
               const deadBadge = isDeadBlock ? ` • ${appLang === "fa" ? "مرده" : "dead"}` : "";
-              const headerTxt = `${_wakeNum}. ${String(w || "")}${wakeActorSuffix(w)}${deadBadge}`;
+              const headerTxt = `${_wakeNum}. ${String(w || "")}${wakeActorSuffix(w, stepIdHint)}${deadBadge}`;
               const deadNotice = isDeadBlock
                 ? `<div class="fl-dead-notice" style="font-weight:1100; margin-bottom:8px; color:var(--muted)">${escapeHtml(appLang === "fa" ? "⛔ این نقش/تیم مرده است و اکشن ندارد." : "⛔ This role/team is dead and has no action.")}</div>`
                 : "";
@@ -3065,7 +3068,7 @@
                   <div style="height:8px"></div>
                   <div class="row one">
                     ${deadNotice}
-                    ${isDeadBlock ? `<div style="pointer-events:none; opacity:.85">${sectionFor(w)}</div>` : sectionFor(w)}
+                    ${isDeadBlock ? `<div style="pointer-events:none; opacity:.85">${sectionFor(w, stepIdHint)}</div>` : sectionFor(w, stepIdHint)}
                   </div>
                 </div>
               `;
@@ -3077,9 +3080,9 @@
               ? (() => {
                   const w = (cur && cur.title) ? cur.title : (ordered && (f.step || 0) >= 0 && (f.step || 0) < ordered.length) ? ordered[f.step] : undefined;
                   if (w === undefined) return `<div class="note">${escapeHtml(noActionTxt)}</div>`;
-                  return oneBlock(w) || `<div class="note">${escapeHtml(noActionTxt)}</div>`;
+                  return oneBlock(w, cur.id) || `<div class="note">${escapeHtml(noActionTxt)}</div>`;
                 })()
-              : ordered.map((w) => oneBlock(w)).filter(Boolean).join("");
+              : ordered.map((w, i) => oneBlock(w, orderedStepIds[i])).filter(Boolean).join("");
 
             // Researcher chain death warning: shown when the mafia shot target is the researcher
             // and the researcher has a link set for this night.

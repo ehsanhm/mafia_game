@@ -1,8 +1,15 @@
 // ─── Scenario Guides ─────────────────────────────────────────────────────────
 // Comprehensive bilingual (FA/EN) moderator & player guides for each scenario.
-// Dependencies (all globals, resolved at call time): appLang, getScenarioConfig, openToolModal.
+// Dependencies (all globals, resolved at call time): appLang, getScenarioConfig, openToolModal, t.
 
 // ── internal helpers ──────────────────────────────────────────────────────────
+function _escHtml(s) {
+  return String(s)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;");
+}
 function _gs(title, body) {
   return (
     '<div style="margin-bottom:14px;">' +
@@ -1117,5 +1124,18 @@ function showScenarioGuide(scenarioId) {
   let body = guide ? (guide[lang] || guide.fa) : '<div class="toolBox">' + (lang === 'fa' ? 'راهنمایی برای این سناریو موجود نیست.' : 'No guide available for this scenario.') + '</div>';
   const scenarioLabel = lang === 'fa' ? ('راهنمای سناریو: ' + cfg.name.fa) : ('Scenario Guide: ' + cfg.name.en);
   body = '<div class="note" style="margin-bottom:12px; font-weight:600">' + scenarioLabel + '</div>' + body;
+  const hintText = typeof t === "function" ? t("help.clearFairnessHistoryHint") : "";
+  const btnText = typeof t === "function" ? t("help.clearFairnessHistory") : "Clear history";
+  const clearFooter =
+    '<div class="fairness-history-clear" style="margin-top:20px;padding-top:14px;border-top:1px solid rgba(255,255,255,.12)">' +
+    '<p class="note" style="margin:0 0 10px;font-size:12px;line-height:1.45;color:#94a3b8">' +
+    _escHtml(hintText) +
+    "</p>" +
+    '<p class="note" id="fairnessClearFeedback" style="display:none;margin:0 0 8px;font-size:12px;color:#86efac" role="status" aria-live="polite"></p>' +
+    '<button type="button" class="btn" id="helpClearFairnessHistoryBtn">' +
+    _escHtml(btnText) +
+    "</button>" +
+    "</div>";
+  body = body + clearFooter;
   openToolModal(title, body);
 }
