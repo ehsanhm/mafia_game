@@ -178,19 +178,34 @@ const SCENARIO_CONFIGS = {
     eliminationCards: [],
     roleOverrides: {},
   },
-  pishrafte: {
-    id: "pishrafte",
-    name: { fa: "پیشرفته", en: "Advanced" },
-    defaults: { nPlayers: 15, mafiaCount: 5 },
-    allowedRoles: ["mafiaBoss", "godfather", "doctorLecter", "jokerMafia", "nato", "natasha", "swindler", "detective", "doctor", "sniper", "professional", "armored", "invulnerable", "judge", "commander", "priest", "researcher", "investigator"],
-    defaultToggles: ["mafiaBoss", "doctorLecter", "jokerMafia", "nato", "natasha", "detective", "doctor", "sniper", "armored", "professional", "researcher"],
+  classicPro: {
+    id: "classicPro",
+    name: { fa: "کلاسیک پیشرفته", en: "Classic Advanced" },
+    defaults: { nPlayers: 12, mafiaCount: 4 },
+    allowedRoles: [
+      // Mafia team
+      "mafiaBoss", "doctorLecter", "jokerMafia", "matador", "saulGoodman",
+      "nato", "natasha", "swindler", "terrorist",
+      // City roles
+      "detective", "doctor", "sniper", "sheriff", "freemason",
+      "professional", "researcher", "investigator",
+      "hardJohn", "invulnerable", "armored", "suspect",
+      "priest", "judge", "cowboy", "commander",
+    ],
+    defaultToggles: [
+      "mafiaBoss", "natasha", "nato",
+      "detective", "doctor", "sniper", "sheriff", "freemason", "priest", "judge", "cowboy",
+    ],
     wakeOrder: {
-      fa: ["محقق", "شیاد", "ناتاشا", "تیم مافیا", "دکتر لکتر", "جوکر مافیا", "حرفه‌ای", "پزشک", "کارآگاه", "تک‌تیرانداز"],
-      en: ["Researcher", "Charlatan", "Natasha", "Mafia team", "Dr. Lecter", "Mafia Joker", "Professional", "Doctor", "Detective", "Sniper"],
+      fa: ["محقق", "شیاد", "ناتاشا", "تیم مافیا (رئیس/ناتو)", "دکتر لکتر", "جوکر مافیا", "حرفه‌ای", "پزشک", "فراماسون", "کارآگاه", "کلانتر", "تک‌تیرانداز"],
+      en: ["Researcher", "Charlatan", "Natasha", "Mafia team (Boss/NATO)", "Dr. Lecter", "Mafia Joker", "Professional", "Doctor", "Freemason", "Detective", "Sheriff", "Sniper"],
     },
     features: { lastMove: false, endCards: false },
     eliminationCards: [],
-    roleOverrides: {},
+    roleOverrides: {
+      judge: { descFa: "در کلاسیک پیشرفته: رأی قاضی در رأی‌گیری روز دو بار شمرده می‌شود." },
+      terrorist: { descFa: "عضو مافیاست اما تیم مافیا را نمی‌شناسد و آن‌ها هم او را نمی‌شناسند. استعلام کارآگاه «شهروند» نمایش می‌دهد. قبل از رأی‌گیری دوم می‌تواند اعلام کند «من تروریستم» و با یک نفر دلخواه منفجر شود (هر دو خارج می‌شوند)." },
+    },
   },
   shab_mafia: {
     id: "shab_mafia",

@@ -70,6 +70,12 @@ const roles = {
   citizenKane: { faName: "همشهری کین", teamFa: "شهر", hintFa: "افشا", descFa: "یک‌بار در کل بازی یک نفر را نشان می‌دهد؛ اگر مافیا باشد، گرداننده روز بعد نقشش را افشا می‌کند (در بازی می‌ماند) و همان شب کین با تیر غیب خارج می‌شود. اگر اشتباه: اتفاقی نمی‌افتد." },
   nostradamus: { faName: "نوستراداموس", teamFa: "مستقل", hintFa: "شب معارفه", descFa: "فقط شب معارفه بیدار می‌شود. ۳ نفر را نشان می‌دهد و گرداننده تعداد مافیاهای داخل آن ۳ را اعلام می‌کند. نوستراداموس بر اساس این اطلاعات ساید خود را انتخاب می‌کند (اگر ۲ نفر از ۳ مافیا باشند، معمولاً مجبور است ساید مافیا را انتخاب کند)." },
 
+  // --- Classic Pro (کلاسیک پرو) ---
+  terrorist: { faName: "تروریست", teamFa: "مافیا", hintFa: "انفجار روز / شهروند برای کارآگاه", descFa: "عضو مافیاست اما تیم مافیا را نمی‌شناسد و آن‌ها هم او را نمی‌شناسند. استعلام کارآگاه برای تروریست «شهروند» نمایش داده می‌شود. روز (قبل از رأی‌گیری دوم) می‌تواند اعلام کند «من تروریستم» و یک نفر دلخواه را با خود از بازی خارج کند (هر دو خارج می‌شوند)." },
+  sheriff: { faName: "کلانتر", teamFa: "شهر", hintFa: "دیدن هویت مافیا", descFa: "هر شب گرداننده هویت یک عضو زنده‌ی مافیا را به کلانتر نشان می‌دهد." },
+  freemason: { faName: "فراماسون", teamFa: "شهر", hintFa: "شناسایی / انتحار مشترک", descFa: "هر شب یک نفر را نشان می‌دهد. اگر آن نفر مافیا باشد، هر دو نفر همان شب از بازی خارج می‌شوند. اگر شهروند باشد، هر دو می‌فهمند که طرف مقابل شهروند است." },
+  cowboy: { faName: "کابوی", teamFa: "شهر", hintFa: "دوئل روز", descFa: "روزها (در بحث آزاد) می‌تواند اعلام کند «دوئل» و یک نفر را برای دوئل انتخاب کند؛ هر دو نفر از بازی خارج می‌شوند." },
+
   // --- Takavar / TV ---
   hostageTaker: { faName: "گروگانگیر", teamFa: "مافیا", hintFa: "مسدودکردن قابلیت", descFa: "هر شب مستقل بیدار می‌شود و قابلیت یک شهروند را مسدود می‌کند؛ آن شهروند همان شب نمی‌تواند از توانایی‌اش استفاده کند. نمی‌تواند دو شب پشت‌سرهم یک نفر را هدف قرار دهد. اگر نگهبان همان نفرِ هدف را محافظت کند، مسدودسازی خنثی می‌شود." },
   commando: { faName: "تکاور", teamFa: "شهر", hintFa: "شلیک پس از مرگ", descFa: "اگر مافیا در شب تکاور را شات کند، تکاور بلافاصله یک نفر را شات می‌کند. اگر به مافیا اصابت کند، آن مافیا هم خارج می‌شود. اگر اشتباه بزند، فقط تکاور خارج می‌شود." },
@@ -132,6 +138,12 @@ const ROLE_I18N = {
   constantine: { name: "Constantine", hint: "Revive", desc: "Once per game can revive an eliminated player — only if that player's role has not yet been announced by the host." },
   citizenKane: { name: "Citizen Kane", hint: "Reveal", desc: "Once per game marks a player; if mafia, host reveals their role next day (they remain in game) and Kane is eliminated the following night (invisible bullet). If wrong, nothing happens." },
   nostradamus: { name: "Nostradamus", hint: "Intro night", desc: "Wakes only on the intro night. Marks 3 players; host reveals how many are mafia. Nostradamus chooses their side based on this — if 2 of 3 are mafia, usually must join the mafia side." },
+
+  // --- Classic Pro ---
+  terrorist: { name: "Terrorist", hint: "Day drag-out / Citizen to detective", desc: "Mafia member who doesn't know the mafia team and vice versa. Detective inquiry always returns 'Citizen'. During the day (before the second vote) can announce 'I'm the Terrorist' and drag one chosen player out — both are eliminated." },
+  sheriff: { name: "Sheriff", hint: "See mafia identity", desc: "Each night the host reveals one live Mafia member's identity to the Sheriff." },
+  freemason: { name: "Freemason", hint: "ID check / mutual kill", desc: "Each night picks a player. If that player is Mafia, both are immediately eliminated. If Citizen, both learn the other is on the city side." },
+  cowboy: { name: "Cowboy", hint: "Day duel", desc: "During daytime discussion can announce a duel with any player; both are eliminated." },
 
   // --- Takavar / TV ---
   hostageTaker: { name: "Hostage-Taker", hint: "Block ability (solo)", desc: "Wakes independently each night and blocks one citizen's night ability. Cannot target the same player on consecutive nights. If the Guardian protects the Hostage-Taker's target, the block is nullified." },

@@ -16,7 +16,7 @@
           // citizen-but-positive roles
           if (rid === "suspect") return true;
           // mafia-leader-but-negative roles (appear as citizen to detective)
-          if (rid === "godfather" || rid === "mafiaBoss" || rid === "danMafia" || rid === "alcapone" || rid === "informant") return false;
+          if (rid === "godfather" || rid === "mafiaBoss" || rid === "danMafia" || rid === "alcapone" || rid === "informant" || rid === "terrorist") return false;
           const teamFa = (roles[rid] && roles[rid].teamFa) ? roles[rid].teamFa : "شهر";
           return teamFa === "مافیا";
         }
@@ -151,8 +151,11 @@
             const s = (savedVal === null || savedVal === undefined || savedVal === "") ? "" : String(Number(savedVal));
             const noneLabel = "—";
             const noneSel = s === "";
+            const cols = indexList.length >= 9 ? 4 : 3;
+            const cardMinH = indexList.length >= 9 ? "40px" : "48px";
+            const cardBase = `border-radius:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;text-align:center;padding:8px 6px;font-size:${indexList.length >= 9 ? "12px" : "13px"};line-height:1.3;transition:background .12s,border-color .12s;box-shadow:0 2px 8px rgba(0,0,0,.2);min-height:${cardMinH};touch-action:manipulation;user-select:none;`;
             const cards = [
-              `<button class="nightPlayerCard" type="button" data-field="${escapeHtml(fieldId)}" data-idx="" style="${NIGHT_CARD_BASE}${noneSel ? NIGHT_CARD_SEL : NIGHT_CARD_IDLE}">${escapeHtml(noneLabel)}</button>`,
+              `<button class="nightPlayerCard" type="button" data-field="${escapeHtml(fieldId)}" data-idx="" style="${cardBase}${noneSel ? NIGHT_CARD_SEL : NIGHT_CARD_IDLE}">${escapeHtml(noneLabel)}</button>`,
             ];
             for (const idx of indexList) {
               const v = String(idx);
@@ -161,13 +164,13 @@
               const nm = escapeHtml(names[idx] || t("common.playerN", { n: idx + 1 }));
               const disAttr = dis ? ' data-disabled="true"' : "";
               const disStyle = dis ? "opacity:.55;pointer-events:none;" : "";
-              cards.push(`<button class="nightPlayerCard" type="button" data-field="${escapeHtml(fieldId)}" data-idx="${escapeHtml(v)}"${disAttr} style="${NIGHT_CARD_BASE}${sel ? NIGHT_CARD_SEL : NIGHT_CARD_IDLE}${disStyle}">${nm}</button>`);
+              cards.push(`<button class="nightPlayerCard" type="button" data-field="${escapeHtml(fieldId)}" data-idx="${escapeHtml(v)}"${disAttr} style="${cardBase}${sel ? NIGHT_CARD_SEL : NIGHT_CARD_IDLE}${disStyle}">${nm}</button>`);
             }
             return `
               <input type="hidden" id="${escapeHtml(fieldId)}" value="${escapeHtml(s)}">
               <div class="nightTargetGroup" data-field="${escapeHtml(fieldId)}" style="margin-top:6px">
                 <div style="font-weight:1100; margin-bottom:6px">${escapeHtml(labelText)}</div>
-                <div class="nightCardGrid fl-scrollable" style="display:grid; grid-template-columns:repeat(3,1fr); gap:8px; max-height:42vh; overflow:auto; -webkit-overflow-scrolling:touch; touch-action:manipulation; overscroll-behavior:contain;">${cards.join("")}</div>
+                <div class="nightCardGrid fl-scrollable" style="display:grid; grid-template-columns:repeat(${cols},1fr); gap:6px; max-height:42vh; overflow:auto; -webkit-overflow-scrolling:touch; touch-action:manipulation; overscroll-behavior:contain;">${cards.join("")}</div>
               </div>`;
           };
           const mkNightMultiPickCards = (fieldId, savedArr, maxCount, labelText, indexList, opts) => {
@@ -205,7 +208,7 @@
               const nm = names[rec.target] || t("common.playerN", { n: rec.target + 1 });
               const code = (rec.code != null && String(rec.code).trim()) ? String(rec.code).trim() : "—";
               if (appLang === "fa") return `بمب جلوی «${nm}» کاشته شده است (کد: ${fmtNum(code)}).`;
-              return `Bomb is planted in front of “${nm}” (code: ${code}).`;
+              return `Bomb is planted in front of "${nm}" (code: ${code}).`;
             } catch {
               return t("tool.flow.bomb.active");
             }
@@ -317,8 +320,22 @@
           } else if (cur.id === "day_bomb") {
             const d = f.draft || {};
             if (!d.bombByDay || typeof d.bombByDay !== "object") d.bombByDay = {};
+            const rec = d.bombByDay[String(f.day)] || null;
+            const targetIdx = (rec && rec.target !== null && rec.target !== undefined && Number.isFinite(Number(rec.target))) ? parseInt(rec.target, 10) : null;
+            const targetName = (targetIdx !== null) ? (names[targetIdx] || t("common.playerN", { n: targetIdx + 1 })) : (appLang === "fa" ? "—" : "—");
+            const plantedCode = (rec && rec.code != null && String(rec.code).trim()) ? String(rec.code).trim() : "";
+            const headline = (appLang === "fa")
+              ? `بمب جلوی «${targetName}» کاشته شده است${plantedCode ? ` (کد: ${fmtNum(plantedCode)})` : ""}.`
+              : `Bomb is planted in front of "${targetName}"${plantedCode ? ` (code: ${plantedCode})` : ""}.`;
+            body = `
+              <div class="fl-say-label">${escapeHtml(t("fl.label.sayAloud"))}</div>
+              <div class="fl-script">${escapeHtml(headline)}</div>
+            `;
+          } else if (cur.id === "day_bomb_guard") {
+            const d = f.draft || {};
+            if (!d.bombByDay || typeof d.bombByDay !== "object") d.bombByDay = {};
             if (!d.bombResolveByDay || typeof d.bombResolveByDay !== "object") d.bombResolveByDay = {};
-            // If we are BACK on the Bomb step, revert so editing is intuitive. Skip if we just applied from change handler.
+            // Revert bomb application when user navigates back to this step.
             if (!bombApplyJustHappened) {
               try {
                 const key = String(f.day || 1);
@@ -361,10 +378,18 @@
             const guardDisabledPrevNight = (guardIdx !== null && d.disabledByNight && d.disabledByNight[String(f.day)] != null)
               ? (parseInt(d.disabledByNight[String(f.day)], 10) === guardIdx) : false;
             const guardCanSacrifice = hasGuard && guardAlive && !guardDisabledPrevNight;
+            // Guard was eligible before any bomb result was applied this day (used to keep checkbox enabled
+            // while the moderator is selecting a guess — the guard may die mid-interaction but the choice must stay editable).
+            const guardWasEligible = hasGuard && !guardDisabledPrevNight && (() => {
+              // If bomb has not yet killed anyone this day, use live alive state.
+              // If bomb already killed the guard, they were still eligible at the start of this step.
+              const applied = d.bombAppliedByDay && d.bombAppliedByDay[String(f.day)];
+              if (!applied || applied.killed === null || applied.killed === undefined) return guardAlive;
+              return true; // guard was alive before bomb was applied
+            })();
             const guardName = (guardIdx !== null)
               ? (names[guardIdx] || t("common.playerN", { n: guardIdx + 1 }))
               : (appLang === "fa" ? "—" : "—");
-
             const r0 = (d.bombResolveByDay[String(f.day)] && typeof d.bombResolveByDay[String(f.day)] === "object")
               ? d.bombResolveByDay[String(f.day)]
               : { guardSacrifice: false, guardGuess: "", targetGuess: "", resolved: false, outcome: null };
@@ -377,18 +402,12 @@
               }
               return opts.join("");
             };
-            const headline = (appLang === "fa")
-              ? `بمب جلوی «${targetName}» کاشته شده است${plantedCode ? ` (کد: ${fmtNum(plantedCode)})` : ""}.`
-              : `Bomb is planted in front of “${targetName}”${plantedCode ? ` (code: ${plantedCode})` : ""}.`;
-            // Keep bomb UI concise; detailed rules belong in Help.
             const guardLine = hasGuard
               ? (guardAlive
                 ? (guardDisabledPrevNight ? (appLang === "fa" ? `محافظ (${guardName}) شب گذشته غیرفعال شده و نمی‌تواند فدا شود.` : `Guard (${guardName}) was disabled last night and cannot sacrifice.`) : "")
                 : (appLang === "fa" ? `محافظ (${guardName}) مرده است.` : `Guard (${guardName}) is dead.`))
               : (appLang === "fa" ? "محافظ در این بازی وجود ندارد." : "No Guard in this game.");
-
             const outcomeLine = (() => {
-              // Live preview: updates as options change. If already applied, mark it as applied.
               if (!plantedCode) return "";
               const applied = !!(r0 && r0.resolved);
               const sac = !!(guardCanSacrifice && r0 && r0.guardSacrifice);
@@ -404,26 +423,31 @@
                   : (sac ? "Pick Guard guess." : "Pick target guess."));
               }
               const ok = String(guess) === String(plantedCode);
-              const o =
-                sac
-                  ? (ok ? "neutralized_guard" : "guard_died")
-                  : (ok ? "neutralized_target" : "target_died");
+              const o = sac
+                ? (ok ? "neutralized_guard" : "guard_died")
+                : (ok ? "neutralized_target" : "target_died");
               if (o === "neutralized_guard") return prefix + (appLang === "fa" ? "محافظ بمب را خنثی کرد." : "Guard neutralized the bomb.");
               if (o === "guard_died") return prefix + (appLang === "fa" ? "محافظ اشتباه حدس زد و مرد." : "Guard guessed wrong and died.");
               if (o === "neutralized_target") return prefix + (appLang === "fa" ? "هدف درست حدس زد و بمب خنثی شد." : "Target guessed right; bomb neutralized.");
               if (o === "target_died") return prefix + (appLang === "fa" ? "هدف اشتباه حدس زد و مرد." : "Target guessed wrong and died.");
               return "";
             })();
-
+            // Show say-aloud if guard can sacrifice, OR already chose to sacrifice (even if since killed by bomb).
+            const showGuardSayAloud = guardCanSacrifice || !!(hasGuard && r0.guardSacrifice);
             body = `
-              <div class="note" style="margin-top:6px">${escapeHtml(headline)}</div>
-              <div style="height:10px"></div>
-              ${guardLine ? `<div class="note">${escapeHtml(guardLine)}</div><div style="height:10px"></div>` : ``}
+              ${showGuardSayAloud ? `
+                <div class="fl-say-label">${escapeHtml(t("fl.label.sayAloud"))}</div>
+                <div class="fl-script">${escapeHtml(appLang === "fa" ? `محافظ بیدار شو. آیا می‌خواهی خودت را فدا کنی؟` : `Guard, wake up. Would you like to sacrifice yourself?`)}</div>
+                <div class="fl-mod-label" style="margin-top:12px">${escapeHtml(t("fl.label.modOnly"))}</div>
+              ` : `
+                <div class="fl-mod-label">${escapeHtml(t("fl.label.modOnly"))}</div>
+                ${guardLine ? `<div class="note fl-moderator-info">${escapeHtml(guardLine)}</div>` : ``}
+              `}
               <div style="height:14px"></div>
               ${hasGuard ? `
                 <label for="fl_bomb_guard" style="display:flex; flex-direction:row; align-items:center; justify-content:space-between; gap:14px; font-weight:950; cursor:pointer; user-select:none; -webkit-user-select:none">
                   <span>${escapeHtml(appLang === "fa" ? "محافظ فدا می‌شود؟" : "Does Guard sacrifice?")}</span>
-                  <input id="fl_bomb_guard" type="checkbox" ${r0.guardSacrifice ? "checked" : ""} ${guardCanSacrifice ? "" : "disabled"} style="width:24px; height:24px; margin:0; accent-color: var(--primary)" />
+                  <input id="fl_bomb_guard" type="checkbox" ${r0.guardSacrifice ? "checked" : ""} ${guardWasEligible ? "" : "disabled"} style="width:24px; height:24px; margin:0; accent-color: var(--primary)" />
                 </label>
                 <div style="height:10px"></div>
               ` : ``}
@@ -437,7 +461,7 @@
                 </label>
               `}
               ${outcomeLine ? `<div class="note warn" style="margin-top:10px">${escapeHtml(outcomeLine)}</div>` : ``}
-              <div class="note" style="margin-top:10px">${escapeHtml(appLang === "fa" ? "با انتخاب حدس، نتیجه بلافاصله اعمال می‌شود؛ «بعدی» برای ادامه." : "Your choice applies immediately. Press \"Next\" to continue.")}</div>
+              <div class="note fl-moderator-info" style="margin-top:10px">${escapeHtml(appLang === "fa" ? "با انتخاب حدس، نتیجه بلافاصله اعمال می‌شود؛ «بعدی» برای ادامه." : "Your choice applies immediately. Press \"Next\" to continue.")}</div>
             `;
           } else if (cur.id === "bazras_interrogation") {
             const d = f.draft || {};
@@ -700,7 +724,8 @@
             ensureTimers();
             const _tmrV = appState.god.timers;
             body = `
-              <div class="note fl-moderator-info" style="margin-top:6px">${escapeHtml(appLang === "fa" ? "برای دفاع، بازیکنان نامزدشده را انتخاب کنید." : "Tap the players who have been nominated to defend themselves.")}</div>
+              <div class="fl-mod-label" style="margin-top:6px">${escapeHtml(t("fl.label.modOnly"))}</div>
+              <div class="note fl-moderator-info" style="margin-top:4px">${escapeHtml(appLang === "fa" ? "برای دفاع، بازیکنان نامزدشده را انتخاب کنید." : "Tap the players who have been nominated to defend themselves.")}</div>
               <div class="note fl-moderator-info" style="margin-top:4px">${escapeHtml(appLang === "fa" ? "اگر چالش خود را استفاده کرده‌اند، آیکون «چالش» را بزنید." : "Tap the \"Challenge\" icon if they've already used their challenge.")}</div>
               ${showBombWarn ? `<div class="note warn" style="margin-top:10px">${escapeHtml(t("tool.flow.bomb.active"))}</div>` : ``}
               <div class="timerRow" style="margin-top:10px; padding-bottom:10px; border-bottom:1px solid rgba(255,255,255,.08)">
@@ -1071,7 +1096,8 @@
             })();
 
             body = `
-              <div class="note fl-moderator-info" style="margin-top:6px">${escapeHtml(t("tool.flow.elim.hint"))}</div>
+              <div class="fl-mod-label" style="margin-top:6px">${escapeHtml(t("fl.label.modOnly"))}</div>
+              <div class="note fl-moderator-info" style="margin-top:4px">${escapeHtml(t("tool.flow.elim.hint"))}</div>
               <div style="height:8px"></div>
               <div class="note fl-moderator-info">${escapeHtml(t((getScenarioConfig(scenario).voteThreshold === "half_minus_one" ? "tool.flow.defense.threshold.halfMinusOne" : "tool.flow.defense.threshold"), { n: defThreshold, v: eligibleVoters }))}</div>
               ${isSingleDef ? `<div class="note" style="margin-top:6px">${escapeHtml(t((getScenarioConfig(scenario).voteThreshold === "half_minus_one" ? "tool.flow.elim.single.need.half" : "tool.flow.elim.single.need"), { n: elimThreshold, v: eligibleVoters }))}</div>` : ``}
@@ -1090,6 +1116,10 @@
                 <div style="color:var(--muted); font-weight:900; font-size:12px">${escapeHtml(t("tool.flow.elim.votes"))}</div>
               </div>
               <div style="height:6px"></div>
+              ${silencedForElim.size > 0 ? `
+                <div class="fl-say-label" style="margin-bottom:6px">${escapeHtml(t("fl.label.sayAloud"))}</div>
+                <div class="fl-script" style="margin-bottom:10px">${escapeHtml([...silencedForElim].map(i => names[i] || t("common.playerN", { n: i + 1 })).join(", "))} ${escapeHtml(appLang === "fa" ? "امروز ساکت است." : "is silent today.")}</div>
+              ` : ""}
               <div class="fl-scrollable" style="border:1px solid rgba(255,255,255,.08); border-radius:14px; padding:10px; background: rgba(17,24,36,.25); max-height: 46vh; overflow:auto; -webkit-overflow-scrolling: touch;">
                 ${(dayCounts || Array.isArray(d.voteCandidatesByDay && d.voteCandidatesByDay[f.day]))
                   ? (rows || `<div style="color:var(--muted); font-weight:900">${escapeHtml(t("tool.flow.elim.noCandidates"))}</div>`)
@@ -1101,6 +1131,7 @@
                 <button class="btn" id="fl_elim_draw" type="button" style="${showDraw ? "" : "display:none"}">${escapeHtml(t("tool.flow.elim.draw"))}</button>
               </div>
               <div style="margin-top:14px; padding-top:12px; border-top:1px solid rgba(255,255,255,.08)">
+                <div class="fl-say-label" style="margin-bottom:6px">${escapeHtml(t("fl.label.sayAloud"))}</div>
                 ${pickedOutIdx !== null
                   ? `<div id="fl_elim_result_line" class="fl-script">${escapeHtml(t("tool.flow.outcome.votedOut"))} <b>${escapeHtml(names[pickedOutIdx] || t("common.playerN", { n: pickedOutIdx + 1 }))}</b></div>`
                   : (tieLine
@@ -1478,7 +1509,7 @@
               return null;
             })();
             const winnerLabel = computedWinner === "mafia" ? (appLang === "fa" ? "مافیا برنده است" : "Mafia wins")
-              : computedWinner === "citizens" ? (appLang === "fa" ? "شهروندان برنده‌اند" : "Citizens win")
+              : computedWinner === "citizens" ? (appLang === "fa" ? "تیم شهروندان برنده شد" : "Citizens win")
               : computedWinner === "independent" ? (appLang === "fa" ? "مستقل برنده است" : "Independent wins")
               : null;
             const picksHtml = aliveIdxs.map(({ p, i }) => {
@@ -1780,6 +1811,48 @@
               }
               return "";
             };
+            // Night wake-up script: what the moderator says aloud to wake each role.
+            // Always shown — even when disabled — so players don't notice the role is inactive.
+            const getNightWakeScript = (k) => {
+              const scripts = appLang === "fa" ? {
+                doctor:      "پزشک، چشمانت را باز کن. می‌خواهی امشب کسی را نجات دهی؟",
+                detective:   "کارآگاه، چشمانت را باز کن. می‌خواهی امشب کسی را بررسی کنی؟",
+                natasha:     "ناتاشا، چشمانت را باز کن. می‌خواهی کسی را فردا ساکت کنی؟",
+                sniper:      "تک‌تیرانداز، چشمانت را باز کن. می‌خواهی امشب شلیک کنی؟",
+                sheriff:     "کلانتر، چشمانت را باز کن.",
+                freemason:   "فراماسون، چشمانت را باز کن. می‌خواهی امشب کسی را بررسی کنی؟",
+                professional:"حرفه‌ای، چشمانت را باز کن. می‌خواهی امشب شلیک کنی؟",
+                researcher:  "محقق، چشمانت را باز کن. می‌خواهی امشب لینک بزنی؟",
+                swindler:    "شیاد، چشمانت را باز کن. می‌خواهی کسی را پوشش بدهی؟",
+                lecter:      "دکتر لکتر، چشمانت را باز کن. می‌خواهی کسی را نجات دهی؟",
+                jokermaf:    "جوکر مافیا، چشمانت را باز کن. می‌خواهی استعلام کسی را برعکس کنی؟",
+                gunslinger:  "تیرانداز، چشمانت را باز کن. می‌خواهی اسلحه‌ای بدهی؟",
+              } : {
+                doctor:      "Doctor, open your eyes. Who would you like to save tonight?",
+                detective:   "Detective, open your eyes. Who would you like to investigate tonight?",
+                natasha:     "Natasha, open your eyes. Who would you like to silence tomorrow?",
+                sniper:      "Sniper, open your eyes. Would you like to shoot tonight?",
+                sheriff:     "Sheriff, open your eyes.",
+                freemason:   "Freemason, open your eyes. Who would you like to check tonight?",
+                professional:"Professional, open your eyes. Would you like to shoot tonight?",
+                researcher:  "Researcher, open your eyes. Who would you like to link tonight?",
+                swindler:    "Swindler, open your eyes. Who would you like to cover tonight?",
+                lecter:      "Dr. Lecter, open your eyes. Who would you like to save tonight?",
+                jokermaf:    "Mafia Joker, open your eyes. Who would you like to flip tonight?",
+                gunslinger:  "Gunslinger, open your eyes. Would you like to give a gun?",
+              };
+              return scripts[k] || null;
+            };
+            const mkSayAloud = (k) => {
+              const script = getNightWakeScript(k);
+              if (!script) return "";
+              return `<div class="fl-say-label">${escapeHtml(t("fl.label.sayAloud"))}</div><div class="fl-script" style="margin-bottom:10px">${escapeHtml(script)}</div>`;
+            };
+            const mkDisabledSection = (playerIdx) => {
+              const note = getDisabledNote(playerIdx);
+              if (!note) return "";
+              return `<div class="fl-mod-label" style="margin-top:8px">${escapeHtml(t("fl.label.modOnly"))}</div><div class="note fl-moderator-info">${escapeHtml(note)}</div>`;
+            };
 
             // Options for targeting alive players, but keep the selected value visible even if they died
             // due to an immediately-applied action (e.g., Mafia shot).
@@ -1854,6 +1927,8 @@
                 hostageTaker: ["hostageTaker"],
                 commando: ["commando"],
                 guardian: ["guardian"],
+                sheriff: ["sheriff"],
+                freemason: ["freemason"],
               };
               const sectionRoleIds = wakeToRoleIds[k] || [k];
               const sectionPlayerIdx = findRolePlayerIdx(sectionRoleIds);
@@ -2177,7 +2252,7 @@
                   ? `<div class="note" style="margin-top:6px">${escapeHtml(appLang === "fa" ? `لئون فقط ۲ گلوله دارد. باقی‌مانده: ${fmtNum(leonBullets)}` : `Leon has only 2 bullets. Remaining: ${leonBullets}`)}</div>`
                   : "";
                 return `
-                  ${sectionDisabled ? `<div class="note warn" style="margin-top:6px">${escapeHtml(getDisabledNote(sectionPlayerIdx))}</div>` : ""}
+                  ${sectionDisabled ? mkDisabledSection(sectionPlayerIdx) : ""}
                   <div style="${sectionDisabledStyle}">
                     ${mkNightTargetCards("fl_pro_shot", savedNight.professionalShot, t("tool.flow.action.professionalShot"))}
                     ${leonBulletsLine}
@@ -2207,7 +2282,7 @@
                   return `${pre}${thumb} ${label}`;
                 })();
                 return `
-                  ${detDisabled ? `<div class="note warn" style="margin-top:6px">${escapeHtml(getDisabledNote(sectionPlayerIdx))}</div>` : ""}
+                  ${detDisabled ? mkDisabledSection(sectionPlayerIdx) : ""}
                   <div style="${sectionDisabledStyle}">
                     ${mkNightTargetCards("fl_det_query", savedNight.detectiveQuery, t("tool.flow.action.detectiveQuery"), selfExcludedIdxs)}
                     <div id="fl_det_result" class="note result" style="margin-top:6px; ${resultLine ? "" : "display:none"}">${escapeHtml(resultLine || "")}</div>
@@ -2220,7 +2295,7 @@
                 const disabledPrevDoctor = (prevDoctorSave !== null && prevDoctorSave !== undefined && Number.isFinite(Number(prevDoctorSave)))
                   ? new Set([parseInt(prevDoctorSave, 10)]) : new Set();
                 return `
-                  ${sectionDisabled ? `<div class="note warn" style="margin-top:6px">${escapeHtml(getDisabledNote(sectionPlayerIdx))}</div>` : ""}
+                  ${sectionDisabled ? mkDisabledSection(sectionPlayerIdx) : ""}
                   <div style="${sectionDisabledStyle}">
                     ${mkNightTargetCards("fl_doctor_save", savedNight.doctorSave, t("tool.flow.action.doctorSave"), null, disabledPrevDoctor)}
                   </div>
@@ -2430,7 +2505,7 @@
               if (k === "lecter") {
                 return `
                   ${mkNightTargetCards("fl_lecter_save", savedNight.lecterSave, appLang === "fa" ? "نجاتِ دکتر لکتر" : "Dr. Lecter save")}
-                  <div class="note" style="margin-top:6px">${escapeHtml(appLang === "fa" ? "دکتر لکتر می‌تواند یک نفر را از شلیک مافیا نجات دهد." : "Dr. Lecter can save one player from the mafia shot.")}</div>
+                  <div class="note fl-moderator-info" style="margin-top:6px">${escapeHtml(appLang === "fa" ? "دکتر لکتر می‌تواند یک نفر را از شلیک مافیا نجات دهد." : "Dr. Lecter can save one player from the mafia shot.")}</div>
                 `;
               }
               if (k === "jokermaf") {
@@ -2442,7 +2517,7 @@
                   ? `(${jokerUsedCount} از ۲ بار استفاده شده — ${jokerRemaining} بار باقی‌مانده)`
                   : `(${jokerUsedCount} of 2 uses — ${jokerRemaining} remaining)`;
                 return `
-                  <div class="note">${escapeHtml(quotaText)}</div>
+                  <div class="note fl-moderator-info">${escapeHtml(quotaText)}</div>
                   ${jokerRemaining > 0 ? (() => {
                   const prevJokerTarget = d && d.nightActionsByNight && d.nightActionsByNight[String((f.day || 1) - 1)]
                     ? d.nightActionsByNight[String((f.day || 1) - 1)].jokerTarget : null;
@@ -2451,7 +2526,7 @@
                   return `
                   <div style="height:6px"></div>
                   ${mkNightTargetCards("fl_joker_target", savedNight.jokerTarget, appLang === "fa" ? "هدف جوکر (برعکس‌کردن استعلام)" : "Joker target (flip inquiry)", aliveIdxs, disabledPrevJoker)}
-                  <div class="note" style="margin-top:6px">${escapeHtml(appLang === "fa" ? "استعلام کارآگاه از این نفر، همان شب برعکس می‌شود. نمی‌تواند دو شب پشت‌سرهم یک نفر را هدف بگیرد." : "Detective inquiry on this player is flipped this night. Cannot target the same player on consecutive nights.")}</div>
+                  <div class="note fl-moderator-info" style="margin-top:6px">${escapeHtml(appLang === "fa" ? "استعلام کارآگاه از این نفر، همان شب برعکس می‌شود. نمی‌تواند دو شب پشت‌سرهم یک نفر را هدف بگیرد." : "Detective inquiry on this player is flipped this night. Cannot target the same player on consecutive nights.")}</div>
                   `;
                   })() : `<div class="note warn" style="margin-top:6px">${escapeHtml(appLang === "fa" ? "جوکر مافیا هر دو بار را استفاده کرده است — دیگر قابلیت ندارد." : "Joker Mafia used both flips — no more uses.")}</div>`}
                 `;
@@ -2459,15 +2534,14 @@
               if (k === "swindler") {
                 return `
                   ${mkNightTargetCards("fl_swindler_target", savedNight.swindlerTarget, appLang === "fa" ? "هدف شیاد (برهم‌زنِ استعلام)" : "Swindler target (disrupt inquiry)", selfExcludedIdxs)}
-                  <div class="note" style="margin-top:6px">${escapeHtml(appLang === "fa" ? "اگر کارآگاه این نفر را استعلام کند، نتیجه «شهروند» نمایش می‌یابد." : "If Detective queries this player, the result shows as 'Citizen'.")}</div>
+                  <div class="note fl-moderator-info" style="margin-top:6px">${escapeHtml(appLang === "fa" ? "اگر کارآگاه این نفر را استعلام کند، نتیجه «شهروند» نمایش می‌یابد." : "If Detective queries this player, the result shows as 'Citizen'.")}</div>
                 `;
               }
               if (k === "researcher") {
                 const isIntroNight = f.phase === "intro_night";
                 return `
-                  <div style="font-weight:1100; margin-bottom:6px">${escapeHtml(appLang === "fa" ? "گره محقق (لینک)" : "Researcher link")} ${isIntroNight ? `<span style="color:var(--muted); font-weight:900">(${escapeHtml(appLang === "fa" ? "شب معارفه — محقق لینک نمی‌زند" : "intro night — no link")})</span>` : ""}</div>
-                  ${isIntroNight ? `<input type="hidden" id="fl_researcher_link" value="" disabled><div class="note">${escapeHtml(appLang === "fa" ? "در شب معارفه لینک ثبت نمی‌شود." : "No link on intro night.")}</div>` : mkNightTargetCards("fl_researcher_link", savedNight.researcherLink, appLang === "fa" ? "گره محقق (لینک)" : "Researcher link", selfExcludedIdxs)}
-                  ${isIntroNight ? "" : `<div class="note" style="margin-top:6px">${escapeHtml(appLang === "fa" ? "اگر محقق با شات شب یا رأی از بازی خارج شود، نفر لینک‌شده هم معمولاً خارج می‌شود (به‌جز رئیس مافیا)." : "If Researcher is eliminated, the linked player usually goes too (except Mafia Boss).")}</div>`}
+                  ${isIntroNight ? `<input type="hidden" id="fl_researcher_link" value="" disabled><div class="note fl-moderator-info">${escapeHtml(appLang === "fa" ? "در شب معارفه لینک ثبت نمی‌شود." : "No link on intro night.")}</div>` : mkNightTargetCards("fl_researcher_link", savedNight.researcherLink, appLang === "fa" ? "گره محقق (لینک)" : "Researcher link", selfExcludedIdxs)}
+                  ${isIntroNight ? "" : `<div class="note fl-moderator-info" style="margin-top:6px">${escapeHtml(appLang === "fa" ? "اگر محقق با شات شب یا رأی از بازی خارج شود، نفر لینک‌شده هم معمولاً خارج می‌شود (به‌جز رئیس مافیا)." : "If Researcher is eliminated, the linked player usually goes too (except Mafia Boss).")}</div>`}
                 `;
               }
               if (k === "natasha") {
@@ -2477,7 +2551,20 @@
                   ? new Set([parseInt(prevNatashaTarget, 10)]) : new Set();
                 return `
                   ${mkNightTargetCards("fl_natasha_target", savedNight.natashaTarget, appLang === "fa" ? "هدف سکوت ناتاشا" : "Natasha silence target", selfExcludedIdxs, disabledPrevNatasha)}
-                  <div class="note" style="margin-top:6px">${escapeHtml(appLang === "fa" ? "این بازیکن فردا نمی‌تواند صحبت کند. نمی‌تواند دو شب پشت‌سرهم یک نفر را ساکت کند." : "This player cannot speak tomorrow. Cannot silence the same player on consecutive nights.")}</div>
+                  <div class="note fl-moderator-info" style="margin-top:6px">${escapeHtml(appLang === "fa" ? "این بازیکن فردا نمی‌تواند صحبت کند. نمی‌تواند دو شب پشت‌سرهم یک نفر را ساکت کند." : "This player cannot speak tomorrow. Cannot silence the same player on consecutive nights.")}</div>
+                `;
+              }
+              if (k === "sheriff") {
+                return `
+                  <div class="fl-mod-label">${escapeHtml(t("fl.label.modOnly"))}</div>
+                  ${mkNightTargetCards("fl_sheriff_reveal", savedNight.sheriffReveal, appLang === "fa" ? "عضو مافیا که به کلانتر نشان می‌دهید" : "Mafia member to reveal to Sheriff", new Set(), new Set())}
+                  <div class="note fl-moderator-info" style="margin-top:6px">${escapeHtml(appLang === "fa" ? "گرداننده یک عضو زنده‌ی مافیا را انتخاب می‌کند تا هویتش را به کلانتر نشان دهد (فقط ثبت اطلاعات)." : "Host picks one live Mafia member to reveal their identity to the Sheriff (informational only).")}</div>
+                `;
+              }
+              if (k === "freemason") {
+                return `
+                  ${mkNightTargetCards("fl_freemason_target", savedNight.freemasonTarget, appLang === "fa" ? "هدف فراماسون" : "Freemason target", selfExcludedIdxs, new Set())}
+                  <div class="note fl-moderator-info" style="margin-top:6px">${escapeHtml(appLang === "fa" ? "اگر هدف مافیا باشد ← هر دو خارج می‌شوند. اگر شهروند باشد ← صرفاً اطلاعاتی است." : "If target is Mafia → both eliminated. If Citizen → informational only.")}</div>
                 `;
               }
               if (k === "sniper") {
@@ -2497,7 +2584,7 @@
                   ? (appLang === "fa" ? "تک‌تیرانداز تیرش را قبلاً استفاده کرده است." : "Sniper already used their shot.")
                   : (appLang === "fa" ? "تک‌تیرانداز فقط یک تیر دارد. اگر به شهروند شلیک کند، خودش کشته می‌شود." : "Sniper has one shot. Shooting a Citizen eliminates the Sniper.");
                 return `
-                  <div class="note" style="margin-top:2px">${escapeHtml(sniperNote)}</div>
+                  <div class="note fl-moderator-info" style="margin-top:2px">${escapeHtml(sniperNote)}</div>
                   ${!sniperUsed ? `
                   <div style="height:6px"></div>
                   ${mkNightTargetCards("fl_sniper_shot", savedNight.sniperShot, appLang === "fa" ? "هدف تک‌تیرانداز" : "Sniper shot target", selfExcludedIdxs)}
@@ -2730,7 +2817,7 @@
                   const fakeEligible = aliveIdxs.filter((i) => i !== gunnerIdx);
                   return `
                     <div class="note" style="margin-top:6px">${escapeHtml(t("tool.flow.guns.gunslingerIs", { name: gunnerName }))}</div>
-                    ${sectionDisabled ? `<div class="note warn" style="margin-top:8px">${escapeHtml(getDisabledNote(sectionPlayerIdx))}</div>` : ""}
+                    ${sectionDisabled ? mkDisabledSection(sectionPlayerIdx) : ""}
                     <div style="${sectionDisabledStyle}">
                       ${mkNightTargetCards("fl_gunner_real", currentRealIdx, appLang === "fa" ? "گلوله واقعی → به چه کسی؟" : "Real bullet → who?", realEligible)}
                       <div style="height:10px"></div>
@@ -2745,12 +2832,10 @@
                 }
                 return `
                   <div class="note" style="margin-top:6px">${escapeHtml(t("tool.flow.guns.gunslingerIs", { name: gunnerName }))}</div>
-                  ${sectionDisabled ? `<div class="note warn" style="margin-top:8px">${escapeHtml(getDisabledNote(sectionPlayerIdx))}</div>` : ""}
+                  ${sectionDisabled ? mkDisabledSection(sectionPlayerIdx) : ""}
                   <div style="${sectionDisabledStyle}">
-                    <div class="row one" style="margin-top:8px">
-                      <label>${escapeHtml(t("tool.flow.guns.giveTo"))}
-                        <select id="fl_gun_give_to">${optsAlive}</select>
-                      </label>
+                    ${mkNightTargetCards("fl_gun_give_to", savedNight.gunGiveTo != null ? savedNight.gunGiveTo : null, t("tool.flow.guns.giveTo"), aliveIdxs)}
+                    <div class="row one" style="margin-top:10px">
                       <label>${escapeHtml(t("tool.flow.guns.type"))}
                         <select id="fl_gun_type">
                           <option value="real">${escapeHtml(t("tool.flow.guns.type.real"))}</option>
@@ -2809,7 +2894,7 @@
               const players = draw && draw.players;
               if (!players || !players.length) return true;
               const sid = String(stepId || "");
-              const stepToRoles = { night_heir: ["heir"], night_herbalist: ["herbalist"], night_detective: ["detective"], night_armorsmith: ["armorsmith"], night_kadkhoda: ["kadkhoda"], night_doctor: ["doctor", "watson"], night_constantine: ["constantine"], night_kane: ["citizenKane"], night_ocean: ["ocean"], night_bomber: ["bomber"], night_zodiac: ["zodiac"], night_professional: ["professional", "leon"], night_sniper: ["sniper"], night_negotiator: ["negotiator"], night_reporter: ["reporter"], night_researcher: ["researcher"], night_swindler: ["swindler"], night_natasha: ["natasha"], night_jokermaf: ["jokerMafia"], night_lecter: ["doctorLecter"], night_magician: ["magician"], night_hacker: ["hacker"], night_guide: ["guide"], night_bodyguard: ["bodyguard"], night_minemaker: ["minemaker"], night_lawyer: ["lawyer"], night_soldier: ["soldier"], night_nato: ["nato"], night_investigator: ["investigator"], night_inspector: ["investigator"], night_guardian: ["guardian"], night_hostageTaker: ["hostageTaker"], night_commando: ["commando"], night_gunner: ["gunslinger"] };
+              const stepToRoles = { night_heir: ["heir"], night_herbalist: ["herbalist"], night_detective: ["detective"], night_armorsmith: ["armorsmith"], night_kadkhoda: ["kadkhoda"], night_doctor: ["doctor", "watson"], night_constantine: ["constantine"], night_kane: ["citizenKane"], night_ocean: ["ocean"], night_bomber: ["bomber"], night_zodiac: ["zodiac"], night_professional: ["professional", "leon"], night_sniper: ["sniper"], night_negotiator: ["negotiator"], night_reporter: ["reporter"], night_researcher: ["researcher"], night_swindler: ["swindler"], night_natasha: ["natasha"], night_jokermaf: ["jokerMafia"], night_lecter: ["doctorLecter"], night_magician: ["magician"], night_hacker: ["hacker"], night_guide: ["guide"], night_bodyguard: ["bodyguard"], night_minemaker: ["minemaker"], night_lawyer: ["lawyer"], night_soldier: ["soldier"], night_nato: ["nato"], night_investigator: ["investigator"], night_inspector: ["investigator"], night_guardian: ["guardian"], night_hostageTaker: ["hostageTaker"], night_commando: ["commando"], night_gunner: ["gunslinger"], night_sheriff: ["sheriff"], night_freemason: ["freemason"] };
               if (sid === "night_mafia") return players.some((p) => p && p.roleId && (roles[p.roleId] && roles[p.roleId].teamFa === "مافیا"));
               const roleIds = stepToRoles[sid];
               if (!roleIds) return true;
@@ -2951,6 +3036,8 @@
                   reporter: ["reporter"],
                   representative: ["representative"],
                   investigator: ["investigator"],
+                  sheriff: ["sheriff"],
+                  freemason: ["freemason"],
                 };
                 let idxs = [];
                 if (k === "mafia") {
@@ -3035,6 +3122,8 @@
                   hostageTaker: ["hostageTaker"],
                   commando: ["commando"],
                   guardian: ["guardian"],
+                  sheriff: ["sheriff"],
+                  freemason: ["freemason"],
                 };
                 let all = [];
                 if (k === "mafia") {
@@ -3062,13 +3151,18 @@
               const deadNotice = isDeadBlock
                 ? `<div class="fl-dead-notice" style="font-weight:1100; margin-bottom:8px; color:var(--muted)">${escapeHtml(appLang === "fa" ? "⛔ این نقش/تیم مرده است و اکشن ندارد." : "⛔ This role/team is dead and has no action.")}</div>`
                 : "";
+              // Say-aloud is rendered here (outside the dead-block dim) so it always shows at full brightness.
+              const blockK = (stepIdHint === "night_mafia" || stepIdHint === "night_mafia_team") ? "mafia" : normWake(w);
+              const sayAloudHtml = mkSayAloud(blockK);
+              const sectionHtml = sectionFor(w, stepIdHint);
               return `
-                <div style="padding:10px 0; border-bottom:1px solid rgba(255,255,255,.06); ${isDeadBlock ? "opacity:.7; filter:saturate(.3);" : ""}">
-                  <div style="font-weight:1100">${escapeHtml(headerTxt)}</div>
+                <div style="padding:10px 0; border-bottom:1px solid rgba(255,255,255,.06);">
+                  <div style="font-weight:1100; ${isDeadBlock ? "opacity:.6;" : ""}">${escapeHtml(headerTxt)}</div>
                   <div style="height:8px"></div>
-                  <div class="row one">
+                  ${sayAloudHtml}
+                  <div class="row one" style="${isDeadBlock ? "opacity:.5; filter:saturate(.3);" : ""}">
                     ${deadNotice}
-                    ${isDeadBlock ? `<div style="pointer-events:none; opacity:.85">${sectionFor(w, stepIdHint)}</div>` : sectionFor(w, stepIdHint)}
+                    ${isDeadBlock ? `<div style="pointer-events:none">${sectionHtml}</div>` : sectionHtml}
                   </div>
                 </div>
               `;
@@ -3194,10 +3288,7 @@
                 }).join("")
               : `<div class="note" style="margin-top:6px">${escapeHtml(appLang === "fa" ? "فعلاً کسی تفنگ ندارد." : "No one has a gun yet.")}</div>`;
 
-            const shooterOpts = [`<option value="">—</option>`].concat(
-              holders.filter((idx) => !(guns[idx] && guns[idx].used)).map((idx) => `<option value="${idx}">${escapeHtml(names[idx])}</option>`)
-            ).join("");
-            const targetOpts = optsAlive;
+            const shooterIdxs = holders.filter((idx) => !(guns[idx] && guns[idx].used));
 
             // Pending shots this phase (recorded but not yet fatal until Next is clicked).
             const pendingShots = (() => {
@@ -3226,117 +3317,8 @@
               `
               : "";
 
-            // Bomb section (shown inline below guns when a bomb is planted today).
-            const bombSectionHtml = (() => {
-              try {
-                const db = f.draft || {};
-                if (!db.bombByDay || typeof db.bombByDay !== "object") return "";
-                if (!db.bombResolveByDay || typeof db.bombResolveByDay !== "object") db.bombResolveByDay = {};
-                const brec = db.bombByDay[String(f.day)] || null;
-                const btargetIdx = (brec && brec.target !== null && brec.target !== undefined && Number.isFinite(Number(brec.target))) ? parseInt(brec.target, 10) : null;
-                const bhasBomb = !!(f.bombActive || (brec && btargetIdx !== null));
-                if (!bhasBomb) return "";
-                const btargetName = (btargetIdx !== null) ? (names[btargetIdx] || t("common.playerN", { n: btargetIdx + 1 })) : "—";
-                const bplantedCode = (brec && brec.code != null && String(brec.code).trim()) ? String(brec.code).trim() : "";
-                const bguardIdx = (() => {
-                  for (let i = 0; i < (draw.players || []).length; i++) {
-                    const p = draw.players[i];
-                    if (!p) continue;
-                    const rid = p.roleId || "citizen";
-                    if (roles[rid] && roles[rid].canSacrificeForBomb) return i;
-                  }
-                  return null;
-                })();
-                const bhasGuard = bguardIdx !== null;
-                // Guard is alive for sacrifice if: alive before this day AND not pending-dead
-                // from a real gun shot recorded in this phase (gun deaths commit on Next, not immediately).
-                const bguardPendingDead = (() => {
-                  try {
-                    const dayKey = String(f.day || 1);
-                    const rec = (db.gunShotAppliedByDay && db.gunShotAppliedByDay[dayKey]) || null;
-                    if (!rec || !Array.isArray(rec.shots)) return false;
-                    return rec.shots.some((s) => s && s.target === bguardIdx && s.type === "real" && s.targetPrevAlive);
-                  } catch { return false; }
-                })();
-                const bguardAlive = bguardIdx !== null
-                  && draw.players[bguardIdx]
-                  && draw.players[bguardIdx].alive !== false
-                  && !bguardPendingDead;
-                const bguardDisabledPrevNight = (bguardIdx !== null && db.disabledByNight && db.disabledByNight[String(f.day)] != null)
-                  ? (parseInt(db.disabledByNight[String(f.day)], 10) === bguardIdx) : false;
-                const bguardCanSacrifice = bhasGuard && bguardAlive && !bguardDisabledPrevNight;
-                const bguardName = (bguardIdx !== null) ? (names[bguardIdx] || t("common.playerN", { n: bguardIdx + 1 })) : "—";
-                const br0 = (db.bombResolveByDay[String(f.day)] && typeof db.bombResolveByDay[String(f.day)] === "object")
-                  ? db.bombResolveByDay[String(f.day)]
-                  : { guardSacrifice: false, guardGuess: "", targetGuess: "", resolved: false, outcome: null };
-                const bmkCodeOpts = (sel) => {
-                  const s = String(sel ?? "").trim();
-                  const opts = [`<option value="" ${s === "" ? "selected" : ""}>—</option>`];
-                  for (let i = 1; i <= 4; i++) {
-                    const v = String(i);
-                    opts.push(`<option value="${v}" ${s === v ? "selected" : ""}>${v}</option>`);
-                  }
-                  return opts.join("");
-                };
-                const bheadline = (appLang === "fa")
-                  ? `بمب جلوی «${btargetName}» کاشته شده است${bplantedCode ? ` (کد: ${fmtNum(bplantedCode)})` : ""}.`
-                  : `Bomb planted in front of "${btargetName}"${bplantedCode ? ` (code: ${bplantedCode})` : ""}.`;
-                const bguardLine = bhasGuard
-                  ? (bguardAlive
-                    ? (bguardDisabledPrevNight ? (appLang === "fa" ? `محافظ (${bguardName}) شب گذشته غیرفعال شده و نمی‌تواند فدا شود.` : `Guard (${bguardName}) was disabled last night and cannot sacrifice.`) : "")
-                    : (appLang === "fa" ? `محافظ (${bguardName}) مرده است.` : `Guard (${bguardName}) is dead.`))
-                  : (appLang === "fa" ? "محافظ در این بازی وجود ندارد." : "No Guard in this game.");
-                const boutcomeLine = (() => {
-                  if (!bplantedCode) return "";
-                  const bapplied = !!(br0 && br0.resolved);
-                  const bsac = !!(bguardCanSacrifice && br0 && br0.guardSacrifice);
-                  const bguardGuess = String((br0 && br0.guardGuess) || "").trim();
-                  const btargetGuess = String((br0 && br0.targetGuess) || "").trim();
-                  const bguess = bsac ? bguardGuess : btargetGuess;
-                  const bprefix = (appLang === "fa")
-                    ? (bapplied ? "نتیجه (اعمال‌شده): " : "نتیجه: ")
-                    : (bapplied ? "Result (applied): " : "Result: ");
-                  if (!bguess) {
-                    return bprefix + (appLang === "fa"
-                      ? (bsac ? "کدِ محافظ را انتخاب کنید." : "حدسِ هدف را انتخاب کنید.")
-                      : (bsac ? "Pick Guard guess." : "Pick target guess."));
-                  }
-                  const bok = String(bguess) === String(bplantedCode);
-                  const bo = bsac
-                    ? (bok ? "neutralized_guard" : "guard_died")
-                    : (bok ? "neutralized_target" : "target_died");
-                  if (bo === "neutralized_guard") return bprefix + (appLang === "fa" ? "محافظ بمب را خنثی کرد." : "Guard neutralized the bomb.");
-                  if (bo === "guard_died") return bprefix + (appLang === "fa" ? "محافظ اشتباه حدس زد و مرد." : "Guard guessed wrong and died.");
-                  if (bo === "neutralized_target") return bprefix + (appLang === "fa" ? "هدف درست حدس زد و بمب خنثی شد." : "Target guessed right; bomb neutralized.");
-                  if (bo === "target_died") return bprefix + (appLang === "fa" ? "هدف اشتباه حدس زد و مرد." : "Target guessed wrong and died.");
-                  return "";
-                })();
-                return `
-                  <div style="height:14px; border-top:1px solid rgba(255,255,255,.12); margin-top:12px; padding-top:2px"></div>
-                  <div class="note" style="margin-top:6px">${escapeHtml(bheadline)}</div>
-                  <div style="height:10px"></div>
-                  ${bguardLine ? `<div class="note">${escapeHtml(bguardLine)}</div><div style="height:10px"></div>` : ``}
-                  ${bhasGuard ? `
-                    <label for="fl_bomb_guard" style="display:flex; flex-direction:row; align-items:center; justify-content:space-between; gap:14px; font-weight:950; cursor:pointer; user-select:none; -webkit-user-select:none">
-                      <span>${escapeHtml(appLang === "fa" ? "محافظ فدا می‌شود؟" : "Does Guard sacrifice?")}</span>
-                      <input id="fl_bomb_guard" type="checkbox" ${br0.guardSacrifice ? "checked" : ""} ${bguardCanSacrifice ? "" : "disabled"} style="width:24px; height:24px; margin:0; accent-color: var(--primary)" />
-                    </label>
-                    <div style="height:10px"></div>
-                  ` : ``}
-                  ${bhasGuard && br0.guardSacrifice ? `
-                    <label>${escapeHtml(appLang === "fa" ? `حدسِ محافظ (${bguardName})` : `Guard (${bguardName}) guess`)}
-                      <select id="fl_bomb_guard_guess">${bmkCodeOpts(br0.guardGuess)}</select>
-                    </label>
-                  ` : `
-                    <label>${escapeHtml(appLang === "fa" ? `حدسِ ${btargetName}` : `${btargetName} guess`)}
-                      <select id="fl_bomb_target_guess">${bmkCodeOpts(br0.targetGuess)}</select>
-                    </label>
-                  `}
-                  ${boutcomeLine ? `<div class="note result" style="margin-top:10px">${escapeHtml(boutcomeLine)}</div>` : ``}
-                  <div class="note" style="margin-top:10px">${escapeHtml(appLang === "fa" ? "با انتخاب حدس، نتیجه بلافاصله اعمال می‌شود." : "Your choice applies immediately.")}</div>
-                `;
-              } catch { return ""; }
-            })();
+            // Bomb announcement is now a separate day_bomb step (inserted before day_guns by getFlowSteps).
+            const bombSectionHtml = "";
 
             body = `
               <div class="note" style="margin-top:6px">${escapeHtml(t("tool.flow.guns.title"))}</div>
@@ -3347,17 +3329,15 @@
               ${pendingShotsHtml}
               <div style="height:12px"></div>
               <div style="font-weight:1100">${escapeHtml(t("tool.flow.guns.fire"))}</div>
-              <div class="row one" style="margin-top:8px">
-                <label>${escapeHtml(t("tool.flow.guns.shooter"))}
-                  <select id="fl_gun_shooter">${shooterOpts}</select>
-                </label>
-                <label>${escapeHtml(t("tool.flow.guns.target"))}
-                  <select id="fl_gun_target">${targetOpts}</select>
-                </label>
-              </div>
-              <div style="height:10px"></div>
-              <button class="btn primary" id="fl_gun_fire" type="button">${escapeHtml(t("tool.flow.guns.fire"))}</button>
-              <div class="note" id="fl_gun_note" style="display:none; margin-top:10px"></div>
+              ${shooterIdxs.length
+                ? `${mkNightTargetCards("fl_gun_shooter", null, t("tool.flow.guns.shooter"), shooterIdxs)}
+                   <div style="height:6px"></div>
+                   ${mkNightTargetCards("fl_gun_target", null, t("tool.flow.guns.target"))}
+                   <div style="height:10px"></div>
+                   <button class="btn primary" id="fl_gun_fire" type="button">${escapeHtml(t("tool.flow.guns.fire"))}</button>
+                   <div class="note" id="fl_gun_note" style="display:none; margin-top:10px"></div>`
+                : `<div class="note" style="margin-top:8px">${escapeHtml(appLang === "fa" ? "همه تفنگ‌ها مصرف شده‌اند. برای تغییر شلیک، دکمه «حذف» را از لیست بالا بزنید." : "All guns have been used. To change a shot, tap Undo in the list above.")}</div>`
+              }
               ${bombSectionHtml}
             `;
           } else if (cur.id === "day_gun_expiry") {
@@ -3368,6 +3348,33 @@
             try { renderCast(); } catch {}
             saveState(appState);
 
+            // Build shot reveal lines for players shot this day (real gun, applied on Next from day_guns).
+            const dayKeyExp = String(f.day || 1);
+            const gunShotRec = (f.draft && f.draft.gunShotAppliedByDay && f.draft.gunShotAppliedByDay[dayKeyExp]) || null;
+            const realShots = (gunShotRec && Array.isArray(gunShotRec.shots)) ? gunShotRec.shots.filter((s) => s && s.type === "real") : [];
+            const shotRevealLines = realShots.map((s) => {
+              try {
+                const tIdx = parseInt(s.target, 10);
+                const shooterIdx = parseInt(s.shooter, 10);
+                const pName = escapeHtml(names[tIdx] || t("common.playerN", { n: tIdx + 1 }));
+                const shooterName = escapeHtml(names[shooterIdx] || t("common.playerN", { n: shooterIdx + 1 }));
+                const p = draw.players[tIdx];
+                const rid = p ? (p.roleId || "citizen") : "citizen";
+                const role = roles[rid] || {};
+                const teamFa = role.teamFa || "شهر";
+                const isMafia = teamFa === "مافیا";
+                const teamLabel = appLang === "fa" ? (isMafia ? "مافیا" : "شهروند") : (isMafia ? "Mafia" : "City");
+                const roleFa = role.faName || rid;
+                const roleEn = (typeof ROLE_I18N !== "undefined" && ROLE_I18N[rid] && ROLE_I18N[rid].name) ? ROLE_I18N[rid].name : rid;
+                const roleLabel = appLang === "fa" ? roleFa : roleEn;
+                const color = isMafia ? "rgba(255,100,80,1)" : "rgba(100,200,120,1)";
+                const sentence = appLang === "fa"
+                  ? `${escapeHtml(names[tIdx] || "")} توسط ${shooterName} با تفنگ واقعی تیر خورد و از بازی خارج شد. تیم او: ${escapeHtml(teamLabel)}.`
+                  : `${escapeHtml(names[tIdx] || "")} was shot by ${shooterName} with a real gun and is eliminated. Their side: ${escapeHtml(teamLabel)}.`;
+                return `<div class="fl-script" style="margin-bottom:8px; color:${color}">${sentence}</div>`;
+              } catch { return ""; }
+            }).join("");
+
             const expiryGuns = f.guns || {};
             const expiryVictims = Object.keys(expiryGuns)
               .map((k) => parseInt(k, 10))
@@ -3375,14 +3382,23 @@
               .filter((idx) => draw.players[idx] && draw.players[idx].alive !== false)
               .filter((idx) => expiryGuns[idx] && !expiryGuns[idx].used && expiryGuns[idx].type === "real");
 
+            const shotSection = shotRevealLines
+              ? `
+                <div class="fl-say-label">${escapeHtml(t("fl.label.sayAloud"))}</div>
+                ${shotRevealLines}
+                ${expiryVictims.length ? `<div style="height:14px; border-bottom:1px solid rgba(255,255,255,.08); margin-bottom:14px"></div>` : ""}
+              `
+              : "";
+
             body = expiryVictims.length
               ? `
+                ${shotSection}
                 <div class="note" style="margin-top:6px">${escapeHtml(t("tool.flow.day.gunExpiry.desc"))}</div>
                 <div style="height:10px"></div>
                 ${expiryVictims.map((idx) => `<div style="padding:6px 0; font-weight:1000; color:rgba(255,160,80,1)">${escapeHtml(names[idx] || t("common.playerN", { n: idx + 1 }))}</div>`).join("")}
                 <div class="note" style="margin-top:10px">${escapeHtml(appLang === "fa" ? "برای خارج کردن این بازیکنان «بعدی» را بزنید." : "Click Next to eliminate these players.")}</div>
               `
-              : `<div class="note" style="margin-top:6px">${escapeHtml(t("tool.flow.day.gunExpiry.none"))}</div>`;
+              : shotSection || `<div class="note" style="margin-top:6px">${escapeHtml(t("tool.flow.day.gunExpiry.none"))}</div>`;
           } else if (cur.id === "night_actions") {
             const d = f.draft || {};
             const evenNight = ((f.day || 1) % 2 === 0);
@@ -3734,7 +3750,9 @@
                 document.getElementById("fl_capo_bullet_order") ||
                 document.getElementById("fl_kabo_yakooza_target") ||
                 document.getElementById("fl_executioner_target") ||
-                document.getElementById("fl_executioner_role");
+                document.getElementById("fl_executioner_role") ||
+                document.getElementById("fl_sheriff_reveal") ||
+                document.getElementById("fl_freemason_target");
               if (!hasAny) return false;
 
               const read = (id) => { const el = document.getElementById(id); return el ? (el.value || "") : ""; };
@@ -3796,6 +3814,8 @@
               if (document.getElementById("fl_hostageTaker_target") || !mergeOnly) per.hostageTakerTarget = readNum("fl_hostageTaker_target");
               if (document.getElementById("fl_guardian_protect1") || !mergeOnly) per.guardianProtect1 = readNum("fl_guardian_protect1");
               if (document.getElementById("fl_guardian_protect2") || !mergeOnly) per.guardianProtect2 = readNum("fl_guardian_protect2");
+              if (document.getElementById("fl_sheriff_reveal") || !mergeOnly) per.sheriffReveal = readNum("fl_sheriff_reveal");
+              if (document.getElementById("fl_freemason_target") || !mergeOnly) per.freemasonTarget = readNum("fl_freemason_target");
               if (document.getElementById("fl_commando_shot") || !mergeOnly) per.commandoShot = readNum("fl_commando_shot");
               if (document.getElementById("fl_gunner_live") || !mergeOnly) per.gunnerLive = readNum("fl_gunner_live");
               if (document.getElementById("fl_neutralized_shot") || !mergeOnly) per.neutralizedShot = readCheck("fl_neutralized_shot");
@@ -3941,6 +3961,8 @@
                 neutralizedShot: per.neutralizedShot === true,
                 betrayalRep: per.betrayalRep != null ? per.betrayalRep : null,
                 betrayalDir: per.betrayalDir != null ? per.betrayalDir : null,
+                sheriffReveal: per.sheriffReveal != null ? per.sheriffReveal : null,
+                freemasonTarget: per.freemasonTarget != null ? per.freemasonTarget : null,
               };
               // Witch (Kabo): ability reflects to target — override payload so target's ability applies to themselves.
               if (getDrawScenarioForFlow() === "kabo" && payload.witchTarget != null && Number.isFinite(Number(payload.witchTarget))) {
@@ -3995,6 +4017,7 @@
                     investigator: ["investigatorT1", "investigatorT2"], sodagari: ["sodagariSacrifice", "sodagariTarget"],
                     godfather: ["godfatherAction", "mafiaShot", "saulBuyTarget", "sixthSenseTarget", "sixthSenseRole"], witch: ["witchTarget"], matador: ["matadorDisable"],
                     soldier: ["soldierTarget", "soldierGunShot"],
+                    sheriff: ["sheriffReveal"], freemason: ["freemasonTarget"],
                   };
                   for (const [roleKey, fields] of Object.entries(roleToFields)) {
                     const rid = roleKey === "godfather" ? ["godfather", "mafiaBoss"] : [roleKey];
@@ -4523,6 +4546,8 @@
                       neutralizedShot: per.neutralizedShot === true,
                       betrayalRep: per.betrayalRep != null ? per.betrayalRep : null,
                       betrayalDir: per.betrayalDir != null ? per.betrayalDir : null,
+                      sheriffReveal: per.sheriffReveal != null ? per.sheriffReveal : null,
+                      freemasonTarget: per.freemasonTarget != null ? per.freemasonTarget : null,
                     };
                     addFlowEvent("night_actions", payload);
                     } catch (e) {
@@ -4545,15 +4570,9 @@
               nextFlowStep();
               return;
             }
-            if (cur && cur.id === "day_bomb") {
+            if (cur && cur.id === "day_bomb_guard") {
               try { applyBombResultFromForm(); } catch {}
-              try {
-                const stepsAfter = getFlowSteps(f);
-                const voteIdx = stepsAfter.findIndex((s) => s && s.id === "day_vote");
-                f.step = (voteIdx >= 0) ? voteIdx : 0;
-                saveState(appState);
-              } catch {}
-              showFlowTool();
+              nextFlowStep();
               return;
             }
             if (cur && cur.id === "kabo_suspect_select") {
@@ -4566,7 +4585,6 @@
               return;
             }
             if (cur && cur.id === "day_guns") {
-              try { applyBombResultFromForm(); } catch {}
               nextFlowStep();
               return;
             }
@@ -4628,7 +4646,7 @@
           };
 
           // Auto-save: persist changes immediately when user selects values.
-          if (cur && (cur.id === "day_bomb" || cur.id === "day_guns")) {
+          if (cur && (cur.id === "day_bomb_guard" || cur.id === "day_guns")) {
             try {
               const saveBombDraft = () => {
                 try {
@@ -5022,6 +5040,8 @@
               "fl_betrayal_rep",
               "fl_betrayal_dir",
               "fl_capo_bullet_order",
+              "fl_sheriff_reveal",
+              "fl_freemason_target",
             ];
             // Helper: enforce mafia-shot ↔ NATO-guess mutual exclusion.
             // Neither side is ever hard-disabled — both remain interactive so the user
@@ -5201,9 +5221,10 @@
                   group.querySelectorAll(".nightPlayerCard").forEach((c) => {
                     const v = (c.getAttribute("data-idx") != null) ? c.getAttribute("data-idx") : "";
                     const isSel = v !== "" && selSet.has(parseInt(v, 10));
-                    const base = "border-radius:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;text-align:center;padding:10px;font-size:13px;line-height:1.3;transition:background .12s,border-color .12s;box-shadow:0 2px 8px rgba(0,0,0,.2);min-height:48px;touch-action:manipulation;user-select:none;";
-                    const colorWeight = isSel ? "color:#fff;font-weight:1100;" : "color:rgba(255,255,255,.85);font-weight:950;";
-                    c.style.cssText = base + (isSel ? NIGHT_CARD_SEL_STYLE : NIGHT_CARD_IDLE_STYLE) + colorWeight;
+                    c.style.background = isSel ? "rgba(99,179,237,.25)" : "rgba(255,255,255,.06)";
+                    c.style.border = isSel ? "2px solid #63b3ed" : "2px solid rgba(255,255,255,.12)";
+                    c.style.color = isSel ? "#fff" : "rgba(255,255,255,.85)";
+                    c.style.fontWeight = isSel ? "1100" : "950";
                   });
                   return;
                 }
@@ -5224,10 +5245,12 @@
                     group.querySelectorAll(".nightPlayerCard").forEach((c) => {
                       const v = (c.getAttribute("data-idx") != null) ? c.getAttribute("data-idx") : "";
                       const isSel = v === idx;
-                      const base = "border-radius:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;text-align:center;padding:10px;font-size:13px;line-height:1.3;transition:background .12s,border-color .12s;box-shadow:0 2px 8px rgba(0,0,0,.2);min-height:48px;touch-action:manipulation;user-select:none;";
-                      const colorWeight = isSel ? "color:#fff;font-weight:1100;" : "color:rgba(255,255,255,.85);font-weight:950;";
                       const dis = c.getAttribute("data-disabled") === "true";
-                      c.style.cssText = base + (isSel ? NIGHT_CARD_SEL_STYLE : NIGHT_CARD_IDLE_STYLE) + colorWeight + (dis ? "opacity:.55;pointer-events:none;" : "");
+                      c.style.background = isSel ? "rgba(99,179,237,.25)" : "rgba(255,255,255,.06)";
+                      c.style.border = isSel ? "2px solid #63b3ed" : "2px solid rgba(255,255,255,.12)";
+                      c.style.color = isSel ? "#fff" : "rgba(255,255,255,.85)";
+                      c.style.fontWeight = isSel ? "1100" : "950";
+                      if (dis) { c.style.opacity = ".55"; c.style.pointerEvents = "none"; }
                     });
                   }
                   return;
@@ -5300,6 +5323,10 @@
                   } catch {}
                   return;
                 }
+                if (field === "fl_gun_give_to") {
+                  // Trigger adjust() in the self-fake-only IIFE which listens for "change"
+                  try { input.dispatchEvent(new Event("change")); } catch {}
+                }
                 if (field === "fl_mafia_shot" && idx !== "") {
                   const natoT = document.getElementById("fl_nato_target");
                   const natoG = document.getElementById("fl_nato_role_guess");
@@ -5330,9 +5357,10 @@
                   const val = String(input.value);
                   group.querySelectorAll(".nightPlayerCard").forEach((c) => {
                     const isSel = (c.getAttribute("data-idx") != null ? c.getAttribute("data-idx") : "") === val;
-                    const base = "border-radius:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;text-align:center;padding:10px;font-size:13px;line-height:1.3;transition:background .12s,border-color .12s;box-shadow:0 2px 8px rgba(0,0,0,.2);min-height:48px;touch-action:manipulation;user-select:none;";
-                    const colorWeight = isSel ? "color:#fff;font-weight:1100;" : "color:rgba(255,255,255,.85);font-weight:950;";
-                    c.style.cssText = base + (isSel ? NIGHT_CARD_SEL_STYLE : NIGHT_CARD_IDLE_STYLE) + colorWeight;
+                    c.style.background = isSel ? "rgba(99,179,237,.25)" : "rgba(255,255,255,.06)";
+                    c.style.border = isSel ? "2px solid #63b3ed" : "2px solid rgba(255,255,255,.12)";
+                    c.style.color = isSel ? "#fff" : "rgba(255,255,255,.85)";
+                    c.style.fontWeight = isSel ? "1100" : "950";
                   });
                 }
               };

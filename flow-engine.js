@@ -281,6 +281,26 @@
               }
             }
             f.bombActive = false;
+            // Natasha silence (Classic Pro / Meeting/Epic / Advanced)
+            if (d.silencedByDay) {
+              const natashaAffectedDay = String((nightDayNum || 1) + 1);
+              if (d.silencedByDay[natashaAffectedDay]) delete d.silencedByDay[natashaAffectedDay];
+            }
+            // Sheriff reveal
+            if (d.sheriffRevealByNight && d.sheriffRevealByNight[dayKey]) {
+              d.sheriffRevealByNight[dayKey] = null;
+            }
+            // Freemason kills
+            if (d.nightFreemasonAppliedByDay && d.nightFreemasonAppliedByDay[dayKey]) {
+              const fRec = d.nightFreemasonAppliedByDay[dayKey];
+              if (fRec && Number.isFinite(Number(fRec.freeKilled)) && fRec.freePrevAlive === true) {
+                try { setPlayerLife(parseInt(fRec.freeKilled, 10), { alive: true }); } catch {}
+              }
+              if (fRec && Number.isFinite(Number(fRec.tgtKilled)) && fRec.tgtPrevAlive === true) {
+                try { setPlayerLife(parseInt(fRec.tgtKilled, 10), { alive: true }); } catch {}
+              }
+              d.nightFreemasonAppliedByDay[dayKey] = { targetIdx: null, targetWasMafia: false, freeKilled: null, freePrevAlive: null, tgtKilled: null, tgtPrevAlive: null };
+            }
             f.draft = d;
           } catch {}
         }
@@ -2112,6 +2132,7 @@
           if (titles[stepId]) return titles[stepId];
           const tKeys = {
             day_bomb: "tool.flow.bomb.active",
+            day_bomb_guard: "tool.flow.bomb.guardDecision",
             day_dawn_resolution: "tool.flow.dawn.title",
             day_dusk_resolution: "tool.flow.dusk.title",
             day_guns: "tool.flow.day.guns",
@@ -2160,6 +2181,8 @@
             night_hostageTaker: "tool.flow.night.hostageTaker",
             night_commando: "tool.flow.night.commando",
             night_gunner: "tool.flow.night.gunner",
+            night_sheriff: "tool.flow.night.sheriff",
+            night_freemason: "tool.flow.night.freemason",
             day_end_card_face_change: "tool.flow.endCard.faceOff",
             day_end_card_handcuffs: "tool.flow.endCard.handcuffs",
             day_end_card_beautiful_mind: "tool.flow.endCard.beautifulMind",
@@ -2511,6 +2534,30 @@
                 return !!(f.bombActive || (rec && rec.target !== null && rec.target !== undefined));
               } catch { return !!f.bombActive; }
             })();
+            // Bomb announcement: insert day_bomb as its own early step (right after Dawn) so
+            // the moderator reads it aloud first, before gun/vote steps.
+            const prependBombStepIfNeeded = (stepObjs) => {
+              if (!hasBombForStep || !Array.isArray(stepObjs)) return stepObjs;
+              const result = [];
+              let bombInserted = false;
+              let guardStepInserted = false;
+              for (const s of stepObjs) {
+                // Insert day_bomb_guard right before day_vote (mid-day nap, just before voting).
+                if (!guardStepInserted && s.id === "day_vote") {
+                  result.push({ id: "day_bomb_guard", title: getStepTitle("day_bomb_guard") });
+                  guardStepInserted = true;
+                }
+                result.push(s);
+                if (!bombInserted && s.id === "day_dawn_resolution") {
+                  result.push({ id: "day_bomb", title: getStepTitle("day_bomb") });
+                  bombInserted = true;
+                }
+              }
+              if (!bombInserted) result.unshift({ id: "day_bomb", title: getStepTitle("day_bomb") });
+              // Fallback: if day_vote was not in the step list, append day_bomb_guard at the end.
+              if (!guardStepInserted) result.push({ id: "day_bomb_guard", title: getStepTitle("day_bomb_guard") });
+              return result;
+            };
             const kaneRevealIdx = (() => {
               try {
                 const prevNight = dayNum - 1;
@@ -2554,11 +2601,11 @@
                   if (endCardStep) steps.push(endCardStep);
                   continue;
                 }
-                if (id === "day_guns" && !(hasUsableDayGuns() || hasBombForStep)) continue;
+                if (id === "day_guns" && !hasUsableDayGuns()) continue;
                 if (id === "day_gun_expiry" && !hasUnfiredRealGuns()) continue;
                 steps.push({ id, title: getStepTitle(id) });
               }
-              return appendDuskStepIfNeeded(prependDawnStepIfNeeded(steps));
+              return appendDuskStepIfNeeded(prependBombStepIfNeeded(prependDawnStepIfNeeded(steps)));
             }
 
             if (dayCfg.kaneReveal && kaneRevealIdx !== null) {
@@ -2569,7 +2616,7 @@
               steps.push({ id: "day_poison_status", title: getStepTitle("day_poison_status") });
             }
             for (const id of baseIds) {
-              if (id === "day_guns" && !(hasUsableDayGuns() || hasBombForStep)) continue;
+              if (id === "day_guns" && !hasUsableDayGuns()) continue;
               if (id === "day_gun_expiry" && !hasUnfiredRealGuns()) continue;
               steps.push({ id, title: getStepTitle(id) });
             }
@@ -2579,7 +2626,7 @@
               const endCardStep = getEndCardActionStepForDay(f);
               if (endCardStep) steps.push(endCardStep);
             }
-            return appendDuskStepIfNeeded(prependDawnStepIfNeeded(steps));
+            return appendDuskStepIfNeeded(prependBombStepIfNeeded(prependDawnStepIfNeeded(steps)));
           }
           // Per-role night steps: one step per wake order entry (same order as Wake tool).
           const cfg = getScenarioConfig(scenario);
@@ -2766,6 +2813,77 @@
           }
         }
 
+        // Apply Natasha's silence — stores silenced player for the NEXT day's elimination vote.
+        function applyNightNatashaFromPayload(f, payload) {
+          try {
+            if (!f || !payload) return false;
+            const draw = appState.draw;
+            if (!draw || !draw.players) return false;
+            const targetRaw = payload.natashaTarget;
+            const targetIdx = (targetRaw !== null && targetRaw !== undefined && Number.isFinite(parseInt(targetRaw, 10)))
+              ? parseInt(targetRaw, 10) : null;
+            if (targetIdx === null || targetIdx < 0 || targetIdx >= draw.players.length) return false;
+            const affectedDay = String((f.day || 1) + 1);
+            if (!f.draft || typeof f.draft !== "object") f.draft = {};
+            if (!f.draft.silencedByDay || typeof f.draft.silencedByDay !== "object") f.draft.silencedByDay = {};
+            f.draft.silencedByDay[affectedDay] = [targetIdx];
+            return true;
+          } catch { return false; }
+        }
+
+        // Apply Sheriff reveal — records which mafia member was shown (informational only, no kills).
+        function applyNightSheriffFromPayload(f, payload) {
+          try {
+            if (!f || !payload) return false;
+            const revealRaw = payload.sheriffReveal;
+            const revealIdx = (revealRaw !== null && revealRaw !== undefined && Number.isFinite(parseInt(revealRaw, 10)))
+              ? parseInt(revealRaw, 10) : null;
+            if (!f.draft || typeof f.draft !== "object") f.draft = {};
+            if (!f.draft.sheriffRevealByNight || typeof f.draft.sheriffRevealByNight !== "object") f.draft.sheriffRevealByNight = {};
+            f.draft.sheriffRevealByNight[String(f.day || 1)] = { revealed: revealIdx, at: Date.now() };
+            return true;
+          } catch { return false; }
+        }
+
+        // Apply Freemason action — if target is mafia, both freemason and target are eliminated.
+        function applyNightFreemasonFromPayload(f, payload) {
+          try {
+            if (!f || !payload) return false;
+            const draw = appState.draw;
+            if (!draw || !draw.players) return false;
+            const targetRaw = payload.freemasonTarget;
+            const targetIdx = (targetRaw !== null && targetRaw !== undefined && Number.isFinite(parseInt(targetRaw, 10)))
+              ? parseInt(targetRaw, 10) : null;
+            if (!f.draft || typeof f.draft !== "object") f.draft = {};
+            if (!f.draft.nightFreemasonAppliedByDay || typeof f.draft.nightFreemasonAppliedByDay !== "object") f.draft.nightFreemasonAppliedByDay = {};
+            const dayKey = String(f.day || 1);
+            const rec = { targetIdx, targetWasMafia: false, freeKilled: null, freePrevAlive: null, tgtKilled: null, tgtPrevAlive: null };
+            if (targetIdx !== null && targetIdx >= 0 && targetIdx < draw.players.length) {
+              const tRole = (draw.players[targetIdx] && draw.players[targetIdx].roleId) ? draw.players[targetIdx].roleId : "citizen";
+              const tIsMafia = roles[tRole] && roles[tRole].teamFa === "مافیا";
+              if (tIsMafia) {
+                rec.targetWasMafia = true;
+                let freeIdx = null;
+                for (let i = 0; i < draw.players.length; i++) {
+                  if (draw.players[i] && draw.players[i].roleId === "freemason") { freeIdx = i; break; }
+                }
+                if (freeIdx !== null && draw.players[freeIdx] && draw.players[freeIdx].alive !== false) {
+                  rec.freeKilled = freeIdx;
+                  rec.freePrevAlive = true;
+                  try { setPlayerLife(freeIdx, { alive: false }); } catch {}
+                }
+                if (draw.players[targetIdx] && draw.players[targetIdx].alive !== false) {
+                  rec.tgtKilled = targetIdx;
+                  rec.tgtPrevAlive = true;
+                  try { setPlayerLife(targetIdx, { alive: false }); } catch {}
+                }
+              }
+            }
+            f.draft.nightFreemasonAppliedByDay[dayKey] = rec;
+            return true;
+          } catch { return false; }
+        }
+
         // Resolve all night effects from payload. Used by effect registry and nextFlowStep.
         // Order: Herbalist → Pro/Sniper/Ocean/Zodiac → Negotiator → Saul → Investigator → Sodagari → Soldier → Mafia → Constantine → SixthSense → Heir.
         // Constantine runs after Mafia/Pro so he can revive players who died this night (e.g. Leon shooting citizen).
@@ -2845,6 +2963,7 @@
                 f.draft.detectiveResultByNight[String(f.day || 1)] = { target: tIdx, isMafia, at: Date.now() };
               }
             } catch {}
+            try { applyNightNatashaFromPayload(f, payload0); } catch {}
             try { applyNightHerbalistFromPayload(f, payload0); } catch {}
             try { applyNightExecutionerFromPayload(f, payload0); } catch {}
             try { applyNightProfessionalFromPayload(f, payload0); } catch {}
@@ -2858,6 +2977,8 @@
             try { applyNightSodagariFromPayload(f, payload0); } catch {}
             try { applyNightSoldierFromPayload(f, payload0); } catch {}
             try { applyNightMafiaFromPayload(f, payload0); } catch {}
+            try { applyNightSheriffFromPayload(f, payload0); } catch {}
+            try { applyNightFreemasonFromPayload(f, payload0); } catch {}
             try { applyNightConstantineFromPayload(f, payload0); } catch {}
             try { applyNightSixthSenseFromPayload(f, payload0); } catch {}
             try { applyHeirInheritanceFromPayload(f); } catch {}
@@ -3437,10 +3558,11 @@
               const prevNightKey = String((f.day || 1) - 1);
               const nightGives = Array.isArray(d.nightGunGivesByNight && d.nightGunGivesByNight[prevNightKey])
                 ? d.nightGunGivesByNight[prevNightKey] : [];
-              const usedShooters = new Set(
-                ((d.gunShotAppliedByDay && d.gunShotAppliedByDay[String(f.day)]) || { shots: [] }).shots
-                  .filter((s) => s).map((s) => parseInt(s.shooter, 10))
-              );
+              const shotRec = (d.gunShotAppliedByDay && d.gunShotAppliedByDay[String(f.day)]) || null;
+              // Only mark guns as used if the shots were actually applied (not reverted).
+              const usedShooters = (shotRec && shotRec.applied && Array.isArray(shotRec.shots))
+                ? new Set(shotRec.shots.filter((s) => s).map((s) => parseInt(s.shooter, 10)))
+                : new Set();
               f.guns = {};
               for (const g of nightGives) {
                 const to = parseInt(g.to, 10);

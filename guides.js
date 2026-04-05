@@ -930,12 +930,12 @@ const SCENARIO_GUIDES = {
   },
 
   // ══════════════════════════════════════════════════════════════════════════
-  pishrafte: {
+  classicPro: {
     fa: _gw([
       _gs('معرفی و ترکیب', [
-        'سناریو پیشرفته. مناسب برای ۱۵ نفر (پیش‌فرض: ۱۵ نفر، ۵ مافیا). بیشترین نقش‌ها.',
-        '<br /><b>تیم مافیا:</b> رئیس مافیا + پدرخوانده + دکتر لکتر + جوکر مافیا + ناتو + ناتاشا + شیاد + مافیا ساده',
-        '<br /><b>تیم شهر:</b> کارآگاه + پزشک + تک‌تیرانداز + حرفه‌ای + زره‌پوش + محقق + بازپرس + رویین‌تن + قاضی + فرمانده + کشیش + شهروند',
+        'سناریو کلاسیک پیشرفته — ترکیب کامل نقش‌ها. پیش‌فرض: ۱۲ نفر، ۴ مافیا.',
+        '<br /><b>تیم مافیا:</b> رئیس مافیا + دکتر لکتر + جوکر مافیا + ماتادور + ساول گودمن + ناتو + ناتاشا + شیاد + تروریست + مافیا ساده',
+        '<br /><b>تیم شهر:</b> کارآگاه + پزشک + تک‌تیرانداز + حرفه‌ای + فراماسون + کلانتر + زره‌پوش + محقق + بازپرس + جان‌سخت + رویین‌تن + مظنون + قاضی + فرمانده + کشیش + کابوی + شهروند',
       ].join('')),
       _gs('ترتیب شب', [
         '<b>۱. محقق:</b> بیدار → لینک → چشم می‌بندد (شب معارفه لینک نمی‌زند).',
@@ -951,8 +951,10 @@ const SCENARIO_GUIDES = {
         '<br />&nbsp;&nbsp;• انتخاب تکراری پشت‌سرهم (دو شب متوالی یک نفر) ممنوع است.',
         '<br /><b>۷. حرفه‌ای:</b> بیدار → اگر می‌خواهد شلیک کند، هدف را نشان می‌دهد → چشم می‌بندد.',
         '<br /><b>۸. پزشک:</b> بیدار → نجات → چشم می‌بندد.',
-        '<br /><b>۹. کارآگاه:</b> بیدار → استعلام → چشم می‌بندد.',
-        '<br /><b>۱۰. تک‌تیرانداز:</b> بیدار → اگر می‌خواهد شلیک کند، هدف را نشان می‌دهد → چشم می‌بندد.',
+        '<br /><b>۹. فراماسون:</b> بیدار → یک نفر را بررسی می‌کند → چشم می‌بندد.',
+        '<br /><b>۱۰. کارآگاه:</b> بیدار → استعلام → چشم می‌بندد.',
+        '<br /><b>۱۱. کلانتر:</b> بیدار → بررسی می‌کند → چشم می‌بندد.',
+        '<br /><b>۱۲. تک‌تیرانداز:</b> بیدار → اگر می‌خواهد شلیک کند، هدف را نشان می‌دهد → چشم می‌بندد.',
       ].join('')),
       _gs('ترتیب پردازش استعلام کارآگاه', [
         'استعلام کارآگاه به ترتیب زیر پردازش می‌شود:',
@@ -974,9 +976,9 @@ const SCENARIO_GUIDES = {
     ]),
     en: _gw([
       _gs('Overview & Composition', [
-        'Advanced scenario. Default: 15 players, 5 mafia. Maximum role count.',
-        '<br /><b>Mafia:</b> Boss + Godfather + Dr. Lecter + Mafia Joker + NATO + Natasha + Charlatan + Simple Mafia',
-        '<br /><b>City:</b> Detective + Doctor + Sniper + Professional + Armored + Researcher + Inspector + Invulnerable + Judge + Commander + Priest + Citizens',
+        'Classic Advanced scenario — full role set. Default: 12 players, 4 mafia.',
+        '<br /><b>Mafia:</b> Boss + Dr. Lecter + Mafia Joker + Matador + Saul Goodman + NATO + Natasha + Charlatan + Terrorist + Simple Mafia',
+        '<br /><b>City:</b> Detective + Doctor + Sniper + Professional + Freemason + Sheriff + Armored + Researcher + Inspector + Hard John + Invulnerable + Suspect + Judge + Commander + Priest + Cowboy + Citizens',
       ].join('')),
       _gs('Night Phase', [
         '<b>1. Researcher:</b> Opens eyes → links → closes eyes (no link on intro night).',
@@ -991,8 +993,10 @@ const SCENARIO_GUIDES = {
         '<br />&nbsp;&nbsp;• Max 2 times per game. Cannot select the same person on consecutive nights.',
         '<br /><b>7. Professional:</b> Opens eyes → shoots if desired → closes eyes.',
         '<br /><b>8. Doctor:</b> Opens eyes → saves → closes eyes.',
-        '<br /><b>9. Detective:</b> Opens eyes → inquires → closes eyes.',
-        '<br /><b>10. Sniper:</b> Opens eyes → shoots if desired → closes eyes.',
+        '<br /><b>9. Freemason:</b> Opens eyes → checks one player → closes eyes.',
+        '<br /><b>10. Detective:</b> Opens eyes → inquires → closes eyes.',
+        '<br /><b>11. Sheriff:</b> Opens eyes → checks → closes eyes.',
+        '<br /><b>12. Sniper:</b> Opens eyes → shoots if desired → closes eyes.',
       ].join('')),
       _gs('Detective Inquiry Resolution Order', [
         'Detective inquiry is resolved in this priority order:',

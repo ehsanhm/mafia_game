@@ -1,5 +1,5 @@
 /**
- * Standard flow — mozaker, takavar, meeting_epic, pishrafte, shab_mafia.
+ * Standard flow — mozaker, takavar, meeting_epic, classicPro, shab_mafia.
  * day_vote → day_elim, no end cards. Each scenario has explicit night steps.
  */
 (function () {
@@ -23,7 +23,10 @@
   FLOW.meeting_epic = Object.assign({}, dayBase, {
     night: ["night_natasha", "night_mafia", "night_lecter", "night_doctor", "night_detective", "night_sniper"],
   });
-  FLOW.pishrafte = Object.assign({}, dayBase, {
+  FLOW.shab_mafia = Object.assign({}, dayBase, {
+    night: ["night_mafia", "night_lecter", "night_joker_mafia", "night_detective", "night_professional", "night_doctor"],
+  });
+  FLOW.classicPro = Object.assign({}, dayBase, {
     night: [
       "night_researcher",
       "night_swindler",
@@ -33,11 +36,10 @@
       "night_joker_mafia",
       "night_professional",
       "night_doctor",
+      "night_freemason",
       "night_detective",
+      "night_sheriff",
       "night_sniper",
     ],
-  });
-  FLOW.shab_mafia = Object.assign({}, dayBase, {
-    night: ["night_mafia", "night_lecter", "night_joker_mafia", "night_detective", "night_professional", "night_doctor"],
   });
 })();

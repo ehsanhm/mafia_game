@@ -40,12 +40,15 @@
       : `<span>${escapeHtml(noneLabel)}</span>`;
     return `
       <div style="text-align:center; padding:20px 0 10px">
-        <div style="font-size:13px; font-weight:950; color:var(--muted); margin-bottom:18px; ${isRtl ? "" : "text-transform:uppercase; letter-spacing:.05em;"}">${escapeHtml(t("tool.flow.dawn.title"))}</div>
-        <div style="text-align:${isRtl ? "right" : "left"}; margin:0 auto; max-width:320px; padding:14px 18px; background:rgba(255,255,255,.06); border-radius:12px; border:1px solid rgba(255,255,255,.12)">
-          <div style="margin-bottom:12px; color:rgba(255,110,70,.95); font-weight:1000; margin-bottom:6px">${escapeHtml(elimLabel)}</div>
-          <div style="color:rgba(255,255,255,.9); margin-bottom:14px">${mkRows(eliminated)}</div>
-          <div style="color:rgba(74,222,128,.95); font-weight:1000; margin-bottom:6px">${escapeHtml(revLabel)}</div>
-          <div style="color:rgba(255,255,255,.9)">${mkRows(revived)}</div>
+        <div style="font-size:13px; font-weight:950; color:var(--muted); margin-bottom:14px; ${isRtl ? "" : "text-transform:uppercase; letter-spacing:.05em;"}">${escapeHtml(t("tool.flow.dawn.title"))}</div>
+        <div style="text-align:${isRtl ? "right" : "left"}; margin:0 auto; max-width:320px">
+          <div class="fl-say-label" style="margin-bottom:8px">${escapeHtml(t("fl.label.sayAloud"))}</div>
+          <div class="fl-script" style="border-radius:10px; margin:0">
+            <div style="margin-bottom:10px; color:rgba(255,110,70,.95); font-weight:1000; margin-bottom:6px">${escapeHtml(elimLabel)}</div>
+            <div style="margin-bottom:14px">${mkRows(eliminated)}</div>
+            <div style="color:rgba(74,222,128,.95); font-weight:1000; margin-bottom:6px">${escapeHtml(revLabel)}</div>
+            <div>${mkRows(revived)}</div>
+          </div>
         </div>
       </div>
     `;
