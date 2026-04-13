@@ -180,31 +180,58 @@ const SCENARIO_CONFIGS = {
   },
   classicPro: {
     id: "classicPro",
-    name: { fa: "کلاسیک پیشرفته", en: "Classic Advanced" },
-    defaults: { nPlayers: 12, mafiaCount: 4 },
+    name: { fa: "کلاسیک پرو", en: "Classic Pro" },
+    defaults: { nPlayers: 18, mafiaCount: 6 },
     allowedRoles: [
-      // Mafia team
-      "mafiaBoss", "doctorLecter", "jokerMafia", "matador", "saulGoodman",
-      "nato", "natasha", "swindler", "terrorist",
-      // City roles
-      "detective", "doctor", "sniper", "sheriff", "freemason",
-      "professional", "researcher", "investigator",
-      "hardJohn", "invulnerable", "armored", "suspect",
-      "priest", "judge", "cowboy", "commander",
+      "snowman", "armorer",
+      "enchantress", "antiLadyVoodoo",
+      "interrogator", "citizenBomber", "mafBomber",
+      "godfather", "perizad", "doctor",
+      "tyler", "tiebreaker", "terrorist", "gunmaker", "sniper",
+      "wizard", "mafSpy", "surgeon", "jackIndep",
+      "luggageBearer",
+      "saboteur",
+      "doubler", "thief", "duelmanMafia",
+      "tracker", "psychShooter", "psycho", "russianRoulette", "invulnerable", "reaper",
+      "clockmaker", "bartender",
+      "shahkesh",
+      "outcast",
+      "spiderCity",
+      "devout", "devotee", "freemason", "commander",
+      "judge", "gamblerMafia",
+      "cowboy", "detective", "specialDetective", "priest", "killer",
+      "gamblerIndep", "gravedigger",
+      "leader", "ladyVoodoo",
+      "protector", "inventorCity", "evilInventor", "strongman", "mistress",
+      "natasha", "nato", "savior", "nero", "guardian",
+      "mafiaLawyer",
+      "yakuza",
     ],
     defaultToggles: [
-      "mafiaBoss", "natasha", "nato",
-      "detective", "doctor", "sniper", "sheriff", "freemason", "priest", "judge", "cowboy",
+      // Mafia
+      "enchantress", "godfather", "mafSpy", "thief", "outcast", "ladyVoodoo",
+      // City
+      "doctor", "tyler", "gunmaker", "sniper",
+      "invulnerable", "freemason", "commander", "cowboy", "detective",
     ],
     wakeOrder: {
-      fa: ["محقق", "شیاد", "ناتاشا", "تیم مافیا (رئیس/ناتو)", "دکتر لکتر", "جوکر مافیا", "حرفه‌ای", "پزشک", "فراماسون", "کارآگاه", "کلانتر", "تک‌تیرانداز"],
-      en: ["Researcher", "Charlatan", "Natasha", "Mafia team (Boss/NATO)", "Dr. Lecter", "Mafia Joker", "Professional", "Doctor", "Freemason", "Detective", "Sheriff", "Sniper"],
+      fa: ["نگهبان", "دَبِل", "ساقی", "افسون‌گر", "دزد", "ناتاشا", "یاکوزا", "طردشده", "وکیل مافیا", "شاه‌کش", "روانی", "لیدی وودو", "تیم مافیا (پدرخوانده)", "جراح", "روان‌شناس", "پزشک", "آهنگر", "فراماسون/تایلر", "تفنگ‌دار", "فداکار", "لیدر", "کارآگاه", "کارآگاه ویژه", "تک‌تیرانداز/فرمانده", "ردگیر", "جادوگر", "انتی لیدی وودو", "آدم‌برفی", "کشیش", "پریزاد", "ریپر", "کیلر", "نرون", "جک", "گمبلر"],
+      en: ["Guardian", "Doubler", "Bartender", "Enchantress", "Thief", "Natasha", "Yakuza", "Outcast", "Mafia Lawyer", "Shahkesh", "Psycho", "Lady Voodoo", "Mafia team (Godfather)", "Surgeon", "Psychologist", "Doctor", "Armorer", "Freemason/Tyler", "Gunmaker", "Devout", "Leader", "Detective", "Special Detective", "Sniper/Commander", "Tracker", "Wizard", "Anti-Lady Voodoo", "Snowman", "Priest", "Perizad", "Reaper", "Killer", "Nero", "Jack", "Gambler"],
     },
     features: { lastMove: false, endCards: false },
     eliminationCards: [],
     roleOverrides: {
-      judge: { descFa: "در کلاسیک پیشرفته: رأی قاضی در رأی‌گیری روز دو بار شمرده می‌شود." },
-      terrorist: { descFa: "عضو مافیاست اما تیم مافیا را نمی‌شناسد و آن‌ها هم او را نمی‌شناسند. استعلام کارآگاه «شهروند» نمایش می‌دهد. قبل از رأی‌گیری دوم می‌تواند اعلام کند «من تروریستم» و با یک نفر دلخواه منفجر شود (هر دو خارج می‌شوند)." },
+      judge: { descFa: "بعد از پایان رأی‌گیری دور دوم، گرداننده همه را می‌خواند تا چشم ببندند و قاضی به تنهایی بیدار می‌شود. قاضی باید رأی خروج مردم شهر را تأیید کند. یک‌بار می‌تواند رأی‌گیری را باطل کند — در این صورت هیچ‌کس خارج نمی‌شود و قاضی به شهروند ساده تبدیل می‌شود. اگر خودش در دفاع باشد نمی‌تواند از قابلیتش استفاده کند. اگر ساقی شب قبل او را مست کرده باشد و همان روز بخواهد رأی‌گیری را لغو کند، قابلیتش بی‌اثر می‌شود و تنها شانس استفاده را از دست می‌دهد." },
+      terrorist: { descFa: "عضو مافیاست اما تیم مافیا را نمی‌شناسد و آن‌ها هم او را نمی‌شناسند. اگر در روز با رأی‌گیری یا روش دیگری قطعاً از بازی خارج شود، می‌تواند نقشش را اعلام کند و یک نفر دلخواه را همراه خودش از بازی بیرون ببرد. اگر قبل از حذف قطعی نقشش را اعلام کند، به تنهایی بیرون می‌رود. اگر در شب کشته شود نمی‌تواند از قابلیتش استفاده کند. اگر هدفش زره داشته باشد، تروریست به تنهایی حذف می‌شود. اگر محافظ در بازی باشد و از قابلیتش استفاده کند، قربانی تروریست نجات می‌یابد و تروریست به تنهایی حذف می‌شود." },
+      sniper: { descFa: "تعداد تیرها معمولاً یک سوم مافیاست و قابل ذخیره‌اند. دکتر می‌تواند قربانی را نجات دهد. اگر فرمانده در بازی باشد شلیک باید به تأیید او برسد — اگر فرمانده رد کند تیر کم نمی‌شود. اگر تک‌تیرانداز به خود فرمانده شلیک کند، فرمانده نمی‌تواند آن را لغو کند. شلیک تک‌تیرانداز رویین‌تن را می‌کشد اما بر محافظ و مستقل‌ها تأثیری ندارد. اگر ساقی تک‌تیرانداز را مست کرده باشد و فرمانده شلیک را تأیید کند، خودِ تک‌تیرانداز کشته می‌شود. اگر در شب استراحت ریپر به ریپر شلیک کند، خودِ تک‌تیرانداز کشته می‌شود." },
+      freemason: { descFa: "هر شب یک نفر را انتخاب می‌کند تا به اتحاد شهروندی اضافه کند. اگر مافیا باشد هر دو همان شب از بازی خارج می‌شوند (مرگ ماسونی). اگر شهروند باشد هر دو می‌فهمند طرف مقابل شهروند است. اگر تایلر در بازی باشد شب اول تایلر را می‌شناسد و هر شب با هم بیدار می‌شوند. جاسوس مافیا اگر بیدار شود به عنوان شهروند معرفی می‌شود اما اگر مستقل وارد اتحاد شود مرگ ماسونی رخ می‌دهد. اگر فراماسون حذف شود، تایلر جانشین می‌شود." },
+      detective: { descFa: "هر شب می‌تواند استعلام یک نفر را بگیرد؛ پدرخوانده و مستقل‌ها همیشه «شهروند» نمایش داده می‌شوند. یک شلیک مهلک دارد — یک‌بار در شب به جای استعلام می‌تواند شلیک کند. شلیک مهلک رویین‌تن، محافظ، مستقل‌ها و طردشده (در چهار شب اول) را هم از پای درمی‌آورد؛ دکتر نمی‌تواند نجات دهد. تنها راه نجات زره آهنگر است. پس از استفاده از شلیک، کارآگاه دیگر استعلام هم ندارد. اگر دزد کارآگاه را انتخاب کند، دزد دستگیر می‌شود." },
+      doctor: { descFa: "تعداد کل نجات‌های دکتر در طول بازی نصف تعداد کل بازیکنان است. هر شب می‌تواند یک یا چند نفر را نجات دهد و خودش هم می‌تواند جزو آن‌ها باشد (اگر آخرین نجات نباشد باید حداقل یک نفر دیگر را هم انتخاب کند). نمی‌تواند دو شب پشت سر هم یک نفر را نجات دهد. از شلیک مهلک مرد قوی، کارآگاه، حمله شاه‌کش، تسخیر پریزاد، انفجار شب بمبر، مرگ ماسونی، انتخاب فداکار و آتش چخماق نمی‌تواند نجات دهد." },
+      priest: { descFa: "شب‌ها هدف ناتاشا را حدس می‌زند؛ اگر درست تشخیص دهد، سایلنت خنثی می‌شود. همچنین می‌تواند به یک بازیکن یک دقیقه وقت صحبت اضافه بدهد (به خودش نمی‌تواند). اگر در روز با رأی‌گیری از بازی حذف شود، نقشش اعلام می‌شود و سپس یک نفر را انتخاب می‌کند تا گرداننده جناح آن نفر (مثبت/منفی/مستقل) را اعلام کند. اگر یکی از سایه‌های پریزاد را انتخاب کند، آن سایه همان شب حذف می‌شود." },
+      guardian: { descFa: "وظیفه‌اش نگهبانی از شهر در برابر دزد یا افسون‌گر است. هر شب قبل از دزد یا افسون‌گر بیدار می‌شود و یک نفر را انتخاب می‌کند؛ اگر دزد یا افسون‌گر در همان شب آن بازیکن را انتخاب کنند، افسون یا دزدی‌شان بی‌نتیجه خواهد بود. اگر دزد از خود نگهبان دزدی کند، دستگیر شده و حذف می‌شود. از نگهبان و کارآگاه در یک بازی همزمان استفاده نمی‌شود." },
+      invulnerable: { descFa: "در شب با شلیک مافیا یا مستقل‌ها کشته نمی‌شود؛ چخماق هم نمی‌تواند او را نفتی کند. اما در برابر شلیک تک‌تیرانداز و روان‌شناس، حمله بمبر و کابوی، انفجار تروریست و مرگ ماسونی بی‌دفاع است. شلیک مهلک مرد قوی، کارآگاه و حمله شاه‌کش هم او را حذف می‌کنند. اگر ساقی مست کند یا دزد قابلیتش را بدزدد، آن شب با هر تیری کشته می‌شود." },
+      natasha: { descFa: "هر شب یک نفر را انتخاب می‌کند تا روز بعد نتواند صحبت، رأی بدهد یا حرکتی داشته باشد (سایلنت). نمی‌تواند دو شب پشت‌سرهم یک نفر را سایلنت کند. تروریست، کابوی و بمبر اگر فلج شوند باز هم می‌توانند از قابلیت انتحاریشان استفاده کنند. اگر کسی که تفنگ‌دار به او تفنگ داده فلج شود، روز بعد نمی‌تواند از تفنگش استفاده کند." },
+      commander: { descFa: "اگر تک‌تیرانداز در شب شلیک کند، فرمانده بعد از او بیدار می‌شود تا شلیک را تأیید یا رد کند. اگر رد کند، شلیک انجام نمی‌شود و از تیرهای تک‌تیرانداز کم نمی‌شود. اگر خود فرمانده هدف تک‌تیرانداز باشد، نمی‌تواند شلیک را لغو کند و کشته خواهد شد. اگر ساقی فرمانده را مست کرده باشد، حتی اگر شلیک را رد کند باز هم تیر شلیک خواهد شد." },
     },
   },
   shab_mafia: {
@@ -233,5 +260,12 @@ const SCENARIO_CONFIGS = {
 };
 
 function getScenarioConfig(scenarioId) {
-  return SCENARIO_CONFIGS[scenarioId] || SCENARIO_CONFIGS["classic"];
+  const cfg = SCENARIO_CONFIGS[scenarioId];
+  if (cfg) return cfg;
+  // Case-insensitive fallback for camelCase scenario IDs (e.g. "classicpro" → "classicPro")
+  const lower = String(scenarioId || "").toLowerCase();
+  for (const k of Object.keys(SCENARIO_CONFIGS)) {
+    if (k.toLowerCase() === lower) return SCENARIO_CONFIGS[k];
+  }
+  return SCENARIO_CONFIGS["classic"];
 }

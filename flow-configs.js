@@ -21,7 +21,13 @@
   window.FLOW_CONFIGS = window.FLOW_CONFIGS || {};
   window.getFlowConfig = function (scenarioId) {
     const cfg = window.FLOW_CONFIGS[scenarioId];
-    return cfg || window.FLOW_CONFIGS.classic || {
+    if (cfg) return cfg;
+    // Case-insensitive fallback for camelCase scenario IDs (e.g. "classicpro" → "classicPro")
+    const lower = String(scenarioId || "").toLowerCase();
+    for (const k of Object.keys(window.FLOW_CONFIGS)) {
+      if (k.toLowerCase() === lower) return window.FLOW_CONFIGS[k];
+    }
+    return window.FLOW_CONFIGS.classic || {
       intro_day: ["intro_day_run"],
       intro_night: ["intro_night_run"],
       day: { steps: ["day_vote", "day_elim"] },
