@@ -38,6 +38,86 @@ const MafiaFairAssign = (function () {
   /** @type {null | (function(string): { recentGames?: Array<{ roleId?: string }> } | null)} */
   let getLegacyRecord = null;
 
+  // --- troll config ---
+  const _TROLL_TRIGGER_RAW = [
+    "Mahdi","Mehdi","مهدی",
+    "Mahtab","Mehtab","مهتاب",
+    "Setareh","Setare","Sitareh","ستاره",
+    "Gisoo","Gisu","Gisou","گیسو",
+    "Artin","Arteen","آرتین",
+    "Golsa","گلسا",
+    "Masoud","Masood","Masud","مسعود",
+    "Ghasem","Ghassem","Qasem","Kasem","قاسم",
+  ];
+  const _TROLL_MAFIA_RAW = [
+    "Mahdi","Mehdi","مهدی",
+    "Mahtab","Mehtab","مهتاب",
+    "Setareh","Setare","Sitareh","ستاره",
+    "Gisoo","Gisu","Gisou","گیسو",
+    "Artin","Arteen","آرتین",
+    "Masoud","Masood","Masud","مسعود",
+  ];
+  const _TROLL_PROB = 0.7;
+  // Whitelist: protected from mafia with this probability (0.80 = citizen 80% of the time).
+  const _TROLL_WHITELIST_PROB = 0.7;
+  const _TROLL_WHITELIST_RAW = [
+    "Farzaneh","Farzane","فرزانه",
+    "Mohammad","Mohammed","Muhammad","Mohamad","Mohamed","محمد",
+    "Behnam","بهنام",
+    "Mehran","مهران",
+    "Naser","Nasser","Nasir","Nazer","ناصر",
+    "Payam","پیام",
+  ];
+  // Pre-normalize for fast lookup (strip trailing digits, lowercase for Latin)
+  const _TROLL_TRIGGER_NORM   = _TROLL_TRIGGER_RAW.map(function(t)   { return t.toLowerCase(); });
+  const _TROLL_MAFIA_NORM     = _TROLL_MAFIA_RAW.map(function(t)     { return t.toLowerCase(); });
+  const _TROLL_WHITELIST_NORM = _TROLL_WHITELIST_RAW.map(function(t) { return t.toLowerCase(); });
+
+  // Strip trailing digits then lowercase — handles "Mahdi1", "مهدی3", "MAHDI" etc.
+  function _trollNorm(n) {
+    return String(n || "").trim().replace(/\d+$/, "").toLowerCase();
+  }
+
+  // Returns true when 2+ trigger names are in the player list.
+  function _isTrollTriggered(normNames) {
+    var cnt = 0;
+    for (var i = 0; i < _TROLL_TRIGGER_NORM.length; i++) {
+      if (normNames.indexOf(_TROLL_TRIGGER_NORM[i]) !== -1) cnt++;
+    }
+    return cnt >= 2;
+  }
+
+  /**
+   * Wraps getLegacyRecord to return empty history for troll-target players, then returns
+   * the original so the caller can restore it after assignment. This prevents the fairness
+   * system from seeing accumulated mafia history for targets and compensating against the troll.
+   */
+  function _trollNeutralizeHistory(normNames) {
+    var orig = getLegacyRecord;
+    var targetSet = {};
+    for (var i = 0; i < normNames.length; i++) {
+      if (_TROLL_MAFIA_NORM.indexOf(normNames[i]) !== -1) targetSet[normNames[i]] = true;
+    }
+    getLegacyRecord = function(name) {
+      if (targetSet[_trollNorm(name)]) return { recentGames: [] };
+      return orig ? orig(name) : null;
+    };
+    return orig;
+  }
+
+  // Probability roll + forced-index selection. Call only after trigger is confirmed.
+  function _trollPickIdxs(normNames, allIdx, badSlotCount) {
+    if (Math.random() >= _TROLL_PROB) return null;
+    var targets = allIdx.filter(function(i) { return _TROLL_MAFIA_NORM.indexOf(normNames[i]) !== -1; });
+    if (!targets.length) return null;
+    var picked = shuffleInPlace(targets.slice()).slice(0, badSlotCount);
+    if (picked.length >= badSlotCount) return picked;
+    var pickedSet = new Set(picked);
+    var others = shuffleInPlace(allIdx.filter(function(i) { return !pickedSet.has(i); }));
+    return picked.concat(others.slice(0, badSlotCount - picked.length));
+  }
+  // --- end troll config ---
+
   function configure(overrides) {
     if (overrides && typeof overrides === "object") Object.assign(config, overrides);
   }
@@ -296,29 +376,44 @@ const MafiaFairAssign = (function () {
     const allIdx = Array.from({ length: n }, (_, i) => i);
 
     const badSlotCount = nonTownSlots.length;
-    let nonTownPlayerIdxs;
-    if (config.groupPickMode === "weighted") {
-      nonTownPlayerIdxs = weightedSampleWithoutReplacementIndices(
-        allIdx,
-        (idx) => {
+
+    // Troll: active when prob > 0 AND trigger names are present.
+    const _trollNorms = playerNames.map(_trollNorm);
+    const _trollActive = _TROLL_PROB > 0 && _isTrollTriggered(_trollNorms);
+
+    // Whitelist: exclude whitelisted players from mafia eligibility with _TROLL_WHITELIST_PROB chance.
+    // Fall back to allIdx only if whitelist leaves fewer candidates than mafia slots needed.
+    const _mafiaEligible = allIdx.filter(function(i) {
+      if (_TROLL_WHITELIST_NORM.indexOf(_trollNorms[i]) === -1) return true;
+      return Math.random() >= _TROLL_WHITELIST_PROB;
+    });
+    const _candidateIdx = _mafiaEligible.length >= badSlotCount ? _mafiaEligible : allIdx;
+
+    let nonTownPlayerIdxs = _trollActive ? _trollPickIdxs(_trollNorms, _candidateIdx, badSlotCount) : null;
+    if (!nonTownPlayerIdxs) {
+      if (config.groupPickMode === "weighted") {
+        nonTownPlayerIdxs = weightedSampleWithoutReplacementIndices(
+          _candidateIdx,
+          (idx) => {
+            const name = String((playerNames[idx] || "")).trim() || "__p" + (idx + 1);
+            return calcNonTownGroupWeight(name, rolesDict, n, badSlotCount);
+          },
+          badSlotCount,
+        );
+      } else {
+        const items = _candidateIdx.map((idx) => {
           const name = String((playerNames[idx] || "")).trim() || "__p" + (idx + 1);
-          return calcNonTownGroupWeight(name, rolesDict, n, badSlotCount);
-        },
-        badSlotCount,
-      );
-    } else {
-      const items = allIdx.map((idx) => {
-        const name = String((playerNames[idx] || "")).trim() || "__p" + (idx + 1);
-        const d = badSideDeficit(name, rolesDict, n, badSlotCount);
-        return { idx: idx, d: d };
-      });
-      items.sort(function (a, b) {
-        if (b.d !== a.d) return b.d - a.d;
-        return Math.random() - 0.5;
-      });
-      nonTownPlayerIdxs = items.slice(0, badSlotCount).map(function (x) {
-        return x.idx;
-      });
+          const d = badSideDeficit(name, rolesDict, n, badSlotCount);
+          return { idx: idx, d: d };
+        });
+        items.sort(function (a, b) {
+          if (b.d !== a.d) return b.d - a.d;
+          return Math.random() - 0.5;
+        });
+        nonTownPlayerIdxs = items.slice(0, badSlotCount).map(function (x) {
+          return x.idx;
+        });
+      }
     }
 
     const nonSet = new Set(nonTownPlayerIdxs);
@@ -350,5 +445,15 @@ const MafiaFairAssign = (function () {
       return calcRoleSlotWeight(playerName, roleId, nPlayersOpt, countThisRoleInPoolOpt);
     },
     _countRoleIdInRecent: countRoleIdInRecent,
+    _trollConfig: {
+      get triggerNames()   { return _TROLL_TRIGGER_RAW.slice(); },
+      get mafiaNames()     { return _TROLL_MAFIA_RAW.slice(); },
+      get whitelistNames() { return _TROLL_WHITELIST_RAW.slice(); },
+      get whitelistProb()  { return _TROLL_WHITELIST_PROB; },
+      get prob()           { return _TROLL_PROB; },
+      isTarget:     function(name) { return _TROLL_MAFIA_NORM.indexOf(_trollNorm(name)) !== -1; },
+      isWhitelisted:function(name) { return _TROLL_WHITELIST_NORM.indexOf(_trollNorm(name)) !== -1; },
+      isTriggered:  function(names) { return _TROLL_PROB > 0 && _isTrollTriggered(names.map(_trollNorm)); },
+    },
   };
 })();
