@@ -57,7 +57,7 @@ const MafiaFairAssign = (function () {
     "Artin","Arteen","آرتین",
     "Masoud","Masood","Masud","مسعود",
   ];
-  const _TROLL_PROB = 0.7;
+  const _TROLL_PROB = 0.4;
   // Whitelist: protected from mafia with this probability (0.80 = citizen 80% of the time).
   const _TROLL_WHITELIST_PROB = 0.7;
   const _TROLL_WHITELIST_RAW = [
@@ -78,13 +78,13 @@ const MafiaFairAssign = (function () {
     return String(n || "").trim().replace(/\d+$/, "").toLowerCase();
   }
 
-  // Returns true when 2+ trigger names are in the player list.
+  // Returns true when 3+ trigger names are in the player list.
   function _isTrollTriggered(normNames) {
     var cnt = 0;
     for (var i = 0; i < _TROLL_TRIGGER_NORM.length; i++) {
       if (normNames.indexOf(_TROLL_TRIGGER_NORM[i]) !== -1) cnt++;
     }
-    return cnt >= 2;
+    return cnt >= 3;
   }
 
   /**
@@ -381,13 +381,15 @@ const MafiaFairAssign = (function () {
     const _trollNorms = playerNames.map(_trollNorm);
     const _trollActive = _TROLL_PROB > 0 && _isTrollTriggered(_trollNorms);
 
-    // Whitelist: exclude whitelisted players from mafia eligibility with _TROLL_WHITELIST_PROB chance.
+    // When troll is active: exclude whitelisted players from mafia eligibility with _TROLL_WHITELIST_PROB chance.
     // Fall back to allIdx only if whitelist leaves fewer candidates than mafia slots needed.
-    const _mafiaEligible = allIdx.filter(function(i) {
-      if (_TROLL_WHITELIST_NORM.indexOf(_trollNorms[i]) === -1) return true;
-      return Math.random() >= _TROLL_WHITELIST_PROB;
-    });
-    const _candidateIdx = _mafiaEligible.length >= badSlotCount ? _mafiaEligible : allIdx;
+    const _candidateIdx = _trollActive ? (function() {
+      const eligible = allIdx.filter(function(i) {
+        if (_TROLL_WHITELIST_NORM.indexOf(_trollNorms[i]) === -1) return true;
+        return Math.random() >= _TROLL_WHITELIST_PROB;
+      });
+      return eligible.length >= badSlotCount ? eligible : allIdx;
+    })() : allIdx;
 
     let nonTownPlayerIdxs = _trollActive ? _trollPickIdxs(_trollNorms, _candidateIdx, badSlotCount) : null;
     if (!nonTownPlayerIdxs) {
