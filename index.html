@@ -994,6 +994,7 @@
             players: (state.draw.players || []).map((p, i) => ({
               name: (state.ui && state.ui.playerNames && state.ui.playerNames[i]) || ("Player " + (i + 1)),
               roleId: p.roleId || "citizen",
+              roleName: roleName(p.roleId || "citizen"),
               alive: p.alive !== false,
             })),
             events: [],
