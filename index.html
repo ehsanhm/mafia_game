@@ -952,10 +952,14 @@
 
         function startNewGameHistory(state) {
           if (!state || !state.draw || !state.draw.players) return;
-          const id = Date.now();
-          currentGameId = id;
+          const gameId = state.draw.createdAt;
+          if (!gameId) return;
+          if (currentGameId === gameId) return;
+          currentGameId = gameId;
+          const history = loadGameHistory();
+          if (history.some((g) => g.id === gameId)) return;
           const entry = {
-            id,
+            id: gameId,
             timestamp: new Date().toISOString(),
             scenario: (state.ui && state.ui.scenario) || "",
             players: (state.draw.players || []).map((p, i) => ({
@@ -965,7 +969,6 @@
             })),
             events: [],
           };
-          const history = loadGameHistory();
           history.push(entry);
           if (history.length > GAME_HISTORY_MAX) history.splice(0, history.length - GAME_HISTORY_MAX);
           saveGameHistory(history);
@@ -973,18 +976,18 @@
 
         function updateCurrentGameHistory(state) {
           if (!currentGameId || !state) return;
-          if (!state.god || !state.god.flow) return;
+          if (!state.draw || !state.draw.players) return;
           const history = loadGameHistory();
           const idx = history.findIndex((g) => g.id === currentGameId);
           if (idx < 0) return;
-          if (state.draw && state.draw.players) {
-            history[idx].players = (state.draw.players || []).map((p, i) => ({
-              name: (state.ui && state.ui.playerNames && state.ui.playerNames[i]) || ("Player " + (i + 1)),
-              roleId: p.roleId || "citizen",
-              alive: p.alive !== false,
-            }));
+          history[idx].players = (state.draw.players || []).map((p, i) => ({
+            name: (state.ui && state.ui.playerNames && state.ui.playerNames[i]) || ("Player " + (i + 1)),
+            roleId: p.roleId || "citizen",
+            alive: p.alive !== false,
+          }));
+          if (state.god && state.god.flow) {
+            history[idx].events = (state.god.flow.events || []).slice();
           }
-          history[idx].events = (state.god.flow.events || []).slice();
           history[idx].lastUpdated = new Date().toISOString();
           saveGameHistory(history);
         }
@@ -4480,6 +4483,7 @@
         }
 
         function renderCast() {
+          try { startNewGameHistory(appState); } catch {}
           const draw = appState.draw;
           if (!draw) return;
           const pending = (() => {
