@@ -246,7 +246,10 @@
         const LANG_KEY = "mafia_v2_simple_web_lang_v1";
         const FAIRNESS_HISTORY_KEY = "mafia_v2_fairness_history_v2";
         const FAIRNESS_HISTORY_MAX_GAMES = 50;
+        const GAME_HISTORY_KEY = "mafia_v2_game_history_v1";
+        const GAME_HISTORY_MAX = 100;
         let appLang = "fa"; // "fa" | "en"
+        let currentGameId = null;
 
 
 
@@ -932,12 +935,67 @@
           localStorage.setItem(LAST_NAMES_KEY, JSON.stringify(names));
         }
 
+        function loadGameHistory() {
+          try {
+            if (!shouldPersist()) return [];
+            const raw = localStorage.getItem(GAME_HISTORY_KEY);
+            return raw ? JSON.parse(raw) : [];
+          } catch { return []; }
+        }
+
+        function saveGameHistory(history) {
+          try {
+            if (!shouldPersist()) return;
+            localStorage.setItem(GAME_HISTORY_KEY, JSON.stringify(history));
+          } catch {}
+        }
+
+        function startNewGameHistory(state) {
+          if (!state || !state.draw || !state.draw.players) return;
+          const id = Date.now();
+          currentGameId = id;
+          const entry = {
+            id,
+            timestamp: new Date().toISOString(),
+            scenario: (state.ui && state.ui.scenario) || "",
+            players: (state.draw.players || []).map((p, i) => ({
+              name: (state.ui && state.ui.playerNames && state.ui.playerNames[i]) || ("Player " + (i + 1)),
+              roleId: p.roleId || "citizen",
+              alive: p.alive !== false,
+            })),
+            events: [],
+          };
+          const history = loadGameHistory();
+          history.push(entry);
+          if (history.length > GAME_HISTORY_MAX) history.splice(0, history.length - GAME_HISTORY_MAX);
+          saveGameHistory(history);
+        }
+
+        function updateCurrentGameHistory(state) {
+          if (!currentGameId || !state) return;
+          if (!state.god || !state.god.flow) return;
+          const history = loadGameHistory();
+          const idx = history.findIndex((g) => g.id === currentGameId);
+          if (idx < 0) return;
+          if (state.draw && state.draw.players) {
+            history[idx].players = (state.draw.players || []).map((p, i) => ({
+              name: (state.ui && state.ui.playerNames && state.ui.playerNames[i]) || ("Player " + (i + 1)),
+              roleId: p.roleId || "citizen",
+              alive: p.alive !== false,
+            }));
+          }
+          history[idx].events = (state.god.flow.events || []).slice();
+          history[idx].lastUpdated = new Date().toISOString();
+          saveGameHistory(history);
+        }
+
         function saveState(state) {
           if (!shouldPersist()) return;
           localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
           setSaveState(true);
           // Keep the "saved game" bar in sync with state changes.
           try { if (typeof updateResumeUI === "function") updateResumeUI(); } catch {}
+          try { updateCurrentGameHistory(state); } catch {}
         }
 
         function loadState() {
@@ -4841,6 +4899,7 @@
             // clear draw + GOD recorded state
             appState.draw = null;
             appState.god = null;
+            currentGameId = null;
             // restore names (and length will be enforced below)
             if (!appState.ui) appState.ui = {};
             appState.ui.playerNames = keepNames;
@@ -4865,6 +4924,7 @@
         $("cardsBackBtn").addEventListener("click", () => showPlayers());
         $("autoAssignBtn").addEventListener("click", autoAssignAllRemaining);
         $("cardsNextBtn").addEventListener("click", () => {
+          try { startNewGameHistory(appState); } catch {}
           renderCast();
           showCast();
         });
