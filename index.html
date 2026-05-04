@@ -1002,6 +1002,9 @@
           if (history.length > GAME_HISTORY_MAX) history.splice(0, history.length - GAME_HISTORY_MAX);
           saveGameHistory(history);
           syncEntryToFirebase(entry);
+          if (mafiaDb) {
+            mafiaDb.ref("mafiaGameCounter").transaction((n) => (n || 0) + 1);
+          }
         }
 
         function updateCurrentGameHistory(state) {
