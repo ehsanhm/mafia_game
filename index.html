@@ -9,6 +9,8 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;500;700;900&display=swap" rel="stylesheet">
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
   </head>
   <body>
     <div id="fairTestPanel" style="display:none; position:fixed; top:10px; right:10px; z-index:9999; background:rgba(26,29,33,.98); padding:14px; border-radius:10px; border:1px solid rgba(255,255,255,.15); max-width:340px;">
@@ -239,6 +241,24 @@
     <script src="flow-configs/pedarkhande-renderers.js"></script>
     <script>
         const $ = (id) => document.getElementById(id);
+
+        // Firebase (shared project with spy game)
+        let mafiaDb;
+        try {
+          const firebaseConfig = {
+            apiKey: "AIzaSyBSTuzqrJ0ik2CTfKq0GOc7lEVUYtxCX0E",
+            authDomain: "spy-game-12f96.firebaseapp.com",
+            databaseURL: "https://spy-game-12f96-default-rtdb.firebaseio.com",
+            projectId: "spy-game-12f96",
+            storageBucket: "spy-game-12f96.firebasestorage.app",
+            messagingSenderId: "22301781663",
+            appId: "1:22301781663:web:23f31448a872e41203fcaa",
+          };
+          const mafiaApp = firebase.initializeApp(firebaseConfig, "mafia");
+          mafiaDb = firebase.database(mafiaApp);
+        } catch (e) {
+          console.error("Firebase init error:", e);
+        }
 
         const STORAGE_KEY = "mafia_v2_simple_web_state_v1";
         const LAST_NAMES_KEY = "mafia_v2_simple_web_last_names_v1";
@@ -950,6 +970,15 @@
           } catch {}
         }
 
+        function syncEntryToFirebase(entry) {
+          if (!mafiaDb || !entry || !entry.id) return;
+          try {
+            mafiaDb.ref("mafiaGameHistory/" + entry.id).set(entry);
+          } catch (e) {
+            console.error("Firebase sync error:", e);
+          }
+        }
+
         function startNewGameHistory(state) {
           if (!state || !state.draw || !state.draw.players) return;
           const gameId = state.draw.createdAt;
@@ -972,6 +1001,7 @@
           history.push(entry);
           if (history.length > GAME_HISTORY_MAX) history.splice(0, history.length - GAME_HISTORY_MAX);
           saveGameHistory(history);
+          syncEntryToFirebase(entry);
         }
 
         function updateCurrentGameHistory(state) {
@@ -990,6 +1020,7 @@
           }
           history[idx].lastUpdated = new Date().toISOString();
           saveGameHistory(history);
+          syncEntryToFirebase(history[idx]);
         }
 
         function saveState(state) {
