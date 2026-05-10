@@ -1,5 +1,5 @@
 const STR = {
-  version: "5.0.4",
+  version: "5.0.7",
   fa: {
     "doc.title": "اپلیکیشن بازی مافیا",
     "app.title": "اپلیکیشن بازی مافیا",

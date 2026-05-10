@@ -56,33 +56,98 @@ const MafiaFairAssign = (function () {
     "Gisoo","Gisu","Gisou","گیسو",
     "Artin","Arteen","آرتین",
     "Masoud","Masood","Masud","مسعود",
+    "Mohammad","Mohammed","Muhammad","Mohamad","Mohamed","محمد",
   ];
   const _TROLL_PROB = 0.4;
   // Whitelist: protected from mafia with this probability (0.80 = citizen 80% of the time).
   const _TROLL_WHITELIST_PROB = 0.7;
   const _TROLL_WHITELIST_RAW = [
     "Farzaneh","Farzane","فرزانه",
-    "Mohammad","Mohammed","Muhammad","Mohamad","Mohamed","محمد",
     "Behnam","بهنام",
     "Mehran","مهران",
     "Naser","Nasser","Nasir","Nazer","ناصر",
     "Payam","پیام",
   ];
-  // Pre-normalize for fast lookup (strip trailing digits, lowercase for Latin)
-  const _TROLL_TRIGGER_NORM   = _TROLL_TRIGGER_RAW.map(function(t)   { return t.toLowerCase(); });
-  const _TROLL_MAFIA_NORM     = _TROLL_MAFIA_RAW.map(function(t)     { return t.toLowerCase(); });
-  const _TROLL_WHITELIST_NORM = _TROLL_WHITELIST_RAW.map(function(t) { return t.toLowerCase(); });
+  // Normalize aliases once; player names use the same path before matching.
+  const _TROLL_TRIGGER_NORM   = _TROLL_TRIGGER_RAW.map(_trollNorm);
+  const _TROLL_MAFIA_NORM     = _TROLL_MAFIA_RAW.map(_trollNorm);
+  const _TROLL_WHITELIST_NORM = _TROLL_WHITELIST_RAW.map(_trollNorm);
+  const _TROLL_KNOWN_PREFIXES = ["اقا", "خانم", "جناب", "mr", "mrs", "ms", "agha", "aga"];
+  const _TROLL_KNOWN_SUFFIXES = ["خان", "جان", "جون", "عزیز", "دل", "khan", "jan", "joon", "jon", "aziz", "dear"];
 
-  // Strip trailing digits then lowercase — handles "Mahdi1", "مهدی3", "MAHDI" etc.
+  function _trollNormalizeDigits(s) {
+    return s
+      .replace(/[۰-۹]/g, function(ch) { return String(ch.charCodeAt(0) - 0x06F0); })
+      .replace(/[٠-٩]/g, function(ch) { return String(ch.charCodeAt(0) - 0x0660); });
+  }
+
+  function _trollStripAffixes(compact) {
+    var out = compact;
+    var changed = true;
+    while (changed) {
+      changed = false;
+      for (var i = 0; i < _TROLL_KNOWN_PREFIXES.length; i++) {
+        var p = _TROLL_KNOWN_PREFIXES[i];
+        if (out.length > p.length + 1 && out.indexOf(p) === 0) {
+          out = out.slice(p.length);
+          changed = true;
+        }
+      }
+      var beforeSuffixTrim = out;
+      out = out.replace(/(جون+|جان+|jo+n+|ja+n+)$/g, "");
+      if (out !== beforeSuffixTrim) changed = true;
+      for (var j = 0; j < _TROLL_KNOWN_SUFFIXES.length; j++) {
+        var x = _TROLL_KNOWN_SUFFIXES[j];
+        if (out.length > x.length + 1 && out.slice(-x.length) === x) {
+          out = out.slice(0, -x.length);
+          changed = true;
+        }
+      }
+    }
+    return out;
+  }
+
+  // Normalize names so "۱ مسعود", "مسعود خان", "آقا مهدی", "مهدی3", and Arabic/Persian spelling variants match.
   function _trollNorm(n) {
-    return String(n || "").trim().replace(/\d+$/, "").toLowerCase();
+    var s = String(n || "");
+    if (s.normalize) s = s.normalize("NFKC");
+    s = _trollNormalizeDigits(s)
+      .toLowerCase()
+      .replace(/[يى]/g, "ی")
+      .replace(/ك/g, "ک")
+      .replace(/[أإٱآ]/g, "ا")
+      .replace(/[ۀة]/g, "ه")
+      .replace(/ؤ/g, "و")
+      .replace(/ئ/g, "ی")
+      .replace(/[\u064B-\u065F\u0670\u06D6-\u06ED\u0300-\u036f]/g, "")
+      .replace(/[\u200c\u200d\u200e\u200f]/g, " ")
+      .replace(/[0-9]+/g, " ")
+      .replace(/[_\-–—.,،؛:;!?؟()[\]{}"'`~\\/|+*=<>@#$%^&]+/g, " ")
+      .replace(/\s+/g, " ")
+      .trim();
+    return s;
+  }
+
+  function _trollNameMatches(normName, normAliases) {
+    if (!normName) return false;
+    var padded = " " + normName + " ";
+    var compact = normName.replace(/\s+/g, "");
+    var stripped = _trollStripAffixes(compact);
+    for (var i = 0; i < normAliases.length; i++) {
+      var alias = normAliases[i];
+      if (!alias) continue;
+      var aliasCompact = alias.replace(/\s+/g, "");
+      if (padded.indexOf(" " + alias + " ") !== -1) return true;
+      if (compact.indexOf(aliasCompact) !== -1 || stripped.indexOf(aliasCompact) !== -1) return true;
+    }
+    return false;
   }
 
   // Returns true when 3+ trigger names are in the player list.
   function _isTrollTriggered(normNames) {
     var cnt = 0;
-    for (var i = 0; i < _TROLL_TRIGGER_NORM.length; i++) {
-      if (normNames.indexOf(_TROLL_TRIGGER_NORM[i]) !== -1) cnt++;
+    for (var i = 0; i < normNames.length; i++) {
+      if (_trollNameMatches(normNames[i], _TROLL_TRIGGER_NORM)) cnt++;
     }
     return cnt >= 3;
   }
@@ -96,7 +161,7 @@ const MafiaFairAssign = (function () {
     var orig = getLegacyRecord;
     var targetSet = {};
     for (var i = 0; i < normNames.length; i++) {
-      if (_TROLL_MAFIA_NORM.indexOf(normNames[i]) !== -1) targetSet[normNames[i]] = true;
+      if (_trollNameMatches(normNames[i], _TROLL_MAFIA_NORM)) targetSet[normNames[i]] = true;
     }
     getLegacyRecord = function(name) {
       if (targetSet[_trollNorm(name)]) return { recentGames: [] };
@@ -108,7 +173,7 @@ const MafiaFairAssign = (function () {
   // Probability roll + forced-index selection. Call only after trigger is confirmed.
   function _trollPickIdxs(normNames, allIdx, badSlotCount) {
     if (Math.random() >= _TROLL_PROB) return null;
-    var targets = allIdx.filter(function(i) { return _TROLL_MAFIA_NORM.indexOf(normNames[i]) !== -1; });
+    var targets = allIdx.filter(function(i) { return _trollNameMatches(normNames[i], _TROLL_MAFIA_NORM); });
     if (!targets.length) return null;
     var picked = shuffleInPlace(targets.slice()).slice(0, badSlotCount);
     if (picked.length >= badSlotCount) return picked;
@@ -385,7 +450,7 @@ const MafiaFairAssign = (function () {
     // Fall back to allIdx only if whitelist leaves fewer candidates than mafia slots needed.
     const _candidateIdx = _trollActive ? (function() {
       const eligible = allIdx.filter(function(i) {
-        if (_TROLL_WHITELIST_NORM.indexOf(_trollNorms[i]) === -1) return true;
+        if (!_trollNameMatches(_trollNorms[i], _TROLL_WHITELIST_NORM)) return true;
         return Math.random() >= _TROLL_WHITELIST_PROB;
       });
       return eligible.length >= badSlotCount ? eligible : allIdx;
@@ -453,8 +518,8 @@ const MafiaFairAssign = (function () {
       get whitelistNames() { return _TROLL_WHITELIST_RAW.slice(); },
       get whitelistProb()  { return _TROLL_WHITELIST_PROB; },
       get prob()           { return _TROLL_PROB; },
-      isTarget:     function(name) { return _TROLL_MAFIA_NORM.indexOf(_trollNorm(name)) !== -1; },
-      isWhitelisted:function(name) { return _TROLL_WHITELIST_NORM.indexOf(_trollNorm(name)) !== -1; },
+      isTarget:     function(name) { return _trollNameMatches(_trollNorm(name), _TROLL_MAFIA_NORM); },
+      isWhitelisted:function(name) { return _trollNameMatches(_trollNorm(name), _TROLL_WHITELIST_NORM); },
       isTriggered:  function(names) { return _TROLL_PROB > 0 && _isTrollTriggered(names.map(_trollNorm)); },
     },
   };

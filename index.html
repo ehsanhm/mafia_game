@@ -979,6 +979,39 @@
           }
         }
 
+        function getWinnerTeamRecord(state) {
+          const f = state && state.god && state.god.flow ? state.god.flow : null;
+          const raw = f && f.draft ? String(f.draft.winnerTeam || "").trim() : "";
+          if (!raw || !f || f.phase !== "winner") return null;
+          const labels = {
+            mafia: { fa: "مافیا", en: "Mafia" },
+            citizens: { fa: "شهروندان", en: "Citizens" },
+            independent: { fa: "مستقل", en: "Independent" },
+          };
+          return {
+            key: raw,
+            labelFa: labels[raw] ? labels[raw].fa : raw,
+            labelEn: labels[raw] ? labels[raw].en : raw,
+          };
+        }
+
+        function applyWinnerTeamToHistoryEntry(entry, state) {
+          if (!entry || !state) return entry;
+          const winner = getWinnerTeamRecord(state);
+          if (winner) {
+            entry.winnerTeam = winner.key;
+            entry.winnerTeamLabelFa = winner.labelFa;
+            entry.winnerTeamLabelEn = winner.labelEn;
+            if (!entry.finishedAt) entry.finishedAt = new Date().toISOString();
+          } else {
+            delete entry.winnerTeam;
+            delete entry.winnerTeamLabelFa;
+            delete entry.winnerTeamLabelEn;
+            delete entry.finishedAt;
+          }
+          return entry;
+        }
+
         function startNewGameHistory(state) {
           if (!state || !state.draw || !state.draw.players) return;
           const gameId = state.draw.createdAt;
@@ -999,6 +1032,7 @@
             })),
             events: [],
           };
+          applyWinnerTeamToHistoryEntry(entry, state);
           history.push(entry);
           if (history.length > GAME_HISTORY_MAX) history.splice(0, history.length - GAME_HISTORY_MAX);
           saveGameHistory(history);
@@ -1022,6 +1056,7 @@
           if (state.god && state.god.flow) {
             history[idx].events = (state.god.flow.events || []).slice();
           }
+          applyWinnerTeamToHistoryEntry(history[idx], state);
           history[idx].lastUpdated = new Date().toISOString();
           saveGameHistory(history);
           syncEntryToFirebase(history[idx]);

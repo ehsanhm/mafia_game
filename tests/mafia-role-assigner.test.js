@@ -163,6 +163,78 @@
           assert(wB > wA, "player who rarely had detective should have higher weight for detective slot");
         },
       },
+      {
+        name: "troll config: decorated Persian names still match dark-list and whitelist aliases",
+        fn: function ({ assert }) {
+          const cfg = MafiaFairAssign._trollConfig;
+          const darkListCases = [
+            "آقا مهدی",
+            "آقامهدی",
+            "مهدی3",
+            "۱ مسعود",
+            "مسعود خان",
+            "مسعودخان",
+            "آرتین جان",
+            "آرتینجان",
+            "مهتاب عزیز دل ستاره",
+            "MAHDI-99",
+            "agha Masoud khan",
+            "aghamahdi3",
+            "محمد خان",
+            "آقا محمد",
+          ];
+          const whitelistCases = [
+            "ناصر جان",
+            "ناصرخان",
+            "Farzaneh-7",
+            "Payam joon",
+          ];
+          for (let i = 0; i < darkListCases.length; i++) {
+            assert(cfg.isTarget(darkListCases[i]), "expected dark-list target match for: " + darkListCases[i]);
+            assert(!cfg.isWhitelisted(darkListCases[i]), "dark-list alias should not also be whitelisted: " + darkListCases[i]);
+          }
+          for (let i = 0; i < whitelistCases.length; i++) {
+            assert(cfg.isWhitelisted(whitelistCases[i]), "expected whitelist match for: " + whitelistCases[i]);
+            assert(!cfg.isTarget(whitelistCases[i]), "whitelist alias should not also be dark-list target: " + whitelistCases[i]);
+          }
+          assert(!cfg.isTarget("Player 10"), "numbered generic player must not become a troll target");
+        },
+      },
+      {
+        name: "troll config: trigger detection survives Persian digits, prefixes, and suffixes",
+        fn: function ({ assert }) {
+          const cfg = MafiaFairAssign._trollConfig;
+          assert(
+            cfg.isTriggered(["۱ مسعود", "قاسم جان", "گلسا جون", "Player 10"]),
+            "three decorated trigger aliases should activate troll assignment",
+          );
+        },
+      },
+      {
+        name: "troll assignment: decorated target names can still be forced into non-town slots",
+        fn: function ({ assert }) {
+          const names = ["آقا مهدی", "۱ مسعود", "قاسم جان", "محمد خان", "ناصر جان", "Player 6"];
+          const legacy = emptyLegacy(names);
+          MafiaFairAssign.init({
+            getLegacyRecord: function (name) {
+              return legacy[name] || { recentGames: [] };
+            },
+          });
+          const oldRandom = Math.random;
+          Math.random = function () { return 0; };
+          try {
+            const pool = ["mafia", "mafia", "mafia", "citizen", "citizen", "citizen"];
+            const out = MafiaFairAssign.buildAssignment(pool, names, { roles: roles });
+            assert(out && out.length === names.length, "assignment");
+            for (let i of [0, 1, 3]) {
+              assert(roles[out[i]] && roles[out[i]].teamFa !== "شهر", "decorated target should be non-town: " + names[i]);
+            }
+            assert(roles[out[4]] && roles[out[4]].teamFa === "شهر", "decorated whitelisted Naser should stay town");
+          } finally {
+            Math.random = oldRandom;
+          }
+        },
+      },
     ],
   };
 })();
