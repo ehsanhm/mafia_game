@@ -68,8 +68,8 @@
 <div id="config-box" class="config-box"></div>
 
 <div class="legend">
-  <span><span class="legend-dot" style="background:#f38ba8"></span>Mafia target</span>
-  <span><span class="legend-dot" style="background:#89dceb"></span>Always citizen (whitelist)</span>
+  <span><span class="legend-dot" style="background:#f38ba8"></span>Mafia target (former whitelist)</span>
+  <span><span class="legend-dot" style="background:#89dceb"></span>Protected former target</span>
   <span><span class="legend-dot" style="background:#585b70"></span>Neutral</span>
   <span style="color:#45475a">| grey marker = natural rate</span>
 </div>
@@ -137,7 +137,7 @@
       rows.forEach(function(r, rank) {
         var cls, barCls, tagCls, tagLbl;
         if (r.isTarget)      { cls = "name-target";    barCls = "bar-target";    tagCls = "tag-target";    tagLbl = "mafia target"; }
-        else if (r.isWhite)  { cls = "name-whitelist"; barCls = "bar-whitelist"; tagCls = "tag-whitelist"; tagLbl = "always citizen"; }
+        else if (r.isWhite)  { cls = "name-whitelist"; barCls = "bar-whitelist"; tagCls = "tag-whitelist"; tagLbl = "protected"; }
         else                 { cls = "name-outsider";  barCls = "bar-outsider";  tagCls = "tag-outsider";  tagLbl = "neutral"; }
         var pct  = (r.rate * 100).toFixed(1);
         var barW = Math.round(r.rate * 160);

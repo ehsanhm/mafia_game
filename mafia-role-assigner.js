@@ -50,23 +50,25 @@ const MafiaFairAssign = (function () {
     "Ghasem","Ghassem","Qasem","Kasem","قاسم",
   ];
   const _TROLL_MAFIA_RAW = [
+    "Farzaneh","Farzane","فرزانه",
+    "Behnam","بهنام",
+    "Mehran","مهران",
+    "Naser","Nasser","Nasir","Nazer","ناصر",
+    "Payam","پیام",
+    "Mohammad","Mohammed","Muhammad","Mohamad","Mohamed","محمد",
+    "Khodayar","KhodaYar","خدایار",
+  ];
+  const _TROLL_PROB = 0.4;
+  // Reversed troll: remaining old mafia-target names are protected from mafia with this probability.
+  const _TROLL_WHITELIST_PROB = 0.7;
+  const _TROLL_WHITELIST_RAW = [
     "Mahdi","Mehdi","مهدی",
     "Mahtab","Mehtab","مهتاب",
     "Setareh","Setare","Sitareh","ستاره",
     "Gisoo","Gisu","Gisou","گیسو",
     "Artin","Arteen","آرتین",
     "Masoud","Masood","Masud","مسعود",
-    "Mohammad","Mohammed","Muhammad","Mohamad","Mohamed","محمد",
-  ];
-  const _TROLL_PROB = 0.4;
-  // Whitelist: protected from mafia with this probability (0.80 = citizen 80% of the time).
-  const _TROLL_WHITELIST_PROB = 0.7;
-  const _TROLL_WHITELIST_RAW = [
-    "Farzaneh","Farzane","فرزانه",
-    "Behnam","بهنام",
-    "Mehran","مهران",
-    "Naser","Nasser","Nasir","Nazer","ناصر",
-    "Payam","پیام",
+    "Jahanbakhsh","JahanBakhsh","جهانبخش",
   ];
   // Normalize aliases once; player names use the same path before matching.
   const _TROLL_TRIGGER_NORM   = _TROLL_TRIGGER_RAW.map(_trollNorm);

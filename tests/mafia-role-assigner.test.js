@@ -164,10 +164,10 @@
         },
       },
       {
-        name: "troll config: decorated Persian names still match dark-list and whitelist aliases",
+        name: "troll config: reversed aliases make former whitelist the target list",
         fn: function ({ assert }) {
           const cfg = MafiaFairAssign._trollConfig;
-          const darkListCases = [
+          const protectedCases = [
             "آقا مهدی",
             "آقامهدی",
             "مهدی3",
@@ -180,22 +180,26 @@
             "MAHDI-99",
             "agha Masoud khan",
             "aghamahdi3",
-            "محمد خان",
-            "آقا محمد",
+            "Jahanbakhsh",
+            "آقا جهانبخش",
           ];
-          const whitelistCases = [
+          const targetCases = [
             "ناصر جان",
             "ناصرخان",
             "Farzaneh-7",
             "Payam joon",
+            "محمد خان",
+            "آقا محمد",
+            "Khodayar",
+            "آقا خدایار",
           ];
-          for (let i = 0; i < darkListCases.length; i++) {
-            assert(cfg.isTarget(darkListCases[i]), "expected dark-list target match for: " + darkListCases[i]);
-            assert(!cfg.isWhitelisted(darkListCases[i]), "dark-list alias should not also be whitelisted: " + darkListCases[i]);
+          for (let i = 0; i < protectedCases.length; i++) {
+            assert(cfg.isWhitelisted(protectedCases[i]), "expected protected match for former target: " + protectedCases[i]);
+            assert(!cfg.isTarget(protectedCases[i]), "former target alias should not also be current target: " + protectedCases[i]);
           }
-          for (let i = 0; i < whitelistCases.length; i++) {
-            assert(cfg.isWhitelisted(whitelistCases[i]), "expected whitelist match for: " + whitelistCases[i]);
-            assert(!cfg.isTarget(whitelistCases[i]), "whitelist alias should not also be dark-list target: " + whitelistCases[i]);
+          for (let i = 0; i < targetCases.length; i++) {
+            assert(cfg.isTarget(targetCases[i]), "expected current target match for former whitelist: " + targetCases[i]);
+            assert(!cfg.isWhitelisted(targetCases[i]), "current target alias should not also be protected: " + targetCases[i]);
           }
           assert(!cfg.isTarget("Player 10"), "numbered generic player must not become a troll target");
         },
@@ -211,9 +215,9 @@
         },
       },
       {
-        name: "troll assignment: decorated target names can still be forced into non-town slots",
+        name: "troll assignment: former whitelist names can now be forced into non-town slots",
         fn: function ({ assert }) {
-          const names = ["آقا مهدی", "۱ مسعود", "قاسم جان", "محمد خان", "ناصر جان", "Player 6"];
+          const names = ["آقا مهدی", "۱ مسعود", "قاسم جان", "ناصر جان", "Farzaneh-7", "Khodayar"];
           const legacy = emptyLegacy(names);
           MafiaFairAssign.init({
             getLegacyRecord: function (name) {
@@ -226,10 +230,12 @@
             const pool = ["mafia", "mafia", "mafia", "citizen", "citizen", "citizen"];
             const out = MafiaFairAssign.buildAssignment(pool, names, { roles: roles });
             assert(out && out.length === names.length, "assignment");
-            for (let i of [0, 1, 3]) {
-              assert(roles[out[i]] && roles[out[i]].teamFa !== "شهر", "decorated target should be non-town: " + names[i]);
+            for (let i of [3, 4, 5]) {
+              assert(roles[out[i]] && roles[out[i]].teamFa !== "شهر", "decorated former-whitelist target should be non-town: " + names[i]);
             }
-            assert(roles[out[4]] && roles[out[4]].teamFa === "شهر", "decorated whitelisted Naser should stay town");
+            for (let i of [0, 1]) {
+              assert(roles[out[i]] && roles[out[i]].teamFa === "شهر", "decorated former target should stay town: " + names[i]);
+            }
           } finally {
             Math.random = oldRandom;
           }
