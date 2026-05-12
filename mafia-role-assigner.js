@@ -33,6 +33,8 @@ const MafiaFairAssign = (function () {
     roleCoverageMode: true,
     roleCoverageBoost: 0.55,
     roleCoveragePenalty: 0.85,
+    /** Master switch for the special troll assignment system. */
+    trollSystemEnabled: false,
   };
 
   /** @type {null | (function(string): { recentGames?: Array<{ roleId?: string }> } | null)} */
@@ -152,6 +154,10 @@ const MafiaFairAssign = (function () {
       if (_trollNameMatches(normNames[i], _TROLL_TRIGGER_NORM)) cnt++;
     }
     return cnt >= 3;
+  }
+
+  function _isTrollSystemEnabled() {
+    return config.trollSystemEnabled !== false;
   }
 
   /**
@@ -444,9 +450,9 @@ const MafiaFairAssign = (function () {
 
     const badSlotCount = nonTownSlots.length;
 
-    // Troll: active when prob > 0 AND trigger names are present.
+    // Troll: active when enabled, prob > 0, and trigger names are present.
     const _trollNorms = playerNames.map(_trollNorm);
-    const _trollActive = _TROLL_PROB > 0 && _isTrollTriggered(_trollNorms);
+    const _trollActive = _isTrollSystemEnabled() && _TROLL_PROB > 0 && _isTrollTriggered(_trollNorms);
 
     // When troll is active: exclude whitelisted players from mafia eligibility with _TROLL_WHITELIST_PROB chance.
     // Fall back to allIdx only if whitelist leaves fewer candidates than mafia slots needed.
@@ -520,9 +526,10 @@ const MafiaFairAssign = (function () {
       get whitelistNames() { return _TROLL_WHITELIST_RAW.slice(); },
       get whitelistProb()  { return _TROLL_WHITELIST_PROB; },
       get prob()           { return _TROLL_PROB; },
+      get enabled()        { return _isTrollSystemEnabled(); },
       isTarget:     function(name) { return _trollNameMatches(_trollNorm(name), _TROLL_MAFIA_NORM); },
       isWhitelisted:function(name) { return _trollNameMatches(_trollNorm(name), _TROLL_WHITELIST_NORM); },
-      isTriggered:  function(names) { return _TROLL_PROB > 0 && _isTrollTriggered(names.map(_trollNorm)); },
+      isTriggered:  function(names) { return _isTrollSystemEnabled() && _TROLL_PROB > 0 && _isTrollTriggered(names.map(_trollNorm)); },
     },
   };
 })();

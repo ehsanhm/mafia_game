@@ -215,6 +215,40 @@
         },
       },
       {
+        name: "troll config: trollSystemEnabled disables trigger and forced assignment",
+        fn: function ({ assert }) {
+          const names = ["Mahdi", "Masoud", "Golsa", "Naser", "Farzaneh", "Khodayar"];
+          const legacy = {
+            Mahdi: { recentGames: Array(40).fill({ roleId: "citizen" }) },
+            Masoud: { recentGames: Array(40).fill({ roleId: "citizen" }) },
+            Golsa: { recentGames: Array(40).fill({ roleId: "citizen" }) },
+            Naser: { recentGames: Array(40).fill({ roleId: "mafia" }) },
+            Farzaneh: { recentGames: Array(40).fill({ roleId: "mafia" }) },
+            Khodayar: { recentGames: Array(40).fill({ roleId: "mafia" }) },
+          };
+          MafiaFairAssign.init({
+            getLegacyRecord: function (name) {
+              return legacy[name] || { recentGames: [] };
+            },
+          });
+          try {
+            MafiaFairAssign.configure({ groupPickMode: "deficit", trollSystemEnabled: false });
+            const cfg = MafiaFairAssign._trollConfig;
+            assert(!cfg.enabled, "troll system should report disabled");
+            assert(!cfg.isTriggered(names), "disabled troll system should not report triggered");
+
+            const pool = ["mafia", "mafia", "mafia", "citizen", "citizen", "citizen"];
+            const out = MafiaFairAssign.buildAssignment(pool, names, { roles: roles });
+            assert(out && out.length === names.length, "assignment");
+            for (let i of [3, 4, 5]) {
+              assert(out[i] === "citizen", "disabled troll system should leave over-used targets in town slots: " + names[i]);
+            }
+          } finally {
+            MafiaFairAssign.configure({ trollSystemEnabled: true });
+          }
+        },
+      },
+      {
         name: "troll assignment: former whitelist names can now be forced into non-town slots",
         fn: function ({ assert }) {
           const names = ["آقا مهدی", "۱ مسعود", "قاسم جان", "ناصر جان", "Farzaneh-7", "Khodayar"];

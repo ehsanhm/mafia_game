@@ -123,8 +123,9 @@
       var cfgHtml = "<b>Pool:</b> <span>" + BAD_COUNT + " mafia / " + (N - BAD_COUNT) + " city</span> &nbsp;|&nbsp; "
         + "<b>Players:</b> <span>" + N + "</span> &nbsp;|&nbsp; "
         + "<b>Natural rate:</b> <span>" + (NATURAL_RATE * 100).toFixed(1) + "%</span> &nbsp;|&nbsp; "
-        + "<b>Troll prob:</b> <span>" + (trollCfg.prob * 100).toFixed(0) + "%</span>"
-        + (trollCfg.prob === 0 ? " &nbsp;<span style='color:#f38ba8'>(troll OFF)</span>" : "");
+        + "<b>Troll prob:</b> <span>" + (trollCfg.prob * 100).toFixed(0) + "%</span> &nbsp;|&nbsp; "
+        + "<b>Troll system:</b> <span>" + (trollCfg.enabled ? "ON" : "OFF") + "</span>"
+        + (!trollCfg.enabled || trollCfg.prob === 0 ? " &nbsp;<span style='color:#f38ba8'>(troll OFF)</span>" : "");
       document.getElementById("config-box").innerHTML = cfgHtml;
 
       var rows = PLAYERS.map(function(name, i) {
