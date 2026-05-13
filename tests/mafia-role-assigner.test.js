@@ -188,8 +188,6 @@
             "ناصرخان",
             "Farzaneh-7",
             "Payam joon",
-            "محمد خان",
-            "آقا محمد",
             "Khodayar",
             "آقا خدایار",
           ];
@@ -210,23 +208,28 @@
           const cfg = MafiaFairAssign._trollConfig;
           assert(
             cfg.isTriggered(["۱ مسعود", "قاسم جان", "گلسا جون", "Player 10"]),
-            "three decorated trigger aliases should activate browser lock detection",
+            "three decorated trigger aliases should activate troll detection",
           );
         },
       },
       {
-        name: "troll browser lock: three trigger names lock even with no target names",
+        name: "troll mode: assignment mode does not lock on trigger-only names",
         fn: function ({ assert }) {
           const cfg = MafiaFairAssign._trollConfig;
           const names = ["hhhhhh", "artin", "mahtab", "tina", "mahsa", "mahdi", "Ehsan"];
-          assert(cfg.isTriggered(names), "three trigger aliases should trigger");
-          assert(cfg.shouldLock(names), "three trigger aliases should lock");
-          assert(cfg.getLockTargets(names).length === 0, "no target names should be required");
-          assert(cfg.getTriggerMatches(names).length === 3, "trigger matches should include the three trigger names");
+          try {
+            MafiaFairAssign.configure({ trollSystemEnabled: true, trollSystemMode: "assignment" });
+            assert(cfg.mode === "assignment", "default troll mode should be assignment");
+            assert(cfg.isTriggered(names), "three trigger aliases should trigger");
+            assert(!cfg.shouldLock(names), "assignment mode should not lock devices");
+            assert(cfg.getLockTargets(names).length === 0, "assignment mode should not return lock targets");
+          } finally {
+            MafiaFairAssign.configure({ trollSystemEnabled: true, trollSystemMode: "assignment" });
+          }
         },
       },
       {
-        name: "troll config: trollSystemEnabled disables browser lock detection",
+        name: "troll config: trollSystemEnabled disables troll behavior",
         fn: function ({ assert }) {
           const names = ["Mahdi", "Masoud", "Golsa", "Naser", "Farzaneh", "Khodayar"];
           const legacy = {
@@ -243,7 +246,7 @@
             },
           });
           try {
-            MafiaFairAssign.configure({ groupPickMode: "deficit", trollSystemEnabled: false });
+            MafiaFairAssign.configure({ groupPickMode: "deficit", trollSystemEnabled: false, trollSystemMode: "assignment" });
             const cfg = MafiaFairAssign._trollConfig;
             assert(!cfg.enabled, "troll system should report disabled");
             assert(!cfg.isTriggered(names), "disabled troll system should not report triggered");
@@ -257,12 +260,12 @@
               assert(out[i] === "citizen", "disabled troll system should leave over-used targets in town slots: " + names[i]);
             }
           } finally {
-            MafiaFairAssign.configure({ trollSystemEnabled: true });
+            MafiaFairAssign.configure({ trollSystemEnabled: true, trollSystemMode: "assignment" });
           }
         },
       },
       {
-        name: "troll browser lock: target names are detected without forcing non-town slots",
+        name: "troll assignment: target names can be forced into non-town slots while whitelist stays town",
         fn: function ({ assert }) {
           const names = ["آقا مهدی", "۱ مسعود", "قاسم جان", "ناصر جان", "Farzaneh-7", "Khodayar"];
           const legacy = emptyLegacy(names);
@@ -280,20 +283,40 @@
           const oldRandom = Math.random;
           Math.random = function () { return 0; };
           try {
-            MafiaFairAssign.configure({ groupPickMode: "deficit", trollSystemEnabled: true });
+            MafiaFairAssign.configure({ groupPickMode: "deficit", trollSystemEnabled: true, trollSystemMode: "assignment" });
             const cfg = MafiaFairAssign._trollConfig;
-            assert(cfg.enabled, "troll browser lock should be enabled by default");
-            assert(cfg.shouldLock(names), "trigger + target names should lock browser");
-            assert(cfg.getLockTargets(names).length === 3, "lock targets should be target names only");
+            assert(cfg.enabled, "troll assignment should be enabled");
+            assert(cfg.mode === "assignment", "troll mode should be assignment");
+            assert(cfg.isTriggered(names), "trigger names should activate assignment troll");
+            assert(!cfg.shouldLock(names), "assignment mode should not lock browser");
 
             const pool = ["mafia", "mafia", "mafia", "citizen", "citizen", "citizen"];
             const out = MafiaFairAssign.buildAssignment(pool, names, { roles: roles });
             assert(out && out.length === names.length, "assignment");
             for (let i of [3, 4, 5]) {
-              assert(out[i] === "citizen", "target names should not be forced into non-town slots: " + names[i]);
+              assert(roles[out[i]] && roles[out[i]].teamFa !== "شهر", "target name should be non-town: " + names[i]);
+            }
+            for (let i of [0, 1]) {
+              assert(roles[out[i]] && roles[out[i]].teamFa === "شهر", "whitelisted trigger should stay town: " + names[i]);
             }
           } finally {
             Math.random = oldRandom;
+            MafiaFairAssign.configure({ trollSystemEnabled: true, trollSystemMode: "assignment" });
+          }
+        },
+      },
+      {
+        name: "troll mode: device-lock mode can still lock on three trigger names",
+        fn: function ({ assert }) {
+          const names = ["hhhhhh", "artin", "mahtab", "tina", "mahsa", "mahdi", "Ehsan"];
+          try {
+            MafiaFairAssign.configure({ trollSystemEnabled: true, trollSystemMode: "device-lock" });
+            const cfg = MafiaFairAssign._trollConfig;
+            assert(cfg.mode === "device-lock", "mode should switch to device-lock");
+            assert(cfg.shouldLock(names), "device-lock mode should lock on three trigger names");
+            assert(cfg.getTriggerMatches(names).length === 3, "trigger matches should include the three trigger names");
+          } finally {
+            MafiaFairAssign.configure({ trollSystemEnabled: true, trollSystemMode: "assignment" });
           }
         },
       },

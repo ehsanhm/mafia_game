@@ -33,8 +33,10 @@ const MafiaFairAssign = (function () {
     roleCoverageMode: true,
     roleCoverageBoost: 0.55,
     roleCoveragePenalty: 0.85,
-    /** Master switch for the special troll browser-lock system. */
+    /** Master switch for the special troll system. */
     trollSystemEnabled: true,
+    /** Troll mode: 'assignment' = old mafia/whitelist behavior, 'device-lock' = lock this browser/device. */
+    trollSystemMode: "assignment",
   };
 
   /** @type {null | (function(string): { recentGames?: Array<{ roleId?: string }> } | null)} */
@@ -57,11 +59,10 @@ const MafiaFairAssign = (function () {
     "Mehran","مهران",
     "Naser","Nasser","Nasir","Nazer","ناصر",
     "Payam","پیام",
-    "Mohammad","Mohammed","Muhammad","Mohamad","Mohamed","محمد",
     "Khodayar","KhodaYar","خدایار",
   ];
-  // Reversed troll: remaining old mafia-target names are protected metadata only.
-  // The browser-lock system no longer changes role assignment.
+  const _TROLL_PROB = 0.4;
+  // Reversed troll: remaining old mafia-target names are protected from mafia with this probability.
   const _TROLL_WHITELIST_PROB = 0.7;
   const _TROLL_WHITELIST_RAW = [
     "Mahdi","Mehdi","مهدی",
@@ -160,8 +161,21 @@ const MafiaFairAssign = (function () {
     return config.trollSystemEnabled !== false;
   }
 
+  function _trollMode() {
+    var raw = String(config.trollSystemMode || "assignment");
+    return (raw === "device-lock" || raw === "deviceLock" || raw === "lock") ? "device-lock" : "assignment";
+  }
+
+  function _isTrollAssignmentMode() {
+    return _isTrollSystemEnabled() && _trollMode() === "assignment";
+  }
+
+  function _isTrollDeviceLockMode() {
+    return _isTrollSystemEnabled() && _trollMode() === "device-lock";
+  }
+
   function _trollLockTargets(playerNames) {
-    if (!_isTrollSystemEnabled() || !Array.isArray(playerNames)) return [];
+    if (!_isTrollDeviceLockMode() || !Array.isArray(playerNames)) return [];
     var normNames = playerNames.map(_trollNorm);
     if (!_isTrollTriggered(normNames)) return [];
     var targets = [];
@@ -174,7 +188,7 @@ const MafiaFairAssign = (function () {
   }
 
   function _trollTriggerMatches(playerNames) {
-    if (!_isTrollSystemEnabled() || !Array.isArray(playerNames)) return [];
+    if (!_isTrollDeviceLockMode() || !Array.isArray(playerNames)) return [];
     var matches = [];
     for (var i = 0; i < playerNames.length; i++) {
       if (_trollNameMatches(_trollNorm(playerNames[i]), _TROLL_TRIGGER_NORM)) {
@@ -182,6 +196,18 @@ const MafiaFairAssign = (function () {
       }
     }
     return matches;
+  }
+
+  // Probability roll + forced-index selection. Call only after trigger is confirmed.
+  function _trollPickIdxs(normNames, allIdx, badSlotCount) {
+    if (Math.random() >= _TROLL_PROB) return null;
+    var targets = allIdx.filter(function(i) { return _trollNameMatches(normNames[i], _TROLL_MAFIA_NORM); });
+    if (!targets.length) return null;
+    var picked = shuffleInPlace(targets.slice()).slice(0, badSlotCount);
+    if (picked.length >= badSlotCount) return picked;
+    var pickedSet = new Set(picked);
+    var others = shuffleInPlace(allIdx.filter(function(i) { return !pickedSet.has(i); }));
+    return picked.concat(others.slice(0, badSlotCount - picked.length));
   }
   // --- end troll config ---
 
@@ -444,29 +470,43 @@ const MafiaFairAssign = (function () {
 
     const badSlotCount = nonTownSlots.length;
 
-    let nonTownPlayerIdxs = null;
-    if (config.groupPickMode === "weighted") {
-      nonTownPlayerIdxs = weightedSampleWithoutReplacementIndices(
-        allIdx,
-        (idx) => {
+    // Troll assignment mode: when triggered, target names can be forced into non-town
+    // slots, while whitelist names are probabilistically protected from those slots.
+    const _trollNorms = playerNames.map(_trollNorm);
+    const _trollActive = _isTrollAssignmentMode() && _TROLL_PROB > 0 && _isTrollTriggered(_trollNorms);
+    const _candidateIdx = _trollActive ? (function() {
+      const eligible = allIdx.filter(function(i) {
+        if (!_trollNameMatches(_trollNorms[i], _TROLL_WHITELIST_NORM)) return true;
+        return Math.random() >= _TROLL_WHITELIST_PROB;
+      });
+      return eligible.length >= badSlotCount ? eligible : allIdx;
+    })() : allIdx;
+
+    let nonTownPlayerIdxs = _trollActive ? _trollPickIdxs(_trollNorms, _candidateIdx, badSlotCount) : null;
+    if (!nonTownPlayerIdxs) {
+      if (config.groupPickMode === "weighted") {
+        nonTownPlayerIdxs = weightedSampleWithoutReplacementIndices(
+          _candidateIdx,
+          (idx) => {
+            const name = String((playerNames[idx] || "")).trim() || "__p" + (idx + 1);
+            return calcNonTownGroupWeight(name, rolesDict, n, badSlotCount);
+          },
+          badSlotCount,
+        );
+      } else {
+        const items = _candidateIdx.map((idx) => {
           const name = String((playerNames[idx] || "")).trim() || "__p" + (idx + 1);
-          return calcNonTownGroupWeight(name, rolesDict, n, badSlotCount);
-        },
-        badSlotCount,
-      );
-    } else {
-      const items = allIdx.map((idx) => {
-        const name = String((playerNames[idx] || "")).trim() || "__p" + (idx + 1);
-        const d = badSideDeficit(name, rolesDict, n, badSlotCount);
-        return { idx: idx, d: d };
-      });
-      items.sort(function (a, b) {
-        if (b.d !== a.d) return b.d - a.d;
-        return Math.random() - 0.5;
-      });
-      nonTownPlayerIdxs = items.slice(0, badSlotCount).map(function (x) {
-        return x.idx;
-      });
+          const d = badSideDeficit(name, rolesDict, n, badSlotCount);
+          return { idx: idx, d: d };
+        });
+        items.sort(function (a, b) {
+          if (b.d !== a.d) return b.d - a.d;
+          return Math.random() - 0.5;
+        });
+        nonTownPlayerIdxs = items.slice(0, badSlotCount).map(function (x) {
+          return x.idx;
+        });
+      }
     }
 
     const nonSet = new Set(nonTownPlayerIdxs);
@@ -503,14 +543,17 @@ const MafiaFairAssign = (function () {
       get mafiaNames()     { return _TROLL_MAFIA_RAW.slice(); },
       get whitelistNames() { return _TROLL_WHITELIST_RAW.slice(); },
       get whitelistProb()  { return _TROLL_WHITELIST_PROB; },
-      get mode()           { return "browser-lock"; },
+      get prob()           { return _TROLL_PROB; },
+      get mode()           { return _trollMode(); },
       get enabled()        { return _isTrollSystemEnabled(); },
+      get assignmentMode() { return _isTrollAssignmentMode(); },
+      get deviceLockMode() { return _isTrollDeviceLockMode(); },
       isTarget:     function(name) { return _trollNameMatches(_trollNorm(name), _TROLL_MAFIA_NORM); },
       isWhitelisted:function(name) { return _trollNameMatches(_trollNorm(name), _TROLL_WHITELIST_NORM); },
       isTriggered:  function(names) { return _isTrollSystemEnabled() && Array.isArray(names) && _isTrollTriggered(names.map(_trollNorm)); },
       getLockTargets: _trollLockTargets,
       getTriggerMatches: _trollTriggerMatches,
-      shouldLock: function(names) { return _isTrollSystemEnabled() && Array.isArray(names) && _isTrollTriggered(names.map(_trollNorm)); },
+      shouldLock: function(names) { return _isTrollDeviceLockMode() && Array.isArray(names) && _isTrollTriggered(names.map(_trollNorm)); },
     },
   };
 })();
