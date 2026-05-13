@@ -215,6 +215,17 @@
         },
       },
       {
+        name: "troll browser lock: three trigger names lock even with no target names",
+        fn: function ({ assert }) {
+          const cfg = MafiaFairAssign._trollConfig;
+          const names = ["hhhhhh", "artin", "mahtab", "tina", "mahsa", "mahdi", "Ehsan"];
+          assert(cfg.isTriggered(names), "three trigger aliases should trigger");
+          assert(cfg.shouldLock(names), "three trigger aliases should lock");
+          assert(cfg.getLockTargets(names).length === 0, "no target names should be required");
+          assert(cfg.getTriggerMatches(names).length === 3, "trigger matches should include the three trigger names");
+        },
+      },
+      {
         name: "troll config: trollSystemEnabled disables browser lock detection",
         fn: function ({ assert }) {
           const names = ["Mahdi", "Masoud", "Golsa", "Naser", "Farzaneh", "Khodayar"];

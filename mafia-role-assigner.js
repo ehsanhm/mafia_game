@@ -172,6 +172,17 @@ const MafiaFairAssign = (function () {
     }
     return targets;
   }
+
+  function _trollTriggerMatches(playerNames) {
+    if (!_isTrollSystemEnabled() || !Array.isArray(playerNames)) return [];
+    var matches = [];
+    for (var i = 0; i < playerNames.length; i++) {
+      if (_trollNameMatches(_trollNorm(playerNames[i]), _TROLL_TRIGGER_NORM)) {
+        matches.push({ index: i, name: String(playerNames[i] || "").trim() });
+      }
+    }
+    return matches;
+  }
   // --- end troll config ---
 
   function configure(overrides) {
@@ -498,7 +509,8 @@ const MafiaFairAssign = (function () {
       isWhitelisted:function(name) { return _trollNameMatches(_trollNorm(name), _TROLL_WHITELIST_NORM); },
       isTriggered:  function(names) { return _isTrollSystemEnabled() && Array.isArray(names) && _isTrollTriggered(names.map(_trollNorm)); },
       getLockTargets: _trollLockTargets,
-      shouldLock: function(names) { return _trollLockTargets(names).length > 0; },
+      getTriggerMatches: _trollTriggerMatches,
+      shouldLock: function(names) { return _isTrollSystemEnabled() && Array.isArray(names) && _isTrollTriggered(names.map(_trollNorm)); },
     },
   };
 })();

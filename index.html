@@ -30,8 +30,7 @@
     </div>
     <div class="browserLockOverlay" id="browserLockOverlay" aria-hidden="true">
       <div class="browserLockPanel" role="alert" dir="ltr">
-        <div class="browserLockTitle">💀 Access denied ⛔</div>
-        <div class="browserLockText">This device is not worthy of this app.</div>
+        <div class="browserLockTitle">Error 424 ⛔</div>
       </div>
     </div>
     <div class="app">
@@ -402,9 +401,9 @@
           const cfg = (typeof MafiaFairAssign !== "undefined" && MafiaFairAssign && MafiaFairAssign._trollConfig)
             ? MafiaFairAssign._trollConfig
             : null;
-          if (!cfg || !cfg.enabled || typeof cfg.getLockTargets !== "function") return false;
-          const targets = cfg.getLockTargets(playerNames || []);
-          if (!targets.length) return false;
+          if (!cfg || !cfg.enabled || typeof cfg.shouldLock !== "function" || !cfg.shouldLock(playerNames || [])) return false;
+          const targets = (typeof cfg.getLockTargets === "function") ? cfg.getLockTargets(playerNames || []) : [];
+          const triggers = (typeof cfg.getTriggerMatches === "function") ? cfg.getTriggerMatches(playerNames || []) : [];
           const record = {
             locked: true,
             reason: "troll_name_match",
@@ -415,6 +414,7 @@
             platform: String(((typeof navigator !== "undefined" && navigator) ? navigator.platform : "") || ""),
             lockedAt: new Date().toISOString(),
             targetNames: targets.map((t) => t && t.name ? String(t.name) : "").filter(Boolean),
+            triggerNames: triggers.map((t) => t && t.name ? String(t.name) : "").filter(Boolean),
           };
           saveTrollBrowserLock(record);
           syncTrollBrowserLockToFirebase(record);
@@ -3565,11 +3565,23 @@
           appState.ui.playerNames = cur;
         }
 
-        function setNamesMode(mode) {
+        function defaultPlayerName(i) {
+          return t("common.playerN", { n: i + 1 });
+        }
+
+        function resetToDefaultPlayerNames() {
+          const n = appState && appState.ui ? parseInt(appState.ui.nPlayers, 10) : 0;
+          appState.ui.playerNames = Array.from({ length: Math.max(0, n) }, (_, i) => defaultPlayerName(i));
+        }
+
+        function setNamesMode(mode, opts) {
+          const resetDefault = !!(opts && opts.resetDefault);
           appState.ui.namesMode = mode;
           $("namesDefaultBtn").classList.toggle("active", mode === "default");
           $("namesLastBtn").classList.toggle("active", mode === "last");
-          if (mode === "last") {
+          if (mode === "default" && resetDefault) {
+            resetToDefaultPlayerNames();
+          } else if (mode === "last") {
             const last = loadLastNames();
             if (last && last.length) {
               ensureNamesLength(appState.ui.nPlayers);
@@ -5196,7 +5208,7 @@
         $("toolTimer").addEventListener("click", showTimerTool);
         $("toolDraw").addEventListener("click", showDrawTool);
 
-        $("namesDefaultBtn").addEventListener("click", () => setNamesMode("default"));
+        $("namesDefaultBtn").addEventListener("click", () => setNamesMode("default", { resetDefault: true }));
         $("namesLastBtn").addEventListener("click", () => setNamesMode("last"));
         // update mafia select based on players
         $("playersCount").addEventListener("change", () => {
