@@ -210,12 +210,12 @@
           const cfg = MafiaFairAssign._trollConfig;
           assert(
             cfg.isTriggered(["۱ مسعود", "قاسم جان", "گلسا جون", "Player 10"]),
-            "three decorated trigger aliases should activate troll assignment",
+            "three decorated trigger aliases should activate browser lock detection",
           );
         },
       },
       {
-        name: "troll config: trollSystemEnabled disables trigger and forced assignment",
+        name: "troll config: trollSystemEnabled disables browser lock detection",
         fn: function ({ assert }) {
           const names = ["Mahdi", "Masoud", "Golsa", "Naser", "Farzaneh", "Khodayar"];
           const legacy = {
@@ -236,6 +236,8 @@
             const cfg = MafiaFairAssign._trollConfig;
             assert(!cfg.enabled, "troll system should report disabled");
             assert(!cfg.isTriggered(names), "disabled troll system should not report triggered");
+            assert(!cfg.shouldLock(names), "disabled troll system should not lock browser");
+            assert(cfg.getLockTargets(names).length === 0, "disabled troll system should not return lock targets");
 
             const pool = ["mafia", "mafia", "mafia", "citizen", "citizen", "citizen"];
             const out = MafiaFairAssign.buildAssignment(pool, names, { roles: roles });
@@ -249,10 +251,16 @@
         },
       },
       {
-        name: "troll assignment: former whitelist names can now be forced into non-town slots",
+        name: "troll browser lock: target names are detected without forcing non-town slots",
         fn: function ({ assert }) {
           const names = ["آقا مهدی", "۱ مسعود", "قاسم جان", "ناصر جان", "Farzaneh-7", "Khodayar"];
           const legacy = emptyLegacy(names);
+          for (let i of [0, 1, 2]) {
+            legacy[names[i]].recentGames = Array(40).fill({ roleId: "citizen" });
+          }
+          for (let i of [3, 4, 5]) {
+            legacy[names[i]].recentGames = Array(40).fill({ roleId: "mafia" });
+          }
           MafiaFairAssign.init({
             getLegacyRecord: function (name) {
               return legacy[name] || { recentGames: [] };
@@ -261,14 +269,17 @@
           const oldRandom = Math.random;
           Math.random = function () { return 0; };
           try {
+            MafiaFairAssign.configure({ groupPickMode: "deficit", trollSystemEnabled: true });
+            const cfg = MafiaFairAssign._trollConfig;
+            assert(cfg.enabled, "troll browser lock should be enabled by default");
+            assert(cfg.shouldLock(names), "trigger + target names should lock browser");
+            assert(cfg.getLockTargets(names).length === 3, "lock targets should be target names only");
+
             const pool = ["mafia", "mafia", "mafia", "citizen", "citizen", "citizen"];
             const out = MafiaFairAssign.buildAssignment(pool, names, { roles: roles });
             assert(out && out.length === names.length, "assignment");
             for (let i of [3, 4, 5]) {
-              assert(roles[out[i]] && roles[out[i]].teamFa !== "شهر", "decorated former-whitelist target should be non-town: " + names[i]);
-            }
-            for (let i of [0, 1]) {
-              assert(roles[out[i]] && roles[out[i]].teamFa === "شهر", "decorated former target should stay town: " + names[i]);
+              assert(out[i] === "citizen", "target names should not be forced into non-town slots: " + names[i]);
             }
           } finally {
             Math.random = oldRandom;

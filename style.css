@@ -1089,6 +1089,51 @@ option:disabled{
 
 .hidden{ display:none !important; }
 
+body.browser-locked{
+  min-height:100vh;
+  overflow:hidden;
+  background:#080b10;
+}
+body.browser-locked .app,
+body.browser-locked #fairTestPanel,
+body.browser-locked .modal{
+  display:none !important;
+}
+.browserLockOverlay{
+  position:fixed;
+  inset:0;
+  z-index:100000;
+  display:none;
+  align-items:center;
+  justify-content:center;
+  padding:24px;
+  background:#080b10;
+  color:#f8fafc;
+}
+body.browser-locked .browserLockOverlay{
+  display:flex;
+}
+.browserLockPanel{
+  width:min(420px, 100%);
+  border:1px solid rgba(248,250,252,.16);
+  border-radius:8px;
+  background:#101820;
+  box-shadow:0 24px 80px rgba(0,0,0,.48);
+  padding:22px;
+  text-align:center;
+}
+.browserLockTitle{
+  font-size:24px;
+  font-weight:1000;
+  line-height:1.15;
+}
+.browserLockText{
+  margin-top:10px;
+  color:#cbd5e1;
+  font-size:15px;
+  line-height:1.55;
+}
+
 .toolBar{
   display:grid;
   grid-template-columns: repeat(6, 1fr);

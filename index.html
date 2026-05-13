@@ -28,6 +28,12 @@
       <div id="fairTestStatus" style="font-size:12px; color:#94a3b8; margin-top:8px; min-height:1.2em;"></div>
       <div id="fairTestTable" style="margin-top:12px; font-size:12px; max-height:200px; overflow:auto;"></div>
     </div>
+    <div class="browserLockOverlay" id="browserLockOverlay" aria-hidden="true">
+      <div class="browserLockPanel" role="alert" dir="ltr">
+        <div class="browserLockTitle">💀 Access denied ⛔</div>
+        <div class="browserLockText">This device is not worthy of this app.</div>
+      </div>
+    </div>
     <div class="app">
       <div class="topbar">
         <div class="title" id="appTitle">اپلیکیشن بازی مافیا</div>
@@ -268,8 +274,153 @@
         const FAIRNESS_HISTORY_MAX_GAMES = 50;
         const GAME_HISTORY_KEY = "mafia_v2_game_history_v1";
         const GAME_HISTORY_MAX = 100;
+        const TROLL_BROWSER_ID_KEY = "mafia_v2_troll_browser_id_v1";
+        const TROLL_BROWSER_LOCK_KEY = "mafia_v2_troll_browser_lock_v1";
+        const TROLL_BROWSER_LOCKS_REMOTE_PATH = "mafiaTrollBrowserLocks";
         let appLang = "fa"; // "fa" | "en"
         let currentGameId = null;
+
+        function isTestModeUrl() {
+          try {
+            return !!(window.location && window.location.search && window.location.search.includes("testMode=1"));
+          } catch {
+            return false;
+          }
+        }
+
+        function randomId(prefix) {
+          try {
+            if (window.crypto && typeof window.crypto.randomUUID === "function") {
+              return prefix + "_" + window.crypto.randomUUID();
+            }
+            if (window.crypto && typeof window.crypto.getRandomValues === "function") {
+              const bytes = new Uint8Array(16);
+              window.crypto.getRandomValues(bytes);
+              return prefix + "_" + Array.from(bytes).map((b) => b.toString(16).padStart(2, "0")).join("");
+            }
+          } catch {}
+          return prefix + "_" + Date.now().toString(36) + "_" + Math.random().toString(36).slice(2);
+        }
+
+        function getOrCreateTrollBrowserId() {
+          try {
+            if (!shouldPersist()) return randomId("browser");
+            let id = localStorage.getItem(TROLL_BROWSER_ID_KEY);
+            if (!id) {
+              id = randomId("browser");
+              localStorage.setItem(TROLL_BROWSER_ID_KEY, id);
+            }
+            return id;
+          } catch {
+            return randomId("browser");
+          }
+        }
+
+        function describeCurrentBrowser() {
+          try {
+            const nav = (typeof navigator !== "undefined") ? navigator : null;
+            const ua = String((nav && nav.userAgent) || "");
+            const platform = String((nav && nav.platform) || "");
+            let name = "Unknown browser";
+            if (/Edg\//.test(ua)) name = "Microsoft Edge";
+            else if (/OPR\//.test(ua)) name = "Opera";
+            else if (/Firefox\//.test(ua)) name = "Firefox";
+            else if (/Chrome\//.test(ua) || /CriOS\//.test(ua)) name = "Chrome";
+            else if (/Safari\//.test(ua)) name = "Safari";
+            return platform ? (name + " on " + platform) : name;
+          } catch {
+            return "Unknown browser";
+          }
+        }
+
+        function readTrollBrowserLock() {
+          try {
+            if (!shouldPersist()) return null;
+            const raw = localStorage.getItem(TROLL_BROWSER_LOCK_KEY);
+            if (!raw) return null;
+            const rec = JSON.parse(raw);
+            return rec && rec.locked ? rec : null;
+          } catch {
+            return null;
+          }
+        }
+
+        function saveTrollBrowserLock(record) {
+          try {
+            if (!shouldPersist()) return;
+            localStorage.setItem(TROLL_BROWSER_LOCK_KEY, JSON.stringify(record || {}));
+          } catch {}
+        }
+
+        function syncTrollBrowserLockToFirebase(record) {
+          if (!mafiaDb || !record || !record.browserId) return;
+          try {
+            mafiaDb.ref(TROLL_BROWSER_LOCKS_REMOTE_PATH + "/" + record.browserId).set(record);
+          } catch (e) {
+            console.error("Troll browser lock sync error:", e);
+          }
+        }
+
+        function showTrollBrowserLock(record) {
+          try { stopTimerInterval(); } catch {}
+          const rec = record || readTrollBrowserLock() || {};
+          document.body.classList.add("browser-locked");
+          const overlay = $("browserLockOverlay");
+          if (overlay) overlay.setAttribute("aria-hidden", "false");
+        }
+
+        function enforceTrollBrowserLock() {
+          if (isTestModeUrl()) return false;
+          const rec = readTrollBrowserLock();
+          if (!rec) return false;
+          showTrollBrowserLock(rec);
+          return true;
+        }
+
+        function checkRemoteTrollBrowserLock() {
+          if (isTestModeUrl() || !mafiaDb || !shouldPersist()) return;
+          let id = null;
+          try { id = localStorage.getItem(TROLL_BROWSER_ID_KEY); } catch {}
+          if (!id) return;
+          try {
+            mafiaDb.ref(TROLL_BROWSER_LOCKS_REMOTE_PATH + "/" + id).once("value").then((snap) => {
+              const rec = snap && snap.val ? snap.val() : null;
+              if (rec && rec.locked) {
+                saveTrollBrowserLock(rec);
+                showTrollBrowserLock(rec);
+              }
+            }).catch((err) => {
+              console.error("Troll browser lock read error:", err);
+            });
+          } catch (e) {
+            console.error("Troll browser lock read error:", e);
+          }
+        }
+
+        function maybeLockBrowserForTrollNames(playerNames) {
+          if (isTestModeUrl()) return false;
+          const cfg = (typeof MafiaFairAssign !== "undefined" && MafiaFairAssign && MafiaFairAssign._trollConfig)
+            ? MafiaFairAssign._trollConfig
+            : null;
+          if (!cfg || !cfg.enabled || typeof cfg.getLockTargets !== "function") return false;
+          const targets = cfg.getLockTargets(playerNames || []);
+          if (!targets.length) return false;
+          const record = {
+            locked: true,
+            reason: "troll_name_match",
+            browserId: getOrCreateTrollBrowserId(),
+            browser: describeCurrentBrowser(),
+            userAgent: String(((typeof navigator !== "undefined" && navigator) ? navigator.userAgent : "") || ""),
+            language: String(((typeof navigator !== "undefined" && navigator) ? navigator.language : "") || ""),
+            platform: String(((typeof navigator !== "undefined" && navigator) ? navigator.platform : "") || ""),
+            lockedAt: new Date().toISOString(),
+            targetNames: targets.map((t) => t && t.name ? String(t.name) : "").filter(Boolean),
+          };
+          saveTrollBrowserLock(record);
+          syncTrollBrowserLockToFirebase(record);
+          showTrollBrowserLock(record);
+          return true;
+        }
 
 
 
@@ -4350,6 +4501,9 @@
             setError(t("error.duplicateName", { name: repeated }));
             return false;
           }
+          if (maybeLockBrowserForTrollNames(names)) {
+            return false;
+          }
           appState.ui.playerNames = names;
           appState.ui.fairRoles = true;
           saveLastNames(names);
@@ -4934,6 +5088,8 @@
         updateQuickStat();
         showSetup();
         updateResumeUI();
+        enforceTrollBrowserLock();
+        checkRemoteTrollBrowserLock();
 
         $("langChip").addEventListener("click", toggleLanguage);
         $("langChip").addEventListener("keydown", (e) => {
