@@ -1124,7 +1124,7 @@ body.browser-locked .browserLockOverlay{
 }
 .browserLockTitle{
   font-size:24px;
-  font-weight:1000;
+  /* font-weight:1000;  */
   line-height:1.15;
 }
 .browserLockText{
