@@ -187,6 +187,19 @@
             "ناصر جان",
             "ناصرخان",
             "Farzaneh-7",
+            "Mohammad",
+            "Mohamed Reza",
+            "Muhammad-99",
+            "Mamad joon",
+            "آقا محمد",
+            "محمّد جان",
+            "محمدرضا",
+            "Shohreh",
+            "Shoreh khanoom",
+            "Shouhreh-7",
+            "Shuhre jan",
+            "آقا شهره",
+            "شُهره جان",
             "Payam joon",
             "Khodayar",
             "آقا خدایار",
@@ -258,6 +271,43 @@
             assert(out && out.length === names.length, "assignment");
             for (let i of [3, 4, 5]) {
               assert(out[i] === "citizen", "disabled troll system should leave over-used targets in town slots: " + names[i]);
+            }
+          } finally {
+            MafiaFairAssign.configure({ trollSystemEnabled: true, trollSystemMode: "assignment" });
+          }
+        },
+      },
+      {
+        name: "troll mode: disabled turns off troll behavior",
+        fn: function ({ assert }) {
+          const names = ["Mahdi", "Masoud", "Golsa", "Naser", "Farzaneh", "Khodayar"];
+          const legacy = {
+            Mahdi: { recentGames: Array(40).fill({ roleId: "citizen" }) },
+            Masoud: { recentGames: Array(40).fill({ roleId: "citizen" }) },
+            Golsa: { recentGames: Array(40).fill({ roleId: "citizen" }) },
+            Naser: { recentGames: Array(40).fill({ roleId: "mafia" }) },
+            Farzaneh: { recentGames: Array(40).fill({ roleId: "mafia" }) },
+            Khodayar: { recentGames: Array(40).fill({ roleId: "mafia" }) },
+          };
+          MafiaFairAssign.init({
+            getLegacyRecord: function (name) {
+              return legacy[name] || { recentGames: [] };
+            },
+          });
+          try {
+            MafiaFairAssign.configure({ groupPickMode: "deficit", trollSystemEnabled: true, trollSystemMode: "disabled" });
+            const cfg = MafiaFairAssign._trollConfig;
+            assert(cfg.mode === "disabled", "mode should report disabled");
+            assert(!cfg.enabled, "disabled mode should report system disabled");
+            assert(!cfg.isTriggered(names), "disabled mode should not report triggered");
+            assert(!cfg.shouldLock(names), "disabled mode should not lock browser");
+            assert(cfg.getLockTargets(names).length === 0, "disabled mode should not return lock targets");
+
+            const pool = ["mafia", "mafia", "mafia", "citizen", "citizen", "citizen"];
+            const out = MafiaFairAssign.buildAssignment(pool, names, { roles: roles });
+            assert(out && out.length === names.length, "assignment");
+            for (let i of [3, 4, 5]) {
+              assert(out[i] === "citizen", "disabled mode should leave over-used targets in town slots: " + names[i]);
             }
           } finally {
             MafiaFairAssign.configure({ trollSystemEnabled: true, trollSystemMode: "assignment" });

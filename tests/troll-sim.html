@@ -79,10 +79,10 @@
 <div class="footer" id="footer"></div>
 
 <script>
-  var PLAYERS = ["Mehran","Naser","Farzaneh","Khodayar","Behnam","Payam","Mahdi","Mahtab","Setareh","Gisoo","Artin","Golsa","Masoud","Ghasem"];
+  var PLAYERS = ["Mehran","Naser","Farzaneh","Khodayar","Behnam","Payam","Mohammad","Shohreh","Jahanbakhsh","Mahdi","Mahtab","Setareh","Gisoo","Artin","Golsa","Masoud","Ghasem"];
   var N = PLAYERS.length;
-  // 14 players: 5 non-town + 9 town
-  var POOL = ["mafiaBoss","mafia","mafia","mafia","mafia","doctor","detective","citizen","citizen","citizen","citizen","citizen","citizen","citizen"];
+  // 17 players: 6 non-town + 11 town
+  var POOL = ["mafiaBoss","mafia","mafia","mafia","mafia","mafia","doctor","detective","citizen","citizen","citizen","citizen","citizen","citizen","citizen","citizen","citizen"];
   var BAD_COUNT = POOL.filter(function(r) { return roles[r] && roles[r].teamFa !== "شهر"; }).length;
   var NATURAL_RATE = BAD_COUNT / N;
   var GAMES = 10;

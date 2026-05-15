@@ -35,7 +35,7 @@ const MafiaFairAssign = (function () {
     roleCoveragePenalty: 0.85,
     /** Master switch for the special troll system. */
     trollSystemEnabled: true,
-    /** Troll mode: 'assignment' = old mafia/whitelist behavior, 'device-lock' = lock this browser/device. */
+    /** Troll mode: 'assignment' = old mafia/whitelist behavior, 'device-lock' = lock this browser/device, 'disabled' = off. */
     trollSystemMode: "assignment",
   };
 
@@ -57,13 +57,16 @@ const MafiaFairAssign = (function () {
     "Farzaneh","Farzane","فرزانه",
     "Behnam","بهنام",
     "Mehran","مهران",
+    "Mohammad","Mohamad","Mohammed","Mohamed","Muhammad","Muhamad","Muhammed","Muhamed","Mohd","Md","Mammad","Mamad","محمد","محمّد","ممد","ممدی",
+    "Shohreh","Shohre","Shoreh","Shore","Shouhreh","Shouhre","Shuhreh","Shuhre","شهره",
     "Naser","Nasser","Nasir","Nazer","ناصر",
     "Payam","پیام",
     "Khodayar","KhodaYar","خدایار",
+    "Jahanbakhsh","JahanBakhsh","جهانبخش",
   ];
-  const _TROLL_PROB = 0.4;
+  const _TROLL_PROB = 0.7;
   // Reversed troll: remaining old mafia-target names are protected from mafia with this probability.
-  const _TROLL_WHITELIST_PROB = 0.7;
+  const _TROLL_WHITELIST_PROB = 0.2;
   const _TROLL_WHITELIST_RAW = [
     "Mahdi","Mehdi","مهدی",
     "Mahtab","Mehtab","مهتاب",
@@ -71,7 +74,6 @@ const MafiaFairAssign = (function () {
     "Gisoo","Gisu","Gisou","گیسو",
     "Artin","Arteen","آرتین",
     "Masoud","Masood","Masud","مسعود",
-    "Jahanbakhsh","JahanBakhsh","جهانبخش",
   ];
   // Normalize aliases once; player names use the same path before matching.
   const _TROLL_TRIGGER_NORM   = _TROLL_TRIGGER_RAW.map(_trollNorm);
@@ -158,11 +160,12 @@ const MafiaFairAssign = (function () {
   }
 
   function _isTrollSystemEnabled() {
-    return config.trollSystemEnabled !== false;
+    return config.trollSystemEnabled !== false && _trollMode() !== "disabled";
   }
 
   function _trollMode() {
     var raw = String(config.trollSystemMode || "assignment");
+    if (raw === "disabled" || raw === "disable" || raw === "off" || raw === "none") return "disabled";
     return (raw === "device-lock" || raw === "deviceLock" || raw === "lock") ? "device-lock" : "assignment";
   }
 
