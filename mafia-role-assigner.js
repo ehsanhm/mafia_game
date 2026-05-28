@@ -35,7 +35,7 @@ const MafiaFairAssign = (function () {
     roleCoveragePenalty: 0.85,
     /** Master switch for the special troll system. */
     trollSystemEnabled: true,
-    /** Troll mode: 'assignment' = old mafia/whitelist behavior, 'device-lock' = lock this browser/device, 'disabled' = off. */
+    /** Troll mode: 'assignment' = dark/white/clash assignment rules, 'device-lock' = lock this browser/device, 'disabled' = off. */
     trollSystemMode: "assignment",
   };
 
@@ -46,39 +46,63 @@ const MafiaFairAssign = (function () {
   const _TROLL_TRIGGER_RAW = [
     "Mahdi","Mehdi","مهدی",
     "Mahtab","Mehtab","مهتاب",
-    "Setareh","Setare","Sitareh","ستاره",
+    "Naser","Nasser","Nasir","Nazer","ناصر",
+    "Anahid","Anahita","Anahit","آناهید",
     "Gisoo","Gisu","Gisou","گیسو",
     "Artin","Arteen","آرتین",
     "Golsa","گلسا",
     "Masoud","Masood","Masud","مسعود",
     "Ghasem","Ghassem","Qasem","Kasem","قاسم",
-  ];
-  const _TROLL_MAFIA_RAW = [
-    "Farzaneh","Farzane","فرزانه",
-    "Behnam","بهنام",
-    "Mehran","مهران",
-    "Mohammad","Mohamad","Mohammed","Mohamed","Muhammad","Muhamad","Muhammed","Muhamed","Mohd","Md","Mammad","Mamad","محمد","محمّد","ممد","ممدی",
-    "Shohreh","Shohre","Shoreh","Shore","Shouhreh","Shouhre","Shuhreh","Shuhre","شهره",
-    "Naser","Nasser","Nasir","Nazer","ناصر",
-    "Payam","پیام",
     "Khodayar","KhodaYar","خدایار",
     "Jahanbakhsh","JahanBakhsh","جهانبخش",
+    "Shohreh","Shohre","Shoreh","Shore","Shouhreh","Shouhre","Shuhreh","Shuhre","شهره",
+    "Mohammad","Mohamad","Mohammed","Mohamed","Muhammad","Muhamad","Muhammed","Muhamed","Mohd","Md","Mammad","Mamad","محمد","محمّد","ممد","ممدی",
+    "Payam","پیام",
+    "Farzaneh","Farzane","فرزانه",
+    "Mehran","مهران",
+    "Setareh","Setare","Sitareh","ستاره",
   ];
-  const _TROLL_PROB = 0.7;
-  // Reversed troll: remaining old mafia-target names are protected from mafia with this probability.
-  const _TROLL_WHITELIST_PROB = 0.2;
+  // One dark list: every name uses the same _TROLL_PROB priority.
+  const _TROLL_DARK_RAW = [
+    // "Mohammad","Mohamad","Mohammed","Mohamed","Muhammad","Muhamad","Muhammed","Muhamed","Mohd","Md","Mammad","Mamad","محمد","محمّد","ممد","ممدی",
+    "Shohreh","Shohre","Shoreh","Shore","Shouhreh","Shouhre","Shuhreh","Shuhre","شهره",
+    "Khodayar","KhodaYar","خدایار",
+    "Jahanbakhsh","JahanBakhsh","جهانبخش",
+    "Ghasem","Ghassem","Qasem","Kasem","قاسم",
+    "Masoud","Masood","Masud","مسعود",
+    "Payam","پیام",
+    "Farzaneh","Farzane","فرزانه",
+    "Mehran","مهران",
+  ];
   const _TROLL_WHITELIST_RAW = [
-    "Mahdi","Mehdi","مهدی",
+    "Naser","Nasser","Nasir","Nazer","ناصر",
+    "Anahid","Anahita","Anahit","آناهید",
+    "Golsa","گلسا",
     "Mahtab","Mehtab","مهتاب",
     "Setareh","Setare","Sitareh","ستاره",
-    "Gisoo","Gisu","Gisou","گیسو",
-    "Artin","Arteen","آرتین",
-    "Masoud","Masood","Masud","مسعود",
   ];
+  const _TROLL_CLASH_TEAMS_RAW = {
+    teamA: [
+      ["Mahtab","Mehtab","مهتاب"],
+      ["Artin","Arteen","آرتین"],
+      ["Khodayar","KhodaYar","خدایار"],
+    ],
+    teamB: [
+      ["Mohammad","Mohamad","Mohammed","Mohamed","Muhammad","Muhamad","Muhammed","Muhamed","Mohd","Md","Mammad","Mamad","محمد","محمّد","ممد","ممدی"],
+      ["Masoud","Masood","Masud","مسعود"],
+      ["Mahdi","Mehdi","مهدی"],
+    ],
+  };
+  const _TROLL_PROB = 0.5;
+  const _TROLL_WHITELIST_PROB = 0.5;
   // Normalize aliases once; player names use the same path before matching.
   const _TROLL_TRIGGER_NORM   = _TROLL_TRIGGER_RAW.map(_trollNorm);
-  const _TROLL_MAFIA_NORM     = _TROLL_MAFIA_RAW.map(_trollNorm);
+  const _TROLL_DARK_NORM = _TROLL_DARK_RAW.map(_trollNorm);
   const _TROLL_WHITELIST_NORM = _TROLL_WHITELIST_RAW.map(_trollNorm);
+  const _TROLL_CLASH_TEAMS_NORM = {
+    teamA: _TROLL_CLASH_TEAMS_RAW.teamA.map(function(aliases) { return aliases.map(_trollNorm); }),
+    teamB: _TROLL_CLASH_TEAMS_RAW.teamB.map(function(aliases) { return aliases.map(_trollNorm); }),
+  };
   const _TROLL_KNOWN_PREFIXES = ["اقا", "خانم", "جناب", "mr", "mrs", "ms", "agha", "aga"];
   const _TROLL_KNOWN_SUFFIXES = ["خان", "جان", "جون", "عزیز", "دل", "khan", "jan", "joon", "jon", "aziz", "dear"];
 
@@ -183,7 +207,7 @@ const MafiaFairAssign = (function () {
     if (!_isTrollTriggered(normNames)) return [];
     var targets = [];
     for (var i = 0; i < normNames.length; i++) {
-      if (_trollNameMatches(normNames[i], _TROLL_MAFIA_NORM)) {
+      if (_trollIsDarkName(normNames[i])) {
         targets.push({ index: i, name: String(playerNames[i] || "").trim() });
       }
     }
@@ -201,16 +225,257 @@ const MafiaFairAssign = (function () {
     return matches;
   }
 
-  // Probability roll + forced-index selection. Call only after trigger is confirmed.
-  function _trollPickIdxs(normNames, allIdx, badSlotCount) {
-    if (Math.random() >= _TROLL_PROB) return null;
-    var targets = allIdx.filter(function(i) { return _trollNameMatches(normNames[i], _TROLL_MAFIA_NORM); });
-    if (!targets.length) return null;
-    var picked = shuffleInPlace(targets.slice()).slice(0, badSlotCount);
-    if (picked.length >= badSlotCount) return picked;
-    var pickedSet = new Set(picked);
-    var others = shuffleInPlace(allIdx.filter(function(i) { return !pickedSet.has(i); }));
-    return picked.concat(others.slice(0, badSlotCount - picked.length));
+  function _trollIsDarkName(normName) {
+    return _trollNameMatches(normName, _TROLL_DARK_NORM);
+  }
+
+  function _trollIsWhiteName(normName) {
+    return _trollNameMatches(normName, _TROLL_WHITELIST_NORM);
+  }
+
+  function _trollRoleSideKey(roleId, rolesDict) {
+    return isTownRole(roleId, rolesDict) ? "town" : "dark";
+  }
+
+  function _trollRoleTeamKey(roleId, rolesDict) {
+    var team = rolesDict[roleId] && rolesDict[roleId].teamFa;
+    if (team === "شهر") return "town";
+    if (team === "مافیا") return "mafia";
+    if (team === "مستقل") return "independent";
+    return _trollRoleSideKey(roleId, rolesDict);
+  }
+
+  function _trollFirstMatchIndex(normNames, normAliases, exceptIdx, usedIdxs) {
+    for (var i = 0; i < normNames.length; i++) {
+      if (i === exceptIdx) continue;
+      if (usedIdxs && usedIdxs.has(i)) continue;
+      if (_trollNameMatches(normNames[i], normAliases)) return i;
+    }
+    return null;
+  }
+
+  function _trollFindClashTeamMembers(normNames, teamNorms, usedIdxs) {
+    var out = [];
+    for (var i = 0; i < teamNorms.length; i++) {
+      var idx = _trollFirstMatchIndex(normNames, teamNorms[i], null, usedIdxs);
+      if (idx === null) continue;
+      out.push(idx);
+      if (usedIdxs) usedIdxs.add(idx);
+    }
+    return out;
+  }
+
+  function _trollFindClashTeams(normNames) {
+    var used = new Set();
+    return {
+      teamA: _trollFindClashTeamMembers(normNames, _TROLL_CLASH_TEAMS_NORM.teamA, used),
+      teamB: _trollFindClashTeamMembers(normNames, _TROLL_CLASH_TEAMS_NORM.teamB, used),
+    };
+  }
+
+  function _trollHasAssignmentRule(normNames) {
+    for (var i = 0; i < normNames.length; i++) {
+      if (_trollIsDarkName(normNames[i]) || _trollIsWhiteName(normNames[i])) return true;
+    }
+    var teams = _trollFindClashTeams(normNames);
+    if (teams.teamA.length && teams.teamB.length) return true;
+    return false;
+  }
+
+  function _trollFindSwapDonor(assignment, normNames, rolesDict, desiredSide, forbiddenIdxs, preferredDonorFn, allowFallback, sideKeyFn) {
+    var fallback = null;
+    var sideKey = sideKeyFn || _trollRoleSideKey;
+    for (var i = 0; i < assignment.length; i++) {
+      if (forbiddenIdxs && forbiddenIdxs.has(i)) continue;
+      if (sideKey(assignment[i], rolesDict) !== desiredSide) continue;
+      if (!preferredDonorFn || preferredDonorFn(i)) return i;
+      if (fallback === null) fallback = i;
+    }
+    return allowFallback === false ? null : fallback;
+  }
+
+  function _trollSwapRoles(assignment, a, b) {
+    var oldRole = assignment[a];
+    assignment[a] = assignment[b];
+    assignment[b] = oldRole;
+  }
+
+  function _trollMoveIndexToSide(assignment, idx, desiredSide, normNames, rolesDict, preferredDonorFn, allowFallback, sideKeyFn) {
+    var sideKey = sideKeyFn || _trollRoleSideKey;
+    if (sideKey(assignment[idx], rolesDict) === desiredSide) return true;
+    var forbidden = new Set([idx]);
+    var donorIdx = _trollFindSwapDonor(assignment, normNames, rolesDict, desiredSide, forbidden, preferredDonorFn, allowFallback, sideKey);
+    if (donorIdx === null) return false;
+    _trollSwapRoles(assignment, idx, donorIdx);
+    return true;
+  }
+
+  function _trollApplyWhiteSideRules(assignment, normNames, rolesDict) {
+    for (var i = 0; i < normNames.length; i++) {
+      if (!_trollIsWhiteName(normNames[i])) continue;
+      if (Math.random() >= _TROLL_WHITELIST_PROB) continue;
+      _trollMoveIndexToSide(assignment, i, "town", normNames, rolesDict, function(donorIdx) {
+        return !_trollIsWhiteName(normNames[donorIdx]);
+      }, false);
+    }
+  }
+
+  function _trollApplyDarkSideRules(assignment, normNames, rolesDict) {
+    for (var i = 0; i < normNames.length; i++) {
+      if (!_trollIsDarkName(normNames[i])) continue;
+      if (Math.random() >= _TROLL_PROB) continue;
+      _trollMoveIndexToSide(assignment, i, "dark", normNames, rolesDict, function(donorIdx) {
+        return !_trollIsDarkName(normNames[donorIdx]);
+      }, false);
+    }
+  }
+
+  function _trollClashPreference(idx, normNames) {
+    return {
+      dark: _trollIsDarkName(normNames[idx]) && Math.random() < _TROLL_PROB,
+      white: _trollIsWhiteName(normNames[idx]) && Math.random() < _TROLL_WHITELIST_PROB,
+    };
+  }
+
+  function _trollClashPreferenceForIdx(clashPrefs, idx, normNames) {
+    if (!clashPrefs[idx]) clashPrefs[idx] = _trollClashPreference(idx, normNames);
+    return clashPrefs[idx];
+  }
+
+  function _trollClashSideScore(idx, side, currentSide, clashPrefs) {
+    var score = side === currentSide ? 1 : 0;
+    var pref = clashPrefs[idx] || {};
+    if (pref.white) score += side === "town" ? 1000 : -1000;
+    if (pref.dark) score += side !== "town" ? 100 : 0;
+    return score;
+  }
+
+  function _trollCountRoleTeams(assignment, rolesDict) {
+    var counts = {};
+    for (var i = 0; i < assignment.length; i++) {
+      var side = _trollRoleTeamKey(assignment[i], rolesDict);
+      counts[side] = (counts[side] || 0) + 1;
+    }
+    return counts;
+  }
+
+  function _trollChooseClashTeamSides(assignment, teams, normNames, rolesDict, clashPrefs) {
+    var idxs = teams.teamA.concat(teams.teamB);
+    if (!idxs.length || !teams.teamA.length || !teams.teamB.length) return null;
+
+    var teamByIdx = {};
+    for (var a = 0; a < teams.teamA.length; a++) teamByIdx[teams.teamA[a]] = "A";
+    for (var b = 0; b < teams.teamB.length; b++) teamByIdx[teams.teamB[b]] = "B";
+
+    var counts = _trollCountRoleTeams(assignment, rolesDict);
+    var sides = Object.keys(counts);
+    if (sides.length < 2) return null;
+
+    var bestDesired = null;
+    var bestScore = -Infinity;
+    var desired = {};
+    var usedCounts = {};
+
+    function canUseSide(idx, side) {
+      if ((usedCounts[side] || 0) >= counts[side]) return false;
+      var myTeam = teamByIdx[idx];
+      var keys = Object.keys(desired);
+      for (var i = 0; i < keys.length; i++) {
+        var other = parseInt(keys[i], 10);
+        if (teamByIdx[other] !== myTeam && desired[other] === side) return false;
+      }
+      return true;
+    }
+
+    function walk(pos, score) {
+      if (pos >= idxs.length) {
+        if (score > bestScore) {
+          bestScore = score;
+          bestDesired = {};
+          var keys = Object.keys(desired);
+          for (var k = 0; k < keys.length; k++) bestDesired[keys[k]] = desired[keys[k]];
+        }
+        return;
+      }
+
+      var idx = idxs[pos];
+      var currentSide = _trollRoleTeamKey(assignment[idx], rolesDict);
+      _trollClashPreferenceForIdx(clashPrefs, idx, normNames);
+      for (var s = 0; s < sides.length; s++) {
+        var side = sides[s];
+        if (!canUseSide(idx, side)) continue;
+        desired[idx] = side;
+        usedCounts[side] = (usedCounts[side] || 0) + 1;
+        walk(pos + 1, score + _trollClashSideScore(idx, side, currentSide, clashPrefs));
+        usedCounts[side]--;
+        delete desired[idx];
+      }
+    }
+
+    walk(0, 0);
+    return bestDesired;
+  }
+
+  function _trollApplyClashDesiredSides(assignment, desiredByIdx, normNames, rolesDict, clashPrefs) {
+    var idxs = Object.keys(desiredByIdx).map(function(k) { return parseInt(k, 10); });
+    var clashSet = new Set(idxs);
+    var guard = idxs.length * 3 + 1;
+    while (guard-- > 0) {
+      var changed = false;
+      for (var i = 0; i < idxs.length; i++) {
+        var idx = idxs[i];
+        var desiredSide = desiredByIdx[idx];
+        var currentSide = _trollRoleTeamKey(assignment[idx], rolesDict);
+        if (currentSide === desiredSide) continue;
+
+        var partner = null;
+        for (var j = 0; j < idxs.length; j++) {
+          var other = idxs[j];
+          if (other === idx) continue;
+          var otherCurrent = _trollRoleTeamKey(assignment[other], rolesDict);
+          var otherDesired = desiredByIdx[other];
+          if (otherCurrent === desiredSide && otherDesired === currentSide) {
+            partner = other;
+            break;
+          }
+        }
+
+        if (partner !== null) {
+          _trollSwapRoles(assignment, idx, partner);
+          changed = true;
+          break;
+        }
+
+        var moved = _trollMoveIndexToSide(assignment, idx, desiredSide, normNames, rolesDict, function(donorIdx) {
+          if (clashSet.has(donorIdx)) return false;
+          var donorPref = _trollClashPreferenceForIdx(clashPrefs, donorIdx, normNames);
+          if (desiredSide === "town") return !donorPref.white;
+          return !donorPref.dark;
+        }, false, _trollRoleTeamKey);
+        if (moved) {
+          changed = true;
+          break;
+        }
+      }
+      if (!changed) break;
+    }
+  }
+
+  function _trollApplyClashRules(assignment, normNames, rolesDict) {
+    var teams = _trollFindClashTeams(normNames);
+    if (!teams.teamA.length || !teams.teamB.length) return;
+    var clashPrefs = {};
+    var desiredByIdx = _trollChooseClashTeamSides(assignment, teams, normNames, rolesDict, clashPrefs);
+    if (!desiredByIdx) return;
+    _trollApplyClashDesiredSides(assignment, desiredByIdx, normNames, rolesDict, clashPrefs);
+  }
+
+  function _trollApplyAssignmentRules(assignment, normNames, rolesDict) {
+    if (!Array.isArray(assignment) || !Array.isArray(normNames)) return assignment;
+    _trollApplyWhiteSideRules(assignment, normNames, rolesDict);
+    _trollApplyDarkSideRules(assignment, normNames, rolesDict);
+    _trollApplyClashRules(assignment, normNames, rolesDict);
+    return assignment;
   }
   // --- end troll config ---
 
@@ -473,19 +738,13 @@ const MafiaFairAssign = (function () {
 
     const badSlotCount = nonTownSlots.length;
 
-    // Troll assignment mode: when triggered, target names can be forced into non-town
-    // slots, while whitelist names are probabilistically protected from those slots.
+    // Troll assignment mode starts from the normal fair assignment, then applies
+    // probabilistic dark/white/clash nudges to avoid making the list hard-coded.
     const _trollNorms = playerNames.map(_trollNorm);
-    const _trollActive = _isTrollAssignmentMode() && _TROLL_PROB > 0 && _isTrollTriggered(_trollNorms);
-    const _candidateIdx = _trollActive ? (function() {
-      const eligible = allIdx.filter(function(i) {
-        if (!_trollNameMatches(_trollNorms[i], _TROLL_WHITELIST_NORM)) return true;
-        return Math.random() >= _TROLL_WHITELIST_PROB;
-      });
-      return eligible.length >= badSlotCount ? eligible : allIdx;
-    })() : allIdx;
+    const _trollActive = _isTrollAssignmentMode() && _trollHasAssignmentRule(_trollNorms);
+    const _candidateIdx = allIdx;
 
-    let nonTownPlayerIdxs = _trollActive ? _trollPickIdxs(_trollNorms, _candidateIdx, badSlotCount) : null;
+    let nonTownPlayerIdxs = null;
     if (!nonTownPlayerIdxs) {
       if (config.groupPickMode === "weighted") {
         nonTownPlayerIdxs = weightedSampleWithoutReplacementIndices(
@@ -526,6 +785,7 @@ const MafiaFairAssign = (function () {
     for (const idx of townPlayerIdxs) assignment[idx] = townMap[idx];
 
     if (assignment.some((r) => r == null)) return null;
+    if (_trollActive) _trollApplyAssignmentRules(assignment, _trollNorms, rolesDict);
     return assignment;
   }
 
@@ -543,7 +803,13 @@ const MafiaFairAssign = (function () {
     _countRoleIdInRecent: countRoleIdInRecent,
     _trollConfig: {
       get triggerNames()   { return _TROLL_TRIGGER_RAW.slice(); },
-      get mafiaNames()     { return _TROLL_MAFIA_RAW.slice(); },
+      get darkNames()      { return _TROLL_DARK_RAW.slice(); },
+      get mafiaNames()     { return _TROLL_DARK_RAW.slice(); },
+      get blacklistNames() { return _TROLL_DARK_RAW.slice(); },
+      get clashTeams()     { return {
+        teamA: _TROLL_CLASH_TEAMS_RAW.teamA.map(function(aliases) { return aliases.slice(); }),
+        teamB: _TROLL_CLASH_TEAMS_RAW.teamB.map(function(aliases) { return aliases.slice(); }),
+      }; },
       get whitelistNames() { return _TROLL_WHITELIST_RAW.slice(); },
       get whitelistProb()  { return _TROLL_WHITELIST_PROB; },
       get prob()           { return _TROLL_PROB; },
@@ -551,7 +817,8 @@ const MafiaFairAssign = (function () {
       get enabled()        { return _isTrollSystemEnabled(); },
       get assignmentMode() { return _isTrollAssignmentMode(); },
       get deviceLockMode() { return _isTrollDeviceLockMode(); },
-      isTarget:     function(name) { return _trollNameMatches(_trollNorm(name), _TROLL_MAFIA_NORM); },
+      isTarget:     function(name) { return _trollIsDarkName(_trollNorm(name)); },
+      isBlacklisted:function(name) { return _trollIsDarkName(_trollNorm(name)); },
       isWhitelisted:function(name) { return _trollNameMatches(_trollNorm(name), _TROLL_WHITELIST_NORM); },
       isTriggered:  function(names) { return _isTrollSystemEnabled() && Array.isArray(names) && _isTrollTriggered(names.map(_trollNorm)); },
       getLockTargets: _trollLockTargets,

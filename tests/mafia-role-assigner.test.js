@@ -28,6 +28,63 @@
     return mock;
   }
 
+  function rollBelow(prob) {
+    if (prob <= 0) return 0;
+    return Math.max(0, Math.min(0.999999, prob - 0.000001));
+  }
+
+  function rollAbove(prob) {
+    if (prob >= 1) return 0.999999;
+    return Math.max(0, Math.min(0.999999, prob + 0.000001));
+  }
+
+  function sideOf(roleId) {
+    return roles[roleId] && roles[roleId].teamFa === "شهر" ? "town" : "dark";
+  }
+
+  function teamOf(roleId) {
+    const team = roles[roleId] && roles[roleId].teamFa;
+    if (team === "شهر") return "town";
+    if (team === "مافیا") return "mafia";
+    if (team === "مستقل") return "independent";
+    return team || "unknown";
+  }
+
+  function assertDifferentTeams(assert, out, teamAIdxs, teamBIdxs, label) {
+    for (let a = 0; a < teamAIdxs.length; a++) {
+      for (let b = 0; b < teamBIdxs.length; b++) {
+        assert(
+          teamOf(out[teamAIdxs[a]]) !== teamOf(out[teamBIdxs[b]]),
+          label + ": " + teamAIdxs[a] + " and " + teamBIdxs[b] + " should be on different role teams",
+        );
+      }
+    }
+  }
+
+  const TROLL_TEST_PLAYER_COUNTS = [12, 15];
+
+  function fillNames(baseNames, nPlayers) {
+    const names = baseNames.slice();
+    for (let i = names.length; i < nPlayers; i++) {
+      names.push("Player " + (i + 1));
+    }
+    return names;
+  }
+
+  function buildPool(nPlayers, darkCount) {
+    const pool = [];
+    for (let i = 0; i < darkCount; i++) pool.push("mafia");
+    for (let i = darkCount; i < nPlayers; i++) pool.push("citizen");
+    return pool;
+  }
+
+  function assignHistory(legacy, names, idxs, roleId) {
+    for (let i = 0; i < idxs.length; i++) {
+      const name = names[idxs[i]];
+      legacy[name].recentGames = Array(40).fill({ roleId: roleId });
+    }
+  }
+
   window.MAFIA_ROLE_ASSIGNER_TESTS = {
     name: "mafia-role-assigner",
     tests: [
@@ -164,29 +221,10 @@
         },
       },
       {
-        name: "troll config: reversed aliases make former whitelist the target list",
+        name: "troll config: requested dark, white, and clash aliases",
         fn: function ({ assert }) {
           const cfg = MafiaFairAssign._trollConfig;
-          const protectedCases = [
-            "آقا مهدی",
-            "آقامهدی",
-            "مهدی3",
-            "۱ مسعود",
-            "مسعود خان",
-            "مسعودخان",
-            "آرتین جان",
-            "آرتینجان",
-            "مهتاب عزیز دل ستاره",
-            "MAHDI-99",
-            "agha Masoud khan",
-            "aghamahdi3",
-            "Jahanbakhsh",
-            "آقا جهانبخش",
-          ];
-          const targetCases = [
-            "ناصر جان",
-            "ناصرخان",
-            "Farzaneh-7",
+          const darkCases = [
             "Mohammad",
             "Mohamed Reza",
             "Muhammad-99",
@@ -200,17 +238,64 @@
             "Shuhre jan",
             "آقا شهره",
             "شُهره جان",
-            "Payam joon",
             "Khodayar",
             "آقا خدایار",
+            "Jahanbakhsh",
+            "آقا جهانبخش",
+            "Ghasem",
+            "Qasem jan",
+            "قاسم خان",
+            "Masoud",
+            "Masood khan",
+            "مسعود خان",
+            "Payam",
+            "Payam joon",
+            "پیام جان",
+            "Farzaneh-7",
+            "فرزانه جان",
+            "Mehran",
+            "مهران خان",
           ];
-          for (let i = 0; i < protectedCases.length; i++) {
-            assert(cfg.isWhitelisted(protectedCases[i]), "expected protected match for former target: " + protectedCases[i]);
-            assert(!cfg.isTarget(protectedCases[i]), "former target alias should not also be current target: " + protectedCases[i]);
+          const whiteCases = [
+            "Mahtab",
+            "مهتاب عزیز",
+            "Naser",
+            "ناصر جان",
+            "ناصرخان",
+            "Anahid",
+            "Anahita",
+            "آناهید",
+            "Gisoo",
+            "Gisu joon",
+            "گیسو جان",
+            "Golsa",
+            "گلسا جون",
+          ];
+          const clashOnlyCases = [
+            "آقا مهدی",
+            "آقامهدی",
+            "مهدی3",
+            "آرتین جان",
+            "آرتینجان",
+          ];
+          const removedDarkCases = [
+            "Behnam",
+          ];
+          for (let i = 0; i < darkCases.length; i++) {
+            assert(cfg.isTarget(darkCases[i]), "expected dark-side match: " + darkCases[i]);
+            assert(cfg.isBlacklisted(darkCases[i]), "dark-side name should be on the single dark list: " + darkCases[i]);
+            assert(!cfg.isWhitelisted(darkCases[i]), "dark-side alias should not also be white-side: " + darkCases[i]);
           }
-          for (let i = 0; i < targetCases.length; i++) {
-            assert(cfg.isTarget(targetCases[i]), "expected current target match for former whitelist: " + targetCases[i]);
-            assert(!cfg.isWhitelisted(targetCases[i]), "current target alias should not also be protected: " + targetCases[i]);
+          for (let i = 0; i < whiteCases.length; i++) {
+            assert(cfg.isWhitelisted(whiteCases[i]), "expected white-side match: " + whiteCases[i]);
+            assert(!cfg.isTarget(whiteCases[i]), "white-side alias should not also be dark-side: " + whiteCases[i]);
+          }
+          for (let i = 0; i < clashOnlyCases.length; i++) {
+            assert(!cfg.isTarget(clashOnlyCases[i]), "clash-only alias should not be dark-side: " + clashOnlyCases[i]);
+            assert(!cfg.isWhitelisted(clashOnlyCases[i]), "clash-only alias should not be white-side: " + clashOnlyCases[i]);
+          }
+          for (let i = 0; i < removedDarkCases.length; i++) {
+            assert(!cfg.isTarget(removedDarkCases[i]), "removed alias should not be dark-side: " + removedDarkCases[i]);
           }
           assert(!cfg.isTarget("Player 10"), "numbered generic player must not become a troll target");
         },
@@ -315,40 +400,253 @@
         },
       },
       {
-        name: "troll assignment: target names can be forced into non-town slots while whitelist stays town",
-        fn: function ({ assert }) {
-          const names = ["آقا مهدی", "۱ مسعود", "قاسم جان", "ناصر جان", "Farzaneh-7", "Khodayar"];
-          const legacy = emptyLegacy(names);
-          for (let i of [0, 1, 2]) {
-            legacy[names[i]].recentGames = Array(40).fill({ roleId: "citizen" });
-          }
-          for (let i of [3, 4, 5]) {
-            legacy[names[i]].recentGames = Array(40).fill({ roleId: "mafia" });
-          }
-          MafiaFairAssign.init({
-            getLegacyRecord: function (name) {
-              return legacy[name] || { recentGames: [] };
-            },
-          });
+        name: "troll assignment: requested dark names go dark while white names stay town",
+        fn: function ({ assert, assertDeepEqual }) {
           const oldRandom = Math.random;
-          Math.random = function () { return 0; };
+          const cfg = MafiaFairAssign._trollConfig;
+          Math.random = function () {
+            return Math.min(rollBelow(cfg.prob), rollBelow(cfg.whitelistProb));
+          };
+          try {
+            for (let c = 0; c < TROLL_TEST_PLAYER_COUNTS.length; c++) {
+              const nPlayers = TROLL_TEST_PLAYER_COUNTS[c];
+              const names = fillNames(["Khodayar", "Jahanbakhsh", "Shohreh", "Mohammad", "Ghasem", "Masoud", "Anahid", "Gisoo", "Golsa"], nPlayers);
+              const legacy = emptyLegacy(names);
+              assignHistory(legacy, names, [0, 1, 2, 3, 4, 5], "mafia");
+              assignHistory(legacy, names, Array.from({ length: nPlayers - 6 }, (_, i) => i + 6), "citizen");
+              MafiaFairAssign.init({
+                getLegacyRecord: function (name) {
+                  return legacy[name] || { recentGames: [] };
+                },
+              });
+              MafiaFairAssign.configure({ groupPickMode: "deficit", trollSystemEnabled: true, trollSystemMode: "assignment" });
+              assert(cfg.enabled, "troll assignment should be enabled for " + nPlayers + " players");
+              assert(cfg.mode === "assignment", "troll mode should be assignment for " + nPlayers + " players");
+              assert(cfg.isTriggered(names), "trigger names should activate assignment troll for " + nPlayers + " players");
+              assert(!cfg.shouldLock(names), "assignment mode should not lock browser for " + nPlayers + " players");
+
+              const pool = buildPool(nPlayers, 6);
+              const out = MafiaFairAssign.buildAssignment(pool, names, { roles: roles });
+              assert(out && out.length === nPlayers, "assignment for " + nPlayers + " players");
+              assertDeepEqual(countRolesSorted(out), countRolesSorted(pool), "multiset must stay intact after troll side rules for " + nPlayers + " players");
+
+              if (cfg.prob > 0) {
+                for (let i of [0, 1, 2, 3, 4, 5]) {
+                  assert(sideOf(out[i]) === "dark", "dark-side name should be non-town when _TROLL_PROB hits for " + nPlayers + " players: " + names[i]);
+                }
+              }
+              if (cfg.whitelistProb > 0) {
+                for (let i of [6, 7, 8]) {
+                  assert(sideOf(out[i]) === "town", "white-side name should stay town when _TROLL_WHITELIST_PROB hits for " + nPlayers + " players: " + names[i]);
+                }
+              }
+            }
+          } finally {
+            Math.random = oldRandom;
+            MafiaFairAssign.configure({ trollSystemEnabled: true, trollSystemMode: "assignment" });
+          }
+        },
+      },
+      {
+        name: "troll assignment: configured dark probability controls dark names",
+        fn: function ({ assert, assertDeepEqual }) {
+          const cfg = MafiaFairAssign._trollConfig;
+          const buildWithRoll = function (nPlayers, targetName, roll) {
+            const names = fillNames([targetName], nPlayers);
+            const legacy = emptyLegacy(names);
+            legacy[targetName].recentGames = Array(40).fill({ roleId: "mafia" });
+            assignHistory(legacy, names, Array.from({ length: nPlayers - 1 }, (_, i) => i + 1), "citizen");
+            MafiaFairAssign.init({
+              getLegacyRecord: function (name) {
+                return legacy[name] || { recentGames: [] };
+              },
+            });
+            const pool = buildPool(nPlayers, 1);
+            const oldRandom = Math.random;
+            Math.random = function () { return roll; };
+            try {
+              return {
+                out: MafiaFairAssign.buildAssignment(pool, names, { roles: roles }),
+                pool: pool,
+              };
+            } finally {
+              Math.random = oldRandom;
+            }
+          };
+
           try {
             MafiaFairAssign.configure({ groupPickMode: "deficit", trollSystemEnabled: true, trollSystemMode: "assignment" });
-            const cfg = MafiaFairAssign._trollConfig;
-            assert(cfg.enabled, "troll assignment should be enabled");
-            assert(cfg.mode === "assignment", "troll mode should be assignment");
-            assert(cfg.isTriggered(names), "trigger names should activate assignment troll");
-            assert(!cfg.shouldLock(names), "assignment mode should not lock browser");
+            for (let c = 0; c < TROLL_TEST_PLAYER_COUNTS.length; c++) {
+              const nPlayers = TROLL_TEST_PLAYER_COUNTS[c];
+              const targetNames = ["Khodayar", "Payam", "Farzaneh", "Mehran"];
+              for (let t = 0; t < targetNames.length; t++) {
+                const targetName = targetNames[t];
+                if (cfg.prob > 0) {
+                  const below = buildWithRoll(nPlayers, targetName, rollBelow(cfg.prob));
+                  assert(below.out && below.out.length === nPlayers, "below-threshold assignment for " + targetName + " with " + nPlayers + " players");
+                  assertDeepEqual(countRolesSorted(below.out), countRolesSorted(below.pool), "below-threshold multiset for " + targetName + " with " + nPlayers + " players");
+                  assert(sideOf(below.out[0]) === "dark", "roll below configured _TROLL_PROB should push " + targetName + " dark for " + nPlayers + " players; prob=" + cfg.prob);
+                }
+                if (cfg.prob < 1) {
+                  const above = buildWithRoll(nPlayers, targetName, rollAbove(cfg.prob));
+                  assert(above.out && above.out.length === nPlayers, "above-threshold assignment for " + targetName + " with " + nPlayers + " players");
+                  assertDeepEqual(countRolesSorted(above.out), countRolesSorted(above.pool), "above-threshold multiset for " + targetName + " with " + nPlayers + " players");
+                  assert(sideOf(above.out[0]) === "town", "roll above configured _TROLL_PROB should leave " + targetName + " to fairness for " + nPlayers + " players; prob=" + cfg.prob);
+                }
+              }
+            }
+          } finally {
+            MafiaFairAssign.configure({ trollSystemEnabled: true, trollSystemMode: "assignment" });
+          }
+        },
+      },
+      {
+        name: "troll assignment: configured whitelist probability controls white names",
+        fn: function ({ assert, assertDeepEqual }) {
+          const cfg = MafiaFairAssign._trollConfig;
+          const buildWithRoll = function (nPlayers, targetName, roll) {
+            const names = fillNames([targetName], nPlayers);
+            const legacy = emptyLegacy(names);
+            legacy[targetName].recentGames = Array(40).fill({ roleId: "citizen" });
+            assignHistory(legacy, names, Array.from({ length: nPlayers - 1 }, (_, i) => i + 1), "mafia");
+            MafiaFairAssign.init({
+              getLegacyRecord: function (name) {
+                return legacy[name] || { recentGames: [] };
+              },
+            });
+            const pool = buildPool(nPlayers, 1);
+            const oldRandom = Math.random;
+            Math.random = function () { return roll; };
+            try {
+              return {
+                out: MafiaFairAssign.buildAssignment(pool, names, { roles: roles }),
+                pool: pool,
+              };
+            } finally {
+              Math.random = oldRandom;
+            }
+          };
 
-            const pool = ["mafia", "mafia", "mafia", "citizen", "citizen", "citizen"];
+          try {
+            MafiaFairAssign.configure({ groupPickMode: "deficit", trollSystemEnabled: true, trollSystemMode: "assignment" });
+            for (let c = 0; c < TROLL_TEST_PLAYER_COUNTS.length; c++) {
+              const nPlayers = TROLL_TEST_PLAYER_COUNTS[c];
+              const targetNames = ["Mahtab", "Naser", "Anahid", "Gisoo", "Golsa"];
+              for (let t = 0; t < targetNames.length; t++) {
+                const targetName = targetNames[t];
+                if (cfg.whitelistProb > 0) {
+                  const below = buildWithRoll(nPlayers, targetName, rollBelow(cfg.whitelistProb));
+                  assert(below.out && below.out.length === nPlayers, "below-threshold whitelist assignment for " + targetName + " with " + nPlayers + " players");
+                  assertDeepEqual(countRolesSorted(below.out), countRolesSorted(below.pool), "below-threshold whitelist multiset for " + targetName + " with " + nPlayers + " players");
+                  assert(sideOf(below.out[0]) === "town", "roll below configured _TROLL_WHITELIST_PROB should protect " + targetName + " for " + nPlayers + " players; prob=" + cfg.whitelistProb);
+                }
+                if (cfg.whitelistProb < 1) {
+                  const above = buildWithRoll(nPlayers, targetName, rollAbove(cfg.whitelistProb));
+                  assert(above.out && above.out.length === nPlayers, "above-threshold whitelist assignment for " + targetName + " with " + nPlayers + " players");
+                  assertDeepEqual(countRolesSorted(above.out), countRolesSorted(above.pool), "above-threshold whitelist multiset for " + targetName + " with " + nPlayers + " players");
+                  assert(sideOf(above.out[0]) === "dark", "roll above configured _TROLL_WHITELIST_PROB should leave " + targetName + " to fairness for " + nPlayers + " players; prob=" + cfg.whitelistProb);
+                }
+              }
+            }
+          } finally {
+            MafiaFairAssign.configure({ trollSystemEnabled: true, trollSystemMode: "assignment" });
+          }
+        },
+      },
+      {
+        name: "troll assignment: requested clash teams land on different role teams",
+        fn: function ({ assert, assertDeepEqual }) {
+          const oldRandom = Math.random;
+          const cfg = MafiaFairAssign._trollConfig;
+          Math.random = function () {
+            return Math.min(rollBelow(cfg.prob), rollBelow(cfg.whitelistProb));
+          };
+          try {
+            for (let c = 0; c < TROLL_TEST_PLAYER_COUNTS.length; c++) {
+              const nPlayers = TROLL_TEST_PLAYER_COUNTS[c];
+              const names = fillNames(["Mahtab", "Artin", "Khodayar", "Mohammad", "Masoud", "Mahdi"], nPlayers);
+              const legacy = emptyLegacy(names);
+              MafiaFairAssign.init({
+                getLegacyRecord: function (name) {
+                  return legacy[name] || { recentGames: [] };
+                },
+              });
+              MafiaFairAssign.configure({ groupPickMode: "deficit", trollSystemEnabled: true, trollSystemMode: "assignment" });
+              const pool = buildPool(nPlayers, 3);
+              const out = MafiaFairAssign.buildAssignment(pool, names, { roles: roles });
+              assert(out && out.length === nPlayers, "assignment for " + nPlayers + " players");
+              assertDeepEqual(countRolesSorted(out), countRolesSorted(pool), "multiset must stay intact after troll clash teams for " + nPlayers + " players");
+
+              assertDifferentTeams(assert, out, [0, 1, 2], [3, 4, 5], "clash teams for " + nPlayers + " players");
+            }
+          } finally {
+            Math.random = oldRandom;
+            MafiaFairAssign.configure({ trollSystemEnabled: true, trollSystemMode: "assignment" });
+          }
+        },
+      },
+      {
+        name: "troll assignment: clash teams force same-side players apart",
+        fn: function ({ assert, assertDeepEqual }) {
+          const oldRandom = Math.random;
+          const cfg = MafiaFairAssign._trollConfig;
+          Math.random = function () {
+            return Math.max(rollAbove(cfg.prob), rollAbove(cfg.whitelistProb));
+          };
+          try {
+            for (let c = 0; c < TROLL_TEST_PLAYER_COUNTS.length; c++) {
+              const nPlayers = TROLL_TEST_PLAYER_COUNTS[c];
+              const names = fillNames(["Mahtab", "Artin", "Khodayar", "Mohammad", "Masoud", "Mahdi"], nPlayers);
+              const legacy = emptyLegacy(names);
+              assignHistory(legacy, names, [0, 1, 2, 3, 4, 5], "mafia");
+              assignHistory(legacy, names, Array.from({ length: nPlayers - 6 }, (_, i) => i + 6), "citizen");
+              MafiaFairAssign.init({
+                getLegacyRecord: function (name) {
+                  return legacy[name] || { recentGames: [] };
+                },
+              });
+              MafiaFairAssign.configure({ groupPickMode: "deficit", trollSystemEnabled: true, trollSystemMode: "assignment" });
+              const pool = buildPool(nPlayers, 3);
+              const out = MafiaFairAssign.buildAssignment(pool, names, { roles: roles });
+              assert(out && out.length === nPlayers, "assignment for " + nPlayers + " players");
+              assertDeepEqual(countRolesSorted(out), countRolesSorted(pool), "multiset must stay intact after forced clash teams for " + nPlayers + " players");
+
+              assertDifferentTeams(assert, out, [0, 1, 2], [3, 4, 5], "forced clash teams for " + nPlayers + " players");
+            }
+          } finally {
+            Math.random = oldRandom;
+            MafiaFairAssign.configure({ trollSystemEnabled: true, trollSystemMode: "assignment" });
+          }
+        },
+      },
+      {
+        name: "troll assignment: clash teams treat independent as a separate role team",
+        fn: function ({ assert, assertDeepEqual }) {
+          const oldRandom = Math.random;
+          const cfg = MafiaFairAssign._trollConfig;
+          Math.random = function () {
+            return Math.max(rollAbove(cfg.prob), rollAbove(cfg.whitelistProb));
+          };
+          try {
+            const names = ["Mahtab", "Artin", "Khodayar", "Mohammad", "Masoud", "Mahdi"];
+            const legacy = emptyLegacy(names);
+            assignHistory(legacy, names, [0, 1, 2, 3, 4, 5], "citizen");
+            MafiaFairAssign.init({
+              getLegacyRecord: function (name) {
+                return legacy[name] || { recentGames: [] };
+              },
+            });
+            MafiaFairAssign.configure({ groupPickMode: "deficit", trollSystemEnabled: true, trollSystemMode: "assignment" });
+            const pool = ["zodiac", "killer", "nero", "mafia", "mafia", "mafia"];
             const out = MafiaFairAssign.buildAssignment(pool, names, { roles: roles });
-            assert(out && out.length === names.length, "assignment");
-            for (let i of [3, 4, 5]) {
-              assert(roles[out[i]] && roles[out[i]].teamFa !== "شهر", "target name should be non-town: " + names[i]);
-            }
-            for (let i of [0, 1]) {
-              assert(roles[out[i]] && roles[out[i]].teamFa === "شهر", "whitelisted trigger should stay town: " + names[i]);
-            }
+            assert(out && out.length === names.length, "assignment with independent and mafia sides");
+            assertDeepEqual(countRolesSorted(out), countRolesSorted(pool), "multiset must stay intact after exact-team clash");
+
+            assertDifferentTeams(assert, out, [0, 1, 2], [3, 4, 5], "independent-vs-mafia clash teams");
+            assert(
+              new Set(out.map(teamOf)).has("independent"),
+              "test setup should include independent roles as a separate team",
+            );
           } finally {
             Math.random = oldRandom;
             MafiaFairAssign.configure({ trollSystemEnabled: true, trollSystemMode: "assignment" });
