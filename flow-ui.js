@@ -4519,7 +4519,15 @@
                 document.getElementById("fl_nero_mode") ||
                 document.getElementById("fl_nero_oil_target") ||
                 document.getElementById("fl_jackIndep_target") ||
-                document.getElementById("fl_gamblerIndep_target");
+                document.getElementById("fl_gamblerIndep_target") ||
+                document.getElementById("fl_devil_imp_successor") ||
+                document.getElementById("fl_devil_ravenkeeper_query") ||
+                document.getElementById("fl_devil_empath_count") ||
+                document.getElementById("fl_devil_ft_a") ||
+                document.getElementById("fl_devil_ft_b") ||
+                document.getElementById("fl_devil_ft_result") ||
+                document.getElementById("fl_devil_undertaker_role") ||
+                document.getElementById("fl_devil_butler_master");
               if (!hasAny) return false;
 
               const read = (id) => { const el = document.getElementById(id); return el ? (el.value || "") : ""; };
@@ -4629,6 +4637,14 @@
               if (document.getElementById("fl_nero_oil_target") || !mergeOnly) per.neroOilTarget = readNum("fl_nero_oil_target");
               if (document.getElementById("fl_jackIndep_target") || !mergeOnly) per.jackIndepTarget = readNum("fl_jackIndep_target");
               if (document.getElementById("fl_gamblerIndep_target") || !mergeOnly) per.gamblerIndepTarget = readNum("fl_gamblerIndep_target");
+              if (document.getElementById("fl_devil_imp_successor") || !mergeOnly) per.botcImpSuccessor = readNum("fl_devil_imp_successor");
+              if (document.getElementById("fl_devil_ravenkeeper_query") || !mergeOnly) per.botcRavenkeeperQuery = readNum("fl_devil_ravenkeeper_query");
+              if (document.getElementById("fl_devil_empath_count") || !mergeOnly) per.botcEmpathCount = readNum("fl_devil_empath_count");
+              if (document.getElementById("fl_devil_ft_a") || !mergeOnly) per.botcFortuneTellerA = readNum("fl_devil_ft_a");
+              if (document.getElementById("fl_devil_ft_b") || !mergeOnly) per.botcFortuneTellerB = readNum("fl_devil_ft_b");
+              if (document.getElementById("fl_devil_ft_result") || !mergeOnly) per.botcFortuneTellerResult = String(read("fl_devil_ft_result") || "");
+              if (document.getElementById("fl_devil_undertaker_role") || !mergeOnly) per.botcUndertakerRole = String(read("fl_devil_undertaker_role") || "");
+              if (document.getElementById("fl_devil_butler_master") || !mergeOnly) per.botcButlerMaster = readNum("fl_devil_butler_master");
               if (document.getElementById("fl_commando_shot") || !mergeOnly) per.commandoShot = readNum("fl_commando_shot");
               if (document.getElementById("fl_gunner_live") || !mergeOnly) per.gunnerLive = readNum("fl_gunner_live");
               if (document.getElementById("fl_neutralized_shot") || !mergeOnly) per.neutralizedShot = readCheck("fl_neutralized_shot");
@@ -4778,6 +4794,14 @@
                 betrayalDir: per.betrayalDir != null ? per.betrayalDir : null,
                 sheriffReveal: per.sheriffReveal != null ? per.sheriffReveal : null,
                 freemasonTarget: per.freemasonTarget != null ? per.freemasonTarget : null,
+                botcImpSuccessor: per.botcImpSuccessor != null ? per.botcImpSuccessor : null,
+                botcRavenkeeperQuery: per.botcRavenkeeperQuery != null ? per.botcRavenkeeperQuery : null,
+                botcEmpathCount: per.botcEmpathCount != null ? per.botcEmpathCount : null,
+                botcFortuneTellerA: per.botcFortuneTellerA != null ? per.botcFortuneTellerA : null,
+                botcFortuneTellerB: per.botcFortuneTellerB != null ? per.botcFortuneTellerB : null,
+                botcFortuneTellerResult: (per.botcFortuneTellerResult != null && String(per.botcFortuneTellerResult)) ? String(per.botcFortuneTellerResult) : null,
+                botcUndertakerRole: (per.botcUndertakerRole != null && String(per.botcUndertakerRole)) ? String(per.botcUndertakerRole) : null,
+                botcButlerMaster: per.botcButlerMaster != null ? per.botcButlerMaster : null,
               };
               // Witch (Kabo): ability reflects to target — override payload so target's ability applies to themselves.
               if (getDrawScenarioForFlow() === "kabo" && payload.witchTarget != null && Number.isFinite(Number(payload.witchTarget))) {
@@ -4833,6 +4857,9 @@
                     godfather: ["godfatherAction", "mafiaShot", "saulBuyTarget", "sixthSenseTarget", "sixthSenseRole"], witch: ["witchTarget"], matador: ["matadorDisable"],
                     soldier: ["soldierTarget", "soldierGunShot"],
                     sheriff: ["sheriffReveal"], freemason: ["freemasonTarget"],
+                    devilMonk: ["doctorSave"], devilFortuneTeller: ["botcFortuneTellerA", "botcFortuneTellerB", "botcFortuneTellerResult"],
+                    devilEmpath: ["botcEmpathCount"], devilUndertaker: ["botcUndertakerRole"],
+                    devilRavenkeeper: ["botcRavenkeeperQuery"], devilButler: ["botcButlerMaster"],
                   };
                   for (const [roleKey, fields] of Object.entries(roleToFields)) {
                     const rid = roleKey === "godfather" ? ["godfather", "mafiaBoss"] : [roleKey];
@@ -5135,8 +5162,8 @@
               // No defendants today => allow advancing.
               if (!candIdxs.length) {
                 try { addFlowEvent("day_elim", { counts: {}, best: 0, leaders: [] }); } catch {}
-                try { addFlowEvent("day_elim_out", { out: null }); } catch {}
-                try { applyDayElimFromPayload(f, { out: null }); } catch {}
+                try { addFlowEvent("day_elim_out", { out: null, noExecution: true }); } catch {}
+                try { applyDayElimFromPayload(f, { out: null, noExecution: true }); } catch {}
                 try { saveState(appState); } catch {}
                 return true;
               }
@@ -5167,8 +5194,8 @@
                 d.elimPickedByDay[f.day] = out;
                 f.draft = d;
                 addFlowEvent("day_elim", { counts, best, leaders: (best > 0) ? [only] : [] });
-                addFlowEvent("day_elim_out", { out, auto: true, single: true });
-                try { applyDayElimFromPayload(f, { out }); } catch {}
+                addFlowEvent("day_elim_out", { out, auto: true, single: true, noExecution: out === null });
+                try { applyDayElimFromPayload(f, { out, noExecution: out === null }); } catch {}
                 try { renderCast(); } catch {}
                 try { if (typeof renderNameGrid === "function") renderNameGrid(); } catch {}
                 saveState(appState);
@@ -5208,8 +5235,8 @@
 
               // No one is eliminated (e.g., scenario allows no-out, or votes are all 0): allow advancing.
               if (!(best > 0) || !top.length) {
-                try { addFlowEvent("day_elim_out", { out: null }); } catch {}
-                try { applyDayElimFromPayload(f, { out: null }); } catch {}
+                try { addFlowEvent("day_elim_out", { out: null, noExecution: true }); } catch {}
+                try { applyDayElimFromPayload(f, { out: null, noExecution: true }); } catch {}
                 return true;
               }
 
@@ -5365,6 +5392,14 @@
                       betrayalDir: per.betrayalDir != null ? per.betrayalDir : null,
                       sheriffReveal: per.sheriffReveal != null ? per.sheriffReveal : null,
                       freemasonTarget: per.freemasonTarget != null ? per.freemasonTarget : null,
+                      botcImpSuccessor: per.botcImpSuccessor != null ? per.botcImpSuccessor : null,
+                      botcRavenkeeperQuery: per.botcRavenkeeperQuery != null ? per.botcRavenkeeperQuery : null,
+                      botcEmpathCount: per.botcEmpathCount != null ? per.botcEmpathCount : null,
+                      botcFortuneTellerA: per.botcFortuneTellerA != null ? per.botcFortuneTellerA : null,
+                      botcFortuneTellerB: per.botcFortuneTellerB != null ? per.botcFortuneTellerB : null,
+                      botcFortuneTellerResult: (per.botcFortuneTellerResult != null && String(per.botcFortuneTellerResult)) ? String(per.botcFortuneTellerResult) : null,
+                      botcUndertakerRole: (per.botcUndertakerRole != null && String(per.botcUndertakerRole)) ? String(per.botcUndertakerRole) : null,
+                      botcButlerMaster: per.botcButlerMaster != null ? per.botcButlerMaster : null,
                     };
                     addFlowEvent("night_actions", payload);
                     } catch (e) {

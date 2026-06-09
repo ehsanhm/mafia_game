@@ -32,6 +32,152 @@
             : getScenario();
         }
 
+        function isDevilScenario() {
+          return String(getDrawScenarioForFlow() || "").toLowerCase() === "devil";
+        }
+
+        function parseFlowPlayerIndex(raw, players) {
+          const n = parseInt(raw, 10);
+          const max = players && players.length ? players.length : 0;
+          return Number.isFinite(n) && n >= 0 && n < max ? n : null;
+        }
+
+        function getFlowRoleId(idx) {
+          const draw = appState.draw;
+          const p = draw && draw.players && draw.players[idx];
+          return (p && p.roleId) ? p.roleId : "citizen";
+        }
+
+        function isDevilRoleType(roleId, type) {
+          const r = roles && roles[roleId];
+          return !!(r && r.botcType === type);
+        }
+
+        function findAliveDevilRole(roleId) {
+          const draw = appState.draw;
+          if (!draw || !draw.players) return null;
+          for (let i = 0; i < draw.players.length; i++) {
+            const p = draw.players[i];
+            if (p && p.roleId === roleId && p.alive !== false) return i;
+          }
+          return null;
+        }
+
+        function findAliveDevilMinion(preferredIdx, excludeIdx) {
+          const draw = appState.draw;
+          if (!draw || !draw.players) return null;
+          const isEligible = (idx) => {
+            const p = draw.players[idx];
+            return !!(p && p.alive !== false && idx !== excludeIdx && isDevilRoleType(p.roleId, "minion"));
+          };
+          if (preferredIdx !== null && preferredIdx !== undefined && Number.isFinite(Number(preferredIdx))) {
+            const idx = parseInt(preferredIdx, 10);
+            if (idx >= 0 && idx < draw.players.length && isEligible(idx)) return idx;
+          }
+          for (let i = 0; i < draw.players.length; i++) {
+            if (isEligible(i)) return i;
+          }
+          return null;
+        }
+
+        function devilAliveCount() {
+          const draw = appState.draw;
+          if (!draw || !draw.players) return 0;
+          return draw.players.filter((p) => p && p.alive !== false).length;
+        }
+
+        function devilIsPoisonedOnDay(f, idx) {
+          try {
+            if (idx === null || idx === undefined || !Number.isFinite(Number(idx))) return false;
+            const prevNightKey = String(Math.max(0, (f.day || 1) - 1));
+            const na = f.draft && f.draft.nightActionsByNight && f.draft.nightActionsByNight[prevNightKey];
+            return !!(na && na.magicianDisable !== null && na.magicianDisable !== undefined && parseInt(na.magicianDisable, 10) === parseInt(idx, 10));
+          } catch {
+            return false;
+          }
+        }
+
+        function devilIsPoisonedThisNight(payload, idx) {
+          try {
+            if (idx === null || idx === undefined || !Number.isFinite(Number(idx))) return false;
+            return !!(payload && payload.magicianDisable !== null && payload.magicianDisable !== undefined && parseInt(payload.magicianDisable, 10) === parseInt(idx, 10));
+          } catch {
+            return false;
+          }
+        }
+
+        function revertDevilPromotionRecord(f, rec, dayKey) {
+          try {
+            if (!rec || typeof rec !== "object") return;
+            const draw = appState.draw;
+            const idxRaw = (rec.impPassedTo !== null && rec.impPassedTo !== undefined) ? rec.impPassedTo : rec.devilPromoted;
+            const prevRole = rec.impSuccessorPrevRoleId || rec.devilPromotedPrevRoleId || null;
+            const idx = parseFlowPlayerIndex(idxRaw, draw && draw.players);
+            if (idx !== null && prevRole && draw && draw.players && draw.players[idx]) {
+              draw.players[idx].roleId = prevRole;
+            }
+            if (rec.devilPromotionReason === "scarlet_woman" && f && f.draft) {
+              if (f.draft.devilScarletWomanUsedOnDay == null || String(f.draft.devilScarletWomanUsedOnDay) === String(dayKey)) {
+                f.draft.devilScarletWomanUsed = false;
+                f.draft.devilScarletWomanUsedOnDay = null;
+              }
+            }
+            rec.devilPromoted = null;
+            rec.devilPromotedPrevRoleId = null;
+            rec.devilPromotionReason = null;
+            rec.impPassedTo = null;
+            rec.impSuccessorPrevRoleId = null;
+          } catch {}
+        }
+
+        function promoteDevilPlayerToImp(f, rec, idx, reason) {
+          try {
+            const draw = appState.draw;
+            if (!draw || !draw.players || idx === null || idx === undefined) return false;
+            const n = parseFlowPlayerIndex(idx, draw.players);
+            if (n === null) return false;
+            const p = draw.players[n];
+            if (!p || p.alive === false || p.roleId === "devilImp") return false;
+            rec.devilPromoted = n;
+            rec.devilPromotedPrevRoleId = p.roleId || null;
+            rec.devilPromotionReason = reason || "imp_pass";
+            if (reason === "imp_self_kill") {
+              rec.impPassedTo = n;
+              rec.impSuccessorPrevRoleId = p.roleId || null;
+            }
+            p.roleId = "devilImp";
+            if (reason === "scarlet_woman" && f && f.draft) {
+              f.draft.devilScarletWomanUsed = true;
+              f.draft.devilScarletWomanUsedOnDay = f.day || 1;
+            }
+            return true;
+          } catch {
+            return false;
+          }
+        }
+
+        function promoteDevilScarletWoman(f, rec, reason) {
+          try {
+            if (!isDevilScenario()) return false;
+            const swIdx = findAliveDevilRole("devilScarletWoman");
+            if (swIdx === null) return false;
+            return promoteDevilPlayerToImp(f, rec, swIdx, reason || "scarlet_woman");
+          } catch {
+            return false;
+          }
+        }
+
+        function setDevilWinner(f, winnerTeam, backPhase, backDay, backStep) {
+          if (!f || !winnerTeam) return false;
+          if (!f.draft || typeof f.draft !== "object") f.draft = {};
+          f.draft.winnerBack = { phase: backPhase, day: backDay, step: backStep };
+          f.draft.winnerFromChaos = false;
+          f.draft.winnerTeam = winnerTeam;
+          f.phase = "winner";
+          f.step = 0;
+          return true;
+        }
+
         function getPlayerNamesForFlow() {
           const draw = appState.draw;
           const n = (draw && draw.players) ? draw.players.length : (appState.ui && appState.ui.nPlayers) ? appState.ui.nPlayers : 0;
@@ -61,6 +207,7 @@
               if (Number.isFinite(Number(rec.chainKilled)) && rec.chainPrevAlive === true) {
                 try { setPlayerLife(parseInt(rec.chainKilled, 10), { alive: true }); } catch {}
               }
+              try { revertDevilPromotionRecord(f, rec, dayKey); } catch {}
               d.nightMafiaAppliedByDay[dayKey] = { killed: null, prevAlive: null };
             }
             // Zodiac shot
@@ -728,6 +875,13 @@
             const ms = (payload.mafiaShot === null || payload.mafiaShot === undefined) ? null : parseInt(payload.mafiaShot, 10);
             const ds = (payload.doctorSave === null || payload.doctorSave === undefined) ? null : parseInt(payload.doctorSave, 10);
             const ls = (payload.lecterSave === null || payload.lecterSave === undefined) ? null : parseInt(payload.lecterSave, 10);
+            const scenarioMafia = getDrawScenarioForFlow();
+            const isDevil = String(scenarioMafia || "").toLowerCase() === "devil";
+            let effectiveDoctorSave = ds;
+            if (isDevil) {
+              const monkIdx = findAliveDevilRole("devilMonk");
+              if (monkIdx !== null && devilIsPoisonedThisNight(payload, monkIdx)) effectiveDoctorSave = null;
+            }
 
             // NATO rule: if NATO made a role guess this night, mafia cannot shoot.
             // If the guess was correct, NATO's target dies instead.
@@ -735,14 +889,17 @@
             const natoGuess = (payload.natoRoleGuess != null && String(payload.natoRoleGuess).trim()) ? String(payload.natoRoleGuess).trim() : null;
             const natoMadeGuess = Number.isFinite(natoTgt) && natoTgt >= 0 && natoTgt < draw.players.length && natoGuess !== null;
 
-            let desiredKill = (Number.isFinite(ms) && ms >= 0 && ms < draw.players.length && ms !== ds && ms !== ls) ? ms : null;
+            let desiredKill = (Number.isFinite(ms) && ms >= 0 && ms < draw.players.length && ms !== effectiveDoctorSave && ms !== ls) ? ms : null;
+            if (isDevil) {
+              const impIdx = findAliveDevilRole("devilImp");
+              if (impIdx !== null && devilIsPoisonedThisNight(payload, impIdx)) desiredKill = null;
+            }
             // Armorsmith armor: if target received armor this night, shot is blocked.
             const armorTgt = (payload.armorsmithArmor !== null && payload.armorsmithArmor !== undefined && Number.isFinite(Number(payload.armorsmithArmor)))
               ? parseInt(payload.armorsmithArmor, 10) : null;
             if (desiredKill !== null && armorTgt !== null && desiredKill === armorTgt) desiredKill = null;
             // Pedarkhande: no mafia shot when Godfather chose sixth sense or Saul buy (if Saul buy fails, no shot either).
             // Kabo: no mafia shot when Don chose yakooza or guess_role.
-            const scenarioMafia = getDrawScenarioForFlow();
             const godfatherAction = (payload.godfatherAction != null && String(payload.godfatherAction)) ? String(payload.godfatherAction) : "shoot";
             if (scenarioMafia === "pedarkhande" && (godfatherAction === "sixth_sense" || godfatherAction === "saul_buy")) desiredKill = null;
             if (scenarioMafia === "kabo" && (godfatherAction === "yakooza" || godfatherAction === "guess_role")) desiredKill = null;
@@ -750,14 +907,16 @@
             if (natoMadeGuess) desiredKill = null;
 
             // If NATO's guess was correct, kill that target (subject to same immunities as mafia shot).
-            if (natoMadeGuess && natoTgt !== ds && natoTgt !== ls) {
+            if (natoMadeGuess && natoTgt !== effectiveDoctorSave && natoTgt !== ls) {
               const actualRole = (draw.players[natoTgt] && draw.players[natoTgt].roleId) ? draw.players[natoTgt].roleId : "citizen";
               if (natoGuess === actualRole) desiredKill = natoTgt;
             }
 
             if (desiredKill !== null) {
               const targetRole = (draw.players[desiredKill] && draw.players[desiredKill].roleId) ? draw.players[desiredKill].roleId : "citizen";
-              if (targetRole === "zodiac" || targetRole === "invulnerable") {
+              if (isDevil && targetRole === "devilSoldier" && !devilIsPoisonedThisNight(payload, desiredKill)) {
+                desiredKill = null;
+              } else if (!isDevil && (targetRole === "zodiac" || targetRole === "invulnerable")) {
                 desiredKill = null;
               } else if (targetRole === "heir") {
                 // Heir is immune only when they picked a citizen and that successor is still alive.
@@ -798,9 +957,20 @@
               }
             }
 
+            const devilImpSelfKill = !!(isDevil && desiredKill !== null && getFlowRoleId(desiredKill) === "devilImp");
+            const devilImpSuccessor = devilImpSelfKill
+              ? findAliveDevilMinion(payload.botcImpSuccessor, desiredKill)
+              : null;
+
             // no change
-            if ((rec.killed === null || rec.killed === undefined) && desiredKill === null) return false;
-            if (Number.isFinite(Number(rec.killed)) && desiredKill !== null && parseInt(rec.killed, 10) === desiredKill) return false;
+            const recHasDevilPromotion = Number.isFinite(Number(rec.impPassedTo)) || Number.isFinite(Number(rec.devilPromoted));
+            if ((rec.killed === null || rec.killed === undefined) && desiredKill === null && !recHasDevilPromotion) return false;
+            if (
+              Number.isFinite(Number(rec.killed)) &&
+              desiredKill !== null &&
+              parseInt(rec.killed, 10) === desiredKill &&
+              (!isDevil || !devilImpSelfKill || parseInt(rec.impPassedTo, 10) === devilImpSuccessor)
+            ) return false;
 
             // revert previous applied kill (only if we killed someone who was alive before)
             if (Number.isFinite(Number(rec.killed))) {
@@ -813,6 +983,7 @@
             if (Number.isFinite(Number(rec.chainKilled)) && rec.chainPrevAlive === true) {
               try { setPlayerLife(parseInt(rec.chainKilled, 10), { alive: true }); } catch {}
             }
+            try { revertDevilPromotionRecord(f, rec, dayKey); } catch {}
             rec.chainKilled = null;
             rec.chainPrevAlive = null;
 
@@ -825,6 +996,10 @@
               }
               rec.killed = desiredKill;
               rec.prevAlive = wasAlive === true;
+
+              if (devilImpSelfKill && devilImpSuccessor !== null) {
+                try { promoteDevilPlayerToImp(f, rec, devilImpSuccessor, "imp_self_kill"); } catch {}
+              }
 
               // Researcher chain kill: if mafia killed the Researcher, also kill their linked player.
               try {
@@ -1927,10 +2102,12 @@
 
             const desiredOutRaw = (payload.out === null || payload.out === undefined) ? null : parseInt(payload.out, 10);
             const desiredOut = (Number.isFinite(desiredOutRaw) && desiredOutRaw >= 0 && desiredOutRaw < draw.players.length) ? desiredOutRaw : null;
+            const desiredNoExecution = isDevilScenario() && desiredOut === null && payload.noExecution === true;
 
             // no change
-            if ((rec.out === null || rec.out === undefined) && desiredOut === null) return false;
-            if (Number.isFinite(Number(rec.out)) && desiredOut !== null && parseInt(rec.out, 10) === desiredOut) return false;
+            const recHasDevilExtras = !!(rec.devilNoExecution || rec.devilSaintExecuted || Number.isFinite(Number(rec.devilPromoted)));
+            if ((rec.out === null || rec.out === undefined) && desiredOut === null && !desiredNoExecution && !recHasDevilExtras) return false;
+            if (Number.isFinite(Number(rec.out)) && desiredOut !== null && parseInt(rec.out, 10) === desiredOut && !recHasDevilExtras) return false;
 
             // revert previous applied out
             if (Number.isFinite(Number(rec.out))) {
@@ -1947,6 +2124,13 @@
                 f.draft.witchHasAntidoteFromDon = false;
               }
             }
+            try { revertDevilPromotionRecord(f, rec, dayKey); } catch {}
+            if (rec.devilSaintExecuted && f.draft.devilSaintExecutedByDay) {
+              delete f.draft.devilSaintExecutedByDay[dayKey];
+            }
+            if (rec.devilNoExecution && f.draft.devilNoExecutionByDay) {
+              delete f.draft.devilNoExecutionByDay[dayKey];
+            }
             // revert previous researcher chain kill
             if (Number.isFinite(Number(rec.chainOut))) {
               if (rec.chainPrevAlive === true) {
@@ -1956,6 +2140,8 @@
             rec.chainOut = null;
             rec.chainPrevAlive = null;
             rec.armoredAbsorbed = false;
+            rec.devilSaintExecuted = false;
+            rec.devilNoExecution = false;
 
             // apply new out
             if (desiredOut !== null) {
@@ -1963,6 +2149,8 @@
               const wasAlive = p ? (p.alive !== false) : null;
               const isArmored = (p && p.roleId === "armored");
               const armorAbsorbs = isArmored && !f.draft.armoredVoteUsed;
+              const devilAliveBefore = isDevilScenario() ? devilAliveCount() : 0;
+              const devilVictimRole = p && p.roleId ? p.roleId : "citizen";
 
               if (armorAbsorbs) {
                 // Armored survives the first vote-out; armor is now spent.
@@ -1977,6 +2165,18 @@
                 rec.armoredAbsorbed = false;
                 rec.out = desiredOut;
                 rec.prevAlive = wasAlive === true;
+
+                if (isDevilScenario()) {
+                  if (!f.draft.devilSaintExecutedByDay || typeof f.draft.devilSaintExecutedByDay !== "object") f.draft.devilSaintExecutedByDay = {};
+                  if (!f.draft.devilNoExecutionByDay || typeof f.draft.devilNoExecutionByDay !== "object") f.draft.devilNoExecutionByDay = {};
+                  if (devilVictimRole === "devilSaint") {
+                    f.draft.devilSaintExecutedByDay[dayKey] = true;
+                    rec.devilSaintExecuted = true;
+                  }
+                  if (devilVictimRole === "devilImp" && wasAlive && devilAliveBefore >= 5) {
+                    promoteDevilScarletWoman(f, rec, "scarlet_woman");
+                  }
+                }
 
                 // Kabo: if Don killed by Capo gun on Day 1, his antidote transfers to Witch.
                 if (getDrawScenarioForFlow() === "kabo" && payload.kaboShot && (f.day || 1) === 1) {
@@ -2015,11 +2215,137 @@
             } else {
               rec.out = null;
               rec.prevAlive = null;
+              if (desiredNoExecution) {
+                if (!f.draft.devilNoExecutionByDay || typeof f.draft.devilNoExecutionByDay !== "object") f.draft.devilNoExecutionByDay = {};
+                f.draft.devilNoExecutionByDay[dayKey] = true;
+                rec.devilNoExecution = true;
+              }
             }
 
             f.draft.dayElimAppliedByDay[dayKey] = rec;
             saveState(appState);
             return true;
+          } catch {
+            return false;
+          }
+        }
+
+        function getDevilStepInput(f, stepId, key, fallback) {
+          try {
+            const el = (typeof document !== "undefined") ? document.getElementById(key) : null;
+            if (el) return (el.type === "checkbox" || el.type === "radio") ? !!el.checked : el.value;
+            const d = f && f.draft ? f.draft : {};
+            const saved = d.stepInputs && d.stepInputs[stepId] ? d.stepInputs[stepId] : {};
+            if (Object.prototype.hasOwnProperty.call(saved, key)) return saved[key];
+            return fallback;
+          } catch {
+            return fallback;
+          }
+        }
+
+        function revertDevilDayActionsForDay(f, dayNum) {
+          try {
+            if (!f || !f.draft || !f.draft.devilDayActionsAppliedByDay) return false;
+            const dayKey = String(dayNum || f.day || 1);
+            const rec = f.draft.devilDayActionsAppliedByDay[dayKey];
+            if (!rec) return false;
+            if (Number.isFinite(Number(rec.virginKilled)) && rec.virginPrevAlive === true) {
+              try { setPlayerLife(parseInt(rec.virginKilled, 10), { alive: true }); } catch {}
+            }
+            if (Number.isFinite(Number(rec.slayerKilled)) && rec.slayerPrevAlive === true) {
+              try { setPlayerLife(parseInt(rec.slayerKilled, 10), { alive: true }); } catch {}
+            }
+            try { revertDevilPromotionRecord(f, rec, dayKey); } catch {}
+            if (rec.virginUsedSet && Number(f.draft.devilVirginUsedOnDay) === Number(dayKey)) {
+              f.draft.devilVirginUsed = false;
+              f.draft.devilVirginUsedOnDay = null;
+            }
+            if (rec.slayerUsedSet && Number(f.draft.devilSlayerUsedOnDay) === Number(dayKey)) {
+              f.draft.devilSlayerUsed = false;
+              f.draft.devilSlayerUsedOnDay = null;
+            }
+            f.draft.devilDayActionsAppliedByDay[dayKey] = null;
+            saveState(appState);
+            return true;
+          } catch {
+            return false;
+          }
+        }
+
+        function applyDevilDayActionsFromInputs(f) {
+          try {
+            if (!isDevilScenario()) return false;
+            const draw = appState.draw;
+            if (!f || !draw || !draw.players) return false;
+            if (!f.draft || typeof f.draft !== "object") f.draft = {};
+            if (!f.draft.devilDayActionsAppliedByDay || typeof f.draft.devilDayActionsAppliedByDay !== "object") f.draft.devilDayActionsAppliedByDay = {};
+            const dayKey = String(f.day || 1);
+            revertDevilDayActionsForDay(f, dayKey);
+
+            const rec = {
+              virginKilled: null,
+              virginPrevAlive: null,
+              virginUsedSet: false,
+              slayerKilled: null,
+              slayerPrevAlive: null,
+              slayerUsedSet: false,
+              devilPromoted: null,
+              devilPromotedPrevRoleId: null,
+              devilPromotionReason: null,
+            };
+
+            const virginApply = getDevilStepInput(f, "devil_day_actions", "fl_devil_virgin_first", false) === true;
+            const virginNominator = parseFlowPlayerIndex(getDevilStepInput(f, "devil_day_actions", "fl_devil_virgin_nominator", null), draw.players);
+            const virginIdx = findAliveDevilRole("devilVirgin");
+            if (virginApply && virginIdx !== null && virginNominator !== null && !f.draft.devilVirginUsed) {
+              f.draft.devilVirginUsed = true;
+              f.draft.devilVirginUsedOnDay = f.day || 1;
+              rec.virginUsedSet = true;
+              const nominator = draw.players[virginNominator];
+              const nominatorRole = nominator && nominator.roleId ? nominator.roleId : "citizen";
+              const virginPoisoned = devilIsPoisonedOnDay(f, virginIdx);
+              const aliveBefore = devilAliveCount();
+              if (!virginPoisoned && nominator && nominator.alive !== false && isDevilRoleType(nominatorRole, "townsfolk")) {
+                const wasAlive = nominator.alive !== false;
+                if (wasAlive) {
+                  try { setPlayerLife(virginNominator, { alive: false, reason: "virgin" }); } catch {}
+                }
+                rec.virginKilled = virginNominator;
+                rec.virginPrevAlive = wasAlive === true;
+                if (nominatorRole === "devilImp" && aliveBefore >= 5) {
+                  promoteDevilScarletWoman(f, rec, "scarlet_woman");
+                }
+              }
+            }
+
+            const slayerFire = getDevilStepInput(f, "devil_day_actions", "fl_devil_slayer_fire", false) === true;
+            const slayerTarget = parseFlowPlayerIndex(getDevilStepInput(f, "devil_day_actions", "fl_devil_slayer_target", null), draw.players);
+            const slayerIdx = findAliveDevilRole("devilSlayer");
+            if (slayerFire && slayerIdx !== null && slayerTarget !== null && !f.draft.devilSlayerUsed) {
+              f.draft.devilSlayerUsed = true;
+              f.draft.devilSlayerUsedOnDay = f.day || 1;
+              rec.slayerUsedSet = true;
+              const slayerPoisoned = devilIsPoisonedOnDay(f, slayerIdx);
+              const target = draw.players[slayerTarget];
+              const targetRole = target && target.roleId ? target.roleId : "citizen";
+              const aliveBefore = devilAliveCount();
+              if (!slayerPoisoned && target && target.alive !== false && targetRole === "devilImp") {
+                const wasAlive = target.alive !== false;
+                if (wasAlive) {
+                  try { setPlayerLife(slayerTarget, { alive: false, reason: "slayer" }); } catch {}
+                }
+                rec.slayerKilled = slayerTarget;
+                rec.slayerPrevAlive = wasAlive === true;
+                if (aliveBefore >= 5) {
+                  promoteDevilScarletWoman(f, rec, "scarlet_woman");
+                }
+              }
+            }
+
+            const applied = rec.virginUsedSet || rec.slayerUsedSet || Number.isFinite(Number(rec.virginKilled)) || Number.isFinite(Number(rec.slayerKilled));
+            f.draft.devilDayActionsAppliedByDay[dayKey] = applied ? rec : null;
+            saveState(appState);
+            return applied;
           } catch {
             return false;
           }
@@ -2128,6 +2454,17 @@
             bazras_midday: appLang === "fa" ? "چرت روز" : "Mid-day",
             bazras_forced_vote: appLang === "fa" ? "رأی‌گیری اجباری" : "Forced Vote",
             day_end_card_pick: appLang === "fa" ? "انتخاب کارت" : "Choose Card",
+            devil_intro_night: "Devil Intro Night",
+            devil_day_actions: "Devil Day Actions",
+            devil_night_poisoner: "Poisoner",
+            devil_night_monk: "Monk",
+            devil_night_imp: "Imp",
+            devil_night_ravenkeeper: "Ravenkeeper",
+            devil_night_empath: "Empath",
+            devil_night_fortune_teller: "Fortune Teller",
+            devil_night_undertaker: "Undertaker",
+            devil_night_butler: "Butler",
+            devil_night_spy: "Spy",
           };
           if (titles[stepId]) return titles[stepId];
           const tKeys = {
@@ -2773,6 +3110,15 @@
               night_nero: ["nero"],
               night_jackIndep: ["jackIndep"],
               night_gamblerIndep: ["gamblerIndep"],
+              devil_night_poisoner: ["devilPoisoner"],
+              devil_night_monk: ["devilMonk"],
+              devil_night_imp: ["devilImp"],
+              devil_night_ravenkeeper: ["devilRavenkeeper"],
+              devil_night_empath: ["devilEmpath"],
+              devil_night_fortune_teller: ["devilFortuneTeller"],
+              devil_night_undertaker: ["devilUndertaker"],
+              devil_night_butler: ["devilButler"],
+              devil_night_spy: ["devilSpy"],
             };
             const roleIds = stepToRoles[sid];
             if (!roleIds) return true;
@@ -3121,6 +3467,25 @@
             const nCitizen = alive.filter(({ p }) => getTeam(p) === "شهر").length;
             const total    = alive.length;
             if (!f.draft || typeof f.draft !== "object") f.draft = {};
+            if (scenario === "devil") {
+              const saintLost = !!(f.draft.devilSaintExecutedByDay && Object.keys(f.draft.devilSaintExecutedByDay).some((k) => f.draft.devilSaintExecutedByDay[k]));
+              if (saintLost) {
+                return setDevilWinner(f, "mafia", backPhase, backDay, backStep);
+              }
+              const demonAlive = alive.some(({ p }) => p && isDevilRoleType(p.roleId, "demon"));
+              if (!demonAlive) {
+                return setDevilWinner(f, "citizens", backPhase, backDay, backStep);
+              }
+              if (total <= 2) {
+                return setDevilWinner(f, "mafia", backPhase, backDay, backStep);
+              }
+              const mayorAlive = alive.some(({ p }) => p && p.roleId === "devilMayor");
+              const noExecutionToday = !!(f.draft.devilNoExecutionByDay && f.draft.devilNoExecutionByDay[String(f.day || 1)]);
+              if (total === 3 && mayorAlive && noExecutionToday) {
+                return setDevilWinner(f, "citizens", backPhase, backDay, backStep);
+              }
+              return false;
+            }
             const zodiacAlive = scenario === "zodiac" && alive.some(({ p }) => (p && p.roleId) === "zodiac");
             // Mafia win: mafia ≥ all non-mafia. Zodiac scenario: Mafia wins only when Zodiac is eliminated.
             if (nMafia > 0 && nMafia >= nCitizen + nIndep && !zodiacAlive) {
@@ -3212,6 +3577,18 @@
               try { renderCast(); } catch {}
             }
             // Pedarkhande: apply Saul Buy when leaving mafia step so Back→change selection→Next works.
+            if (curStep.id === "devil_day_actions") {
+              try {
+                applyDevilDayActionsFromInputs(f);
+                try { renderCast(); } catch {}
+                try { if (typeof renderNameGrid === "function") renderNameGrid(); } catch {}
+                if (checkAndAutoNavigate(f, f.phase, f.day, f.step)) {
+                  saveState(appState);
+                  showFlowTool();
+                  return;
+                }
+              } catch {}
+            }
             if (curStep.id === "night_mafia_team" && getDrawScenarioForFlow() === "pedarkhande") {
               try {
                 const ev = (f.events || []).slice().reverse().find((e) => e && e.kind === "night_actions" && e.phase === "night" && e.day === f.day && e.data);
@@ -3389,7 +3766,10 @@
             // Each step now applies deaths only on Next (deferred), so we revert either when:
             //   (a) leaving that step going backward, OR
             //   (b) entering that step from a later step going backward.
-            if (leavingStep.id === "day_elim" || leavingStep.id === "namayande_vote") {
+            if (leavingStep.id === "devil_day_actions" || enteringStep.id === "devil_day_actions") {
+              try { revertDevilDayActionsForDay(f, f.day || 1); } catch {}
+              try { renderCast(); } catch {}
+            } else if (leavingStep.id === "day_elim" || leavingStep.id === "namayande_vote") {
               // Revert via effect registry (or fallback to direct call if registry not loaded)
               try {
                 if (typeof revertEffect === "function" && typeof hasEffect === "function" && hasEffect(leavingStep.id)) {
@@ -3541,6 +3921,14 @@
             } else if (f.draft && f.draft.winnerBack) {
               const bk = f.draft.winnerBack;
               f.phase = bk.phase; f.day = bk.day; f.step = bk.step;
+              try {
+                const restoredSteps = getFlowSteps(f);
+                const restoredStep = restoredSteps[Math.min(restoredSteps.length - 1, Math.max(0, f.step || 0))] || {};
+                if (restoredStep.id === "devil_day_actions") {
+                  revertDevilDayActionsForDay(f, f.day || 1);
+                  try { renderCast(); } catch {}
+                }
+              } catch {}
             } else {
               f.phase = "day"; f.step = 0;
             }

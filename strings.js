@@ -1,5 +1,5 @@
 const STR = {
-  version: "9.2.0",
+  version: "10.0.0",
   fa: {
     "doc.title": "اپلیکیشن بازی مافیا",
     "app.title": "اپلیکیشن بازی مافیا",
@@ -72,6 +72,7 @@ const STR = {
     "teams.independent": "مستقل",
     "teams.mafiaTeam": "تیم مافیا",
     "teams.cityTeam": "تیم شهر",
+    "teams.outsiderTeam": "غریبه‌ها",
 
     "toggles.variableCount": "تعداد: متغیر",
 
@@ -446,6 +447,7 @@ const STR = {
     "teams.independent": "Independent",
     "teams.mafiaTeam": "Mafia team",
     "teams.cityTeam": "City team",
+    "teams.outsiderTeam": "Outsiders",
 
     "toggles.variableCount": "Count: variable",
 

@@ -29,6 +29,31 @@ const SCENARIO_CONFIGS = {
     eliminationCards: [],
     roleOverrides: {},
   },
+  devil: {
+    id: "devil",
+    name: { fa: "شیطان", en: "Devil" },
+    // Blood on the Clocktower style Trouble Brewing script: 7 Townsfolk, 2 Outsiders, 2 Minions, 1 Demon at 12 players.
+    defaults: { nPlayers: 12, mafiaCount: 3 },
+    baseRoles: { citizen: "devilTownsfolk", mafia: "devilMinion" },
+    allowedRoles: [
+      "devilWasherwoman", "devilLibrarian", "devilInvestigator", "devilChef", "devilEmpath", "devilFortuneTeller", "devilUndertaker",
+      "devilMonk", "devilRavenkeeper", "devilVirgin", "devilSlayer", "devilSoldier", "devilMayor",
+      "devilButler", "devilDrunk", "devilRecluse", "devilSaint",
+      "devilPoisoner", "devilSpy", "devilScarletWoman", "devilBaron", "devilImp",
+    ],
+    defaultToggles: [
+      "devilWasherwoman", "devilChef", "devilEmpath", "devilFortuneTeller", "devilUndertaker", "devilMonk", "devilSlayer",
+      "devilRecluse", "devilSaint",
+      "devilPoisoner", "devilScarletWoman", "devilImp",
+    ],
+    wakeOrder: {
+      fa: ["مسموم‌کننده", "راهب", "دیوچه", "نگهبان کلاغ", "همدل", "فال‌گیر", "گورکن", "پیشخدمت", "جاسوس"],
+      en: ["Poisoner", "Monk", "Imp", "Ravenkeeper", "Empath", "Fortune Teller", "Undertaker", "Butler", "Spy"],
+    },
+    features: { lastMove: false, endCards: false },
+    eliminationCards: [],
+    roleOverrides: {},
+  },
   bazras: {
     id: "bazras",
     name: { fa: "بازپرس", en: "Inspector" },

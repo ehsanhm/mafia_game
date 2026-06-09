@@ -3,6 +3,32 @@ const roles = {
   citizen: { faName: "شهروند ساده", teamFa: "شهر", hintFa: "بدون قابلیت", descFa: "قابلیت شب ندارید. روزها با صحبت، استدلال و رأی درست به پیدا شدن مافیا کمک کنید." },
   mafia: { faName: "مافیا ساده", teamFa: "مافیا", hintFa: "بدون قابلیت", descFa: "قابلیت مستقل ندارید. شب‌ها با مافیا مشورت می‌کنید و روزها تلاش می‌کنید شهر را گمراه کنید." },
 
+  // --- Devil / Blood on the Clocktower: Trouble Brewing inspired ---
+  devilTownsfolk: { faName: "شهروند نیک", teamFa: "شهر", hintFa: "نقش خوب پایه", descFa: "نقش خوبِ پایه برای چیدمان‌های سفارشی سناریوی شیطان.", botcType: "townsfolk" },
+  devilMinion: { faName: "دستیار شیطان", teamFa: "مافیا", hintFa: "نقش بد پایه", descFa: "نقش بدِ پایه برای چیدمان‌های سفارشی سناریوی شیطان.", botcType: "minion" },
+  devilWasherwoman: { faName: "رخت‌شوی", teamFa: "شهر", hintFa: "اطلاعات شب اول", descFa: "در شب اول می‌فهمد یکی از دو بازیکن، یک شهروند نیک مشخص است.", botcType: "townsfolk" },
+  devilLibrarian: { faName: "کتابدار", teamFa: "شهر", hintFa: "اطلاعات شب اول", descFa: "در شب اول می‌فهمد یکی از دو بازیکن، یک غریبه مشخص است؛ یا می‌فهمد غریبه‌ای در بازی نیست.", botcType: "townsfolk" },
+  devilInvestigator: { faName: "بازرس", teamFa: "شهر", hintFa: "سرنخ دستیار", descFa: "در شب اول می‌فهمد یکی از دو بازیکن، یک دستیار شیطان مشخص است.", botcType: "townsfolk" },
+  devilChef: { faName: "آشپز", teamFa: "شهر", hintFa: "جفت‌های بد", descFa: "در شب اول می‌فهمد چند جفت بازیکن بد کنار هم نشسته‌اند.", botcType: "townsfolk" },
+  devilEmpath: { faName: "همدل", teamFa: "شهر", hintFa: "اطلاعات همسایه‌ها", descFa: "هر شب می‌فهمد از دو همسایه زنده‌اش چند نفر بد هستند.", botcType: "townsfolk" },
+  devilFortuneTeller: { faName: "فال‌گیر", teamFa: "شهر", hintFa: "استعلام شیطان", descFa: "هر شب دو بازیکن را انتخاب می‌کند و می‌فهمد آیا یکی از آن‌ها شیطان است یا نه. یک بازیکن خوب می‌تواند طعمه قرمز باشد.", botcType: "townsfolk" },
+  devilUndertaker: { faName: "گورکن", teamFa: "شهر", hintFa: "نقش اعدام‌شده", descFa: "هر شب می‌فهمد امروز چه نقشی اعدام شده است.", botcType: "townsfolk" },
+  devilMonk: { faName: "راهب", teamFa: "شهر", hintFa: "محافظت", descFa: "هر شب یک بازیکن دیگر را انتخاب می‌کند تا از حمله شیطان محافظت شود.", botcType: "townsfolk" },
+  devilRavenkeeper: { faName: "نگهبان کلاغ", teamFa: "شهر", hintFa: "اطلاعات پس از مرگ", descFa: "اگر شب کشته شود، بیدار می‌شود و نقش یک بازیکن را می‌فهمد.", botcType: "townsfolk" },
+  devilVirgin: { faName: "پاکدامن", teamFa: "شهر", hintFa: "نامزدی اول", descFa: "اولین شهروند نیکی که او را نامزد کند، همان لحظه اعدام می‌شود.", botcType: "townsfolk" },
+  devilSlayer: { faName: "شکارچی شیطان", teamFa: "شهر", hintFa: "یک شلیک", descFa: "یک‌بار در طول بازی، در روز یک بازیکن را انتخاب می‌کند؛ اگر آن بازیکن شیطان باشد، می‌میرد.", botcType: "townsfolk" },
+  devilSoldier: { faName: "سرباز", teamFa: "شهر", hintFa: "مصون از شیطان", descFa: "شیطان نمی‌تواند او را بکشد، مگر اینکه مست یا مسموم باشد.", botcType: "townsfolk" },
+  devilMayor: { faName: "شهردار", teamFa: "شهر", hintFa: "سه نفر پایانی", descFa: "اگر فقط سه بازیکن زنده بمانند و اعدامی انجام نشود، تیم خوب برنده می‌شود. گرداننده می‌تواند حمله شیطان را به هدف دیگری منتقل کند.", botcType: "townsfolk" },
+  devilButler: { faName: "پیشخدمت", teamFa: "شهر", hintFa: "رأی با ارباب", descFa: "هر شب یک ارباب انتخاب می‌کند. پیشخدمت فقط وقتی باید رأی بدهد که اربابش رأی داده باشد.", botcType: "outsider" },
+  devilDrunk: { faName: "مست", teamFa: "شهر", hintFa: "فکر می‌کند شهروند نیک است", descFa: "نمی‌داند مست است. گرداننده باید برای او یک نقش ظاهری شهروند نیک تعیین کند؛ آن توانایی ظاهری کار نمی‌کند.", botcType: "outsider" },
+  devilRecluse: { faName: "گوشه‌نشین", teamFa: "شهر", hintFa: "ممکن است بد دیده شود", descFa: "خوب است، اما ممکن است برای توانایی‌های دیگران بد، دستیار شیطان یا شیطان ثبت شود.", botcType: "outsider" },
+  devilSaint: { faName: "قدیس", teamFa: "شهر", hintFa: "اعدام او باخت است", descFa: "اگر قدیس اعدام شود، تیم بد برنده می‌شود.", botcType: "outsider" },
+  devilPoisoner: { faName: "مسموم‌کننده", teamFa: "مافیا", hintFa: "مسمومیت", descFa: "هر شب یک بازیکن را انتخاب می‌کند. توانایی آن بازیکن همان شب و روز بعد مسموم می‌شود.", botcType: "minion" },
+  devilSpy: { faName: "جاسوس", teamFa: "مافیا", hintFa: "دیدن دفتر بازی", descFa: "هر شب کل دفتر نقش‌ها را می‌بیند. ممکن است برای توانایی‌های دیگران خوب، شهروند نیک یا غریبه ثبت شود.", botcType: "minion" },
+  devilScarletWoman: { faName: "بانوی سرخ‌پوش", teamFa: "مافیا", hintFa: "جانشین شیطان", descFa: "اگر شیطان وقتی بازیکن کافی باقی مانده بمیرد، بانوی سرخ‌پوش به شیطان جدید تبدیل می‌شود.", botcType: "minion" },
+  devilBaron: { faName: "بارون", teamFa: "مافیا", hintFa: "غریبه‌های بیشتر", descFa: "در چیدمان بازی غریبه‌های بیشتری اضافه می‌کند. در این برنامه، با روشن کردن نقش‌های غریبه بیشتر در تنظیمات شیطان از او استفاده کنید.", botcType: "minion" },
+  devilImp: { faName: "دیوچه", teamFa: "مافیا", hintFa: "کشتار شیطان", descFa: "هر شب به‌جز شب اول یک بازیکن را برای مرگ انتخاب می‌کند. اگر خودش را بکشد، یک دستیار زنده به دیوچه جدید تبدیل می‌شود.", botcType: "demon" },
+
   // --- classic / general ---
   mafiaBoss: { faName: "رئیس مافیا", teamFa: "مافیا", hintFa: "رهبر + شلیک", descFa: "رهبر تیم مافیاست؛ تصمیم نهاییِ شلیک شب با اوست. استعلام او برای کارآگاه همیشه «منفی» (شهروند) است." },
   godfather: { faName: "پدرخوانده", teamFa: "مافیا", hintFa: "رهبر + شلیک", descFa: "رهبر مافیاست و شلیک شب را تعیین می‌کند. استعلام او برای کارآگاه همیشه «منفی» (شهروند) است." },
@@ -139,6 +165,30 @@ const roles = {
 const ROLE_I18N = {
   citizen: { name: "Simple Citizen", hint: "No ability", desc: "No night ability. Help find mafia through discussion and voting." },
   mafia: { name: "Simple Mafia", hint: "No ability", desc: "No standalone ability. Coordinate at night; mislead during the day." },
+  devilTownsfolk: { name: "Devil Townsfolk", hint: "Good filler", desc: "Good Clocktower filler role for custom Devil setups." },
+  devilMinion: { name: "Devil Minion", hint: "Evil filler", desc: "Evil Clocktower filler role for custom Devil setups." },
+  devilWasherwoman: { name: "Washerwoman", hint: "First-night info", desc: "On the first night, learns that one of two players is a specific Townsfolk." },
+  devilLibrarian: { name: "Librarian", hint: "First-night info", desc: "On the first night, learns that one of two players is a specific Outsider, or that no Outsiders are in play." },
+  devilInvestigator: { name: "Investigator", hint: "First-night minion clue", desc: "On the first night, learns that one of two players is a specific Minion." },
+  devilChef: { name: "Chef", hint: "Evil pairs", desc: "On the first night, learns how many pairs of evil players are sitting next to each other." },
+  devilEmpath: { name: "Empath", hint: "Neighbor info", desc: "Each night, learns how many of their two living neighbors are evil." },
+  devilFortuneTeller: { name: "Fortune Teller", hint: "Demon check", desc: "Each night, chooses two players and learns whether either is the Demon. One good player can be a red herring." },
+  devilUndertaker: { name: "Undertaker", hint: "Executed role", desc: "Each night, learns which character was executed today." },
+  devilMonk: { name: "Monk", hint: "Protect", desc: "Each night, chooses another player to protect from the Demon." },
+  devilRavenkeeper: { name: "Ravenkeeper", hint: "Death info", desc: "If killed at night, wakes and learns one player's character." },
+  devilVirgin: { name: "Virgin", hint: "First nomination", desc: "The first Townsfolk who nominates the Virgin is executed immediately." },
+  devilSlayer: { name: "Slayer", hint: "One shot", desc: "Once per game during the day, may choose a player. If that player is the Demon, they die." },
+  devilSoldier: { name: "Soldier", hint: "Demon-proof", desc: "Cannot be killed by the Demon unless drunk or poisoned." },
+  devilMayor: { name: "Mayor", hint: "Final 3", desc: "If only three players live and no execution occurs, good wins. Demon attacks may be redirected by the Storyteller." },
+  devilButler: { name: "Butler", hint: "Vote with master", desc: "Each night, chooses a master. The Butler should only vote when their master votes." },
+  devilDrunk: { name: "Drunk", hint: "Thinks Townsfolk", desc: "Does not know they are the Drunk. The Storyteller should assign a Townsfolk bluff manually; that apparent ability does not work." },
+  devilRecluse: { name: "Recluse", hint: "May register evil", desc: "Good, but may register as evil and/or as a Minion or Demon to other abilities." },
+  devilSaint: { name: "Saint", hint: "Execution loses", desc: "If the Saint is executed, evil wins." },
+  devilPoisoner: { name: "Poisoner", hint: "Poison", desc: "Each night, chooses a player. Their ability is poisoned tonight and through the next day." },
+  devilSpy: { name: "Spy", hint: "Sees grimoire", desc: "Each night, sees the full grimoire. May register as good and/or as a Townsfolk or Outsider." },
+  devilScarletWoman: { name: "Scarlet Woman", hint: "Demon backup", desc: "If the Demon dies while enough players remain, becomes the Demon." },
+  devilBaron: { name: "Baron", hint: "More Outsiders", desc: "Adds extra Outsiders during setup. In this app, use it by enabling more Outsider roles in the Devil setup." },
+  devilImp: { name: "Imp", hint: "Demon kill", desc: "Each night except the first, chooses a player to die. If the Imp kills themself, an alive Minion becomes the new Imp." },
   mafiaBoss: { name: "Mafia Boss", hint: "Leader + shot", desc: "Mafia leader; decides the final night shot. Always shows as 'citizen' (negative) to the Detective." },
   godfather: { name: "Godfather", hint: "Leader + shot", desc: "Mafia leader; decides the night shot. Always shows as 'citizen' (negative) to the Detective." },
   swindler: { name: "Charlatan", hint: "Disrupts inquiry", desc: "Targets one player each night. If the Detective is targeted, that night's inquiry result is forced 'citizen' regardless of the actual inquiry target. Knows the mafia team but wakes independently." },
@@ -262,3 +312,163 @@ const ROLE_I18N = {
   bodyguard: { name: "Bodyguard", hint: "Protect from assassination", desc: "Each night protects one player from the Rebel's assassination. Bodyguard themselves is also immune to assassination." },
   soldier: { name: "Soldier", hint: "One-time bullet", desc: "At night gives one bullet to a player. If given to mafia → Soldier is eliminated. If given to a citizen → that citizen may shoot: hitting mafia (non-Don) → mafia eliminated; hitting Don → nobody dies; hitting a citizen → recipient is eliminated." },
 };
+
+// Detailed Devil role help is kept here so Persian and English role cards stay in sync.
+const DEVIL_ROLE_DETAILS = {
+  devilTownsfolk: {
+    hintFa: "نقش خوب بدون قابلیت",
+    descFa: "نقش خوب پایه برای چیدمان های سفارشی شیطان. قابلیت شب یا روز ندارد؛ با تیم خوب می برد و ابزارش فقط صحبت، نامزدی، رای و تحلیل اطلاعات دیگران است.",
+    hint: "Good filler",
+    desc: "Use this as a plain good role in custom Devil setups. This player has no special night or day ability.\n\nThey win with the good team, so their job is to listen, nominate, vote, and help solve the game from other players' information.",
+  },
+  devilMinion: {
+    hintFa: "بد بدون قابلیت",
+    descFa: "نقش بد پایه برای چیدمان های سفارشی شیطان. همراه شیطان می برد، برای تیم بد بلوف می زند و گمراه سازی می کند، اما قابلیت خودکار شب یا روز ندارد.",
+    hint: "Evil filler",
+    desc: "Use this as a plain evil role in custom Devil setups. This player has no special night or day ability.\n\nThey win with the Demon side, so their job is to bluff as a good character, protect the Demon, and help create believable misinformation.",
+  },
+  devilWasherwoman: {
+    hintFa: "اطلاعات شهروند نیک",
+    descFa: "فقط شب اول: گرداننده دو بازیکن و یک نقش شهروند نیک مشخص را نشان می دهد. دقیقا یکی از آن دو بازیکن به عنوان آن نقش ثبت می شود. جاسوس یا گوشه نشین می توانند این اطلاعات را گمراه کننده کنند و مستی یا مسمومیت هم ممکن است نتیجه را خراب کند.",
+    hint: "Townsfolk clue",
+    desc: "On the first night, the Storyteller shows the Washerwoman two players and names a Townsfolk character that is in play. One of those two players is that Townsfolk.\n\nThis is usually a confirmation clue. The Spy can register as Townsfolk, and drunkenness or poison can make the information false.",
+  },
+  devilLibrarian: {
+    hintFa: "اطلاعات غریبه",
+    descFa: "فقط شب اول: گرداننده دو بازیکن و یک نقش غریبه مشخص را نشان می دهد و یکی از آن ها آن غریبه است؛ یا اعلام می کند غریبه ای در بازی نیست. مست یک غریبه واقعی است، حتی اگر خودش فکر کند شهروند نیک است.",
+    hint: "Outsider clue",
+    desc: "On the first night, the Storyteller shows the Librarian two players and names an Outsider character that is in play. One of those two players is that Outsider. Alternatively, if there are no Outsiders in play, the Storyteller tells the Librarian so.\n\nThe Drunk counts as a real Outsider for this ability, even though that player believes they are a Townsfolk.",
+  },
+  devilInvestigator: {
+    hintFa: "سرنخ دستیار شیطان",
+    descFa: "فقط شب اول: گرداننده دو بازیکن و یک نقش دستیار شیطان مشخص را نشان می دهد. یکی از آن دو به عنوان آن دستیار ثبت می شود. گوشه نشین یا جاسوس می توانند باعث شوند بازیکن خوب یا بد اشتباه در این سرنخ دیده شود.",
+    hint: "Minion clue",
+    desc: "On the first night, the Storyteller shows the Investigator two players and names a Minion character. One of those two players is registering as that Minion.\n\nThis points to a possible Minion, but it is not always a guaranteed evil player. The Recluse may register as a Minion, and drunkenness or poison can make the information false.",
+  },
+  devilChef: {
+    hintFa: "شمارش جفت های بد",
+    descFa: "فقط شب اول: عدد دقیق جفت های بازیکنان بدی را می گیرد که کنار هم نشسته اند. سه بازیکن بد پشت سر هم دو جفت حساب می شوند، و بازیکنی که بین دو بد است می تواند در بیش از یک جفت نقش داشته باشد. ثبت اشتباه گوشه نشین یا جاسوس می تواند عدد را تغییر دهد.",
+    hint: "Evil neighbor pairs",
+    desc: "On the first night, the Storyteller tells the Chef a number: how many pairs of evil players are sitting next to each other around the circle.\n\nA pair means two adjacent evil players. Three evil players in a row count as two pairs. Registration effects, especially the Recluse, can change what counts as evil.",
+  },
+  devilEmpath: {
+    hintFa: "عدد بدی همسایه ها",
+    descFa: "هر شب عدد ۰، ۱ یا ۲ را می گیرد: چند نفر از دو همسایه زنده نزدیکش بد هستند. بازیکنان مرده نادیده گرفته می شوند و نزدیک ترین زنده در هر سمت حساب می شود. چون بعد از کشتار شیطان اطلاعات می گیرد، وضعیت بعد از مرگ شبانه را می بیند.",
+    hint: "Living-neighbor read",
+    desc: "Each night, the Storyteller tells the Empath 0, 1, or 2. This number is how many of the Empath's two nearest living neighbors are evil.\n\nDead players are skipped, so the checked neighbors can change during the game. The Empath acts after the Demon kill, so the result reflects the table after that night's death.",
+  },
+  devilFortuneTeller: {
+    hintFa: "استعلام شیطان",
+    descFa: "هر شب دو بازیکن را انتخاب می کند، حتی خودش یا مرده ها، و فقط جواب بله/خیر می گیرد که آیا یکی از آن دو شیطان ثبت می شود یا نه. یک بازیکن خوب از اول بازی طعمه قرمز است و برای فال گیر مثل شیطان جواب بله می دهد.",
+    hint: "Demon yes/no",
+    desc: "Each night, the Fortune Teller chooses two players. The Storyteller answers yes if either chosen player registers as the Demon or is the red herring, otherwise no.\n\nChoosing yourself can turn the ability into a focused check on the other player, because you usually know you are not the Demon. However, the Fortune Teller can be their own red herring, so a yes on yourself plus another player is not perfect proof. The Fortune Teller may also choose dead players, and a dead Demon still gives a yes.",
+  },
+  devilUndertaker: {
+    hintFa: "نقش اعدامی روز",
+    descFa: "هر شب به جز شب اول، نقش بازیکنی را می فهمد که همان روز با اعدام مرده است. اگر کسی اعدام نشود، یا اعدام شود ولی نمیرد، اطلاعاتی نمی گیرد. مرگ های شبانه یا قابلیت های روز دیگر توسط گورکن گزارش نمی شوند.",
+    hint: "Execution reveal",
+    desc: "Each night except the first, if a player died by execution during the previous day, the Storyteller tells the Undertaker that player's character.\n\nIf nobody was executed, or the executed player did not die, the Undertaker learns nothing. Only execution deaths are reported; night deaths and other day deaths are not.",
+  },
+  devilMonk: {
+    hintFa: "محافظت از شیطان",
+    descFa: "هر شب به جز شب اول یک بازیکن دیگر را انتخاب می کند، نه خودش. آن بازیکن فقط همان شب از کشتن و اثرهای مضر شیطان محافظت می شود. اگر شیطان همان هدف را بزند معمولا هدف جایگزین نمی گیرد و ممکن است هیچ کس نمیرد.",
+    hint: "Demon protection",
+    desc: "Each night except the first, the Monk chooses another player. That player is protected from the Demon for that night.\n\nThe Monk cannot choose themselves. If the Demon attacks the protected player, the attack fails instead of moving to another target. This does not protect from execution or non-Demon deaths.",
+  },
+  devilRavenkeeper: {
+    hintFa: "اطلاعات پس از مرگ شب",
+    descFa: "اگر در شب بمیرد، همان لحظه بیدار می شود، هر بازیکنی را حتی مرده ها انتخاب می کند و نقش آن بازیکن را می فهمد. اگر در روز بمیرد اطلاعاتی نمی گیرد. ثبت جاسوس یا گوشه نشین می تواند نقش اعلام شده را گمراه کننده کند.",
+    hint: "Night-death info",
+    desc: "If the Ravenkeeper dies at night, the Storyteller wakes them immediately. The Ravenkeeper chooses any player, alive or dead, and learns that player's character.\n\nIf the Ravenkeeper dies during the day, they learn nothing. Spy or Recluse registration, drunkenness, or poison can make the shown character misleading.",
+  },
+  devilVirgin: {
+    hintFa: "آزمون نامزدی اول",
+    descFa: "اولین باری که نامزد شود قابلیتش مصرف می شود. اگر نامزدکننده شهروند نیک ثبت شود، همان لحظه اعدام می شود و روز تمام می شود. اگر نامزدکننده شهروند نیک نباشد، یا پاکدامن مست/مسموم باشد، اتفاقی نمی افتد اما قابلیت همچنان مصرف شده است.",
+    hint: "First nomination test",
+    desc: "The first time the Virgin is nominated, the ability is checked and then spent. If the nominator registers as Townsfolk, that nominator is executed immediately and the day ends.\n\nIf the nominator does not register as Townsfolk, nothing happens, but the Virgin's ability is still spent. The Spy can register as Townsfolk, and drunkenness or poison can stop the effect.",
+  },
+  devilSlayer: {
+    hintFa: "شلیک روزانه یک بار",
+    descFa: "یک بار در کل بازی، در روز و به صورت عمومی یک بازیکن را هدف می گیرد. اگر هدف زنده و شیطان باشد، همان لحظه می میرد؛ در غیر این صورت هیچ اتفاقی نمی افتد. هدف اشتباه، شیطان مرده، مستی یا مسمومیت هم شانس شلیک را مصرف می کند.",
+    hint: "One public shot",
+    desc: "Once per game during the day, the Slayer publicly chooses one player to shoot. If that player is alive and is the Demon, that player dies immediately.\n\nIf the target is not the Demon, is already dead, or the Slayer is drunk or poisoned, nothing happens, but the shot is still spent.",
+  },
+  devilSoldier: {
+    hintFa: "مصون از حمله شیطان",
+    descFa: "تا وقتی مست یا مسموم نباشد، با قابلیت شیطان کشته نمی شود. اگر شیطان سرباز را هدف بگیرد معمولا هدف جایگزین ندارد و ممکن است مرگی رخ ندهد. اعدام روزانه یا مرگ های غیرشیطانی همچنان می توانند سرباز را از بازی خارج کنند.",
+    hint: "Demon-proof",
+    desc: "The Soldier cannot be killed by the Demon's ability while sober and healthy.\n\nIf the Demon attacks the Soldier, the attack usually causes no death instead of moving to another target. The Soldier can still die by execution or non-Demon abilities, and drunkenness or poison removes this protection.",
+  },
+  devilMayor: {
+    hintFa: "برد در سه نفر پایانی",
+    descFa: "اگر فقط سه بازیکن زنده بمانند و روز بدون اعدام تمام شود، تیم خوب می برد. اگر شهردار قرار باشد شب با حمله شیطان بمیرد، گرداننده می تواند مرگ را به بازیکن دیگری منتقل کند؛ این انتقال ممکن است به بازیکن مرده یا محافظت شده بخورد و مرگی رخ ندهد.",
+    hint: "Final-three win",
+    desc: "If exactly three players are alive and the day ends with no execution, the good team wins.\n\nIf the Demon attacks the Mayor at night, the Storyteller may redirect that death to another player instead. The redirect can hit a dead or protected player, causing no death.",
+  },
+  devilButler: {
+    hintFa: "رای وابسته به ارباب",
+    descFa: "هر شب یک بازیکن دیگر را به عنوان ارباب انتخاب می کند. فردا فقط وقتی باید رای بدهد که اربابش هم رای داده باشد یا رای او در همان رای گیری شمرده شود. ارباب اجباری به رای دادن ندارد و کنترل رعایت این قانون با خود پیشخدمت است.",
+    hint: "Vote with master",
+    desc: "Each night, the Butler chooses another player to be their master for the next day.\n\nThe next day, the Butler should only vote while their master is voting, or when the master's vote is counted in that vote. The master is never forced to vote; the Butler is responsible for following this restriction.",
+  },
+  devilDrunk: {
+    hintFa: "غریبه پنهان",
+    descFa: "خودش نمی داند مست است و فکر می کند یکی از نقش های شهروند نیک را دارد. در واقع غریبه است و هیچ قابلیت واقعی ندارد. گرداننده مثل نقش ظاهری با او رفتار می کند، ممکن است بیدارش کند یا اطلاعات بدهد، اما آن اطلاعات می تواند کاملا غلط باشد.",
+    hint: "Secret Outsider",
+    desc: "The Drunk does not know they are the Drunk. During setup, the Storyteller makes the Drunk believe they are a Townsfolk character.\n\nThe Drunk is actually an Outsider with no working ability. The Storyteller may wake them and give them plausible information as if their fake ability worked, but that information can be false.",
+  },
+  devilRecluse: {
+    hintFa: "خوبی که بد ثبت می شود",
+    descFa: "با تیم خوب است، اما برای هر قابلیت ممکن است به عنوان بد، دستیار شیطان یا حتی شیطان ثبت شود؛ حتی بعد از مرگ. گرداننده در هر بررسی جداگانه تصمیم می گیرد و می تواند در همان شب نتیجه های متفاوت بدهد. گوشه نشین قابلیت نقش های بد را به دست نمی آورد.",
+    hint: "Good, may register evil",
+    desc: "The Recluse is good and wins with the good team.\n\nWhenever another ability checks the Recluse, the Storyteller may make the Recluse register as evil, as a Minion, or as the Demon, even if the Recluse is dead. This does not give the Recluse any evil ability.",
+  },
+  devilSaint: {
+    hintFa: "اعدام برابر با باخت",
+    descFa: "اگر با اعدام روزانه بمیرد، تیم خوب فورا می بازد و تیم بد می برد. اگر در شب کشته شود یا با روش غیر اعدام بمیرد این شرط فعال نمی شود. شهر باید او را باور کند ولی کورکورانه هم از ادعا سوءاستفاده نکند.",
+    hint: "Execution loses",
+    desc: "If the Saint dies by execution, the good team loses immediately and the evil team wins.\n\nOnly execution triggers this loss. If the Saint dies at night or from another non-execution effect, the game continues normally.",
+  },
+  devilPoisoner: {
+    hintFa: "خاموش کردن قابلیت",
+    descFa: "هر شب یک بازیکن را انتخاب می کند؛ قابلیت آن بازیکن همان شب و روز بعد خاموش و مسموم است. گرداننده وانمود می کند قابلیت کار کرده، پس اطلاعات می تواند غلط باشد و قابلیت های یک بار مصرف ممکن است بی اثر ولی مصرف شده شوند. مسمومیت در غروب بعد پایان می یابد.",
+    hint: "Poison ability",
+    desc: "Each night, the Poisoner chooses one player. That player is poisoned for the rest of that night and the following day, so their ability does not work.\n\nThe Storyteller still behaves as if the poisoned ability worked. That means poisoned information can be false, and once-per-game abilities can be spent for no effect. Poison ends at dusk.",
+  },
+  devilSpy: {
+    hintFa: "دیدن دفتر کامل بازی",
+    descFa: "هر شب دفتر کامل بازی را می بیند: نقش ها، وضعیت ها و اطلاعاتی که گرداننده در دفتر نگه می دارد. برای قابلیت های خوب ممکن است به عنوان خوب، شهروند نیک یا غریبه ثبت شود، حتی بعد از مرگ. جاسوس قابلیت نقش خوب را به دست نمی آورد؛ فقط ممکن است اینطور دیده شود.",
+    hint: "Sees the grimoire",
+    desc: "Each night, the Storyteller shows the Spy the grimoire: players' characters, statuses, and other key Storyteller-held information.\n\nThe Spy is evil, but may register as good, as Townsfolk, or as an Outsider to other abilities, even while dead. This does not give the Spy any good ability.",
+  },
+  devilScarletWoman: {
+    hintFa: "جانشین شیطان",
+    descFa: "اگر شیطان وقتی حداقل پنج بازیکن زنده اند بمیرد، بانوی سرخ پوش فورا به شیطان جدید تبدیل می شود. اگر کمتر از پنج بازیکن زنده باشند، این نجات انجام نمی شود و تیم خوب می برد. شیطان جدید از آن به بعد قابلیت و ثبت شیطان را دارد.",
+    hint: "Demon backup",
+    desc: "If the Demon dies while five or more players are alive, the Scarlet Woman immediately becomes the new Demon.\n\nIf fewer than five players are alive when the Demon dies, this backup does not trigger. Once transformed, the Scarlet Woman has the Demon ability and registers as the Demon.",
+  },
+  devilBaron: {
+    hintFa: "دو غریبه بیشتر",
+    descFa: "در چیدمان بازی دو غریبه اضافه می کند و به همان تعداد از شهروندان نیک کم می شود. این تغییر چیدمان دائمی است و با مرگ بارون برنمی گردد. در این برنامه، برای اجرای آن نقش های غریبه بیشتری را در تنظیمات شیطان فعال کنید.",
+    hint: "Adds Outsiders",
+    desc: "During setup, the Baron adds two extra Outsiders to the game and removes two Townsfolk.\n\nThis is a setup change, not an ongoing power, and it does not revert if the Baron dies. In this app, represent the Baron by enabling extra Outsider roles in the Devil setup.",
+  },
+  devilImp: {
+    hintFa: "شیطان قاتل",
+    descFa: "شیطان بازی است. هر شب به جز شب اول یک بازیکن را برای مرگ انتخاب می کند و می تواند مرده ها یا خودش را هم انتخاب کند. اگر خودش را بکشد، یک دستیار زنده به دیوچه جدید تبدیل می شود و همان شب دوباره عمل نمی کند. اگر شیطانی باقی نماند، تیم خوب می برد.",
+    hint: "Demon kill",
+    desc: "Each night except the first, the Imp chooses one player to die. The Imp may choose a dead player or choose themselves.\n\nIf the Imp kills themselves, one alive Minion becomes the new Imp and does not attack again that same night. If no Demon remains alive, the good team wins.",
+  },
+};
+
+Object.keys(DEVIL_ROLE_DETAILS).forEach((roleId) => {
+  const detail = DEVIL_ROLE_DETAILS[roleId];
+  if (roles[roleId]) {
+    roles[roleId].hintFa = detail.hintFa;
+    roles[roleId].descFa = detail.descFa;
+  }
+  if (ROLE_I18N[roleId]) {
+    ROLE_I18N[roleId].hint = detail.hint;
+    ROLE_I18N[roleId].desc = detail.desc;
+  }
+});

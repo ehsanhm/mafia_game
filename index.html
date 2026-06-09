@@ -56,6 +56,7 @@
               <span data-i18n="setup.scenario">سناریو</span>
               <select id="scenario">
                 <option value="bazras">بازپرس</option>
+                <option value="devil">شیطان</option>
                 <option value="namayande">نماینده</option>
                 <option value="mozaker">مذاکره</option>
                 <option value="classic">کلاسیک</option>
@@ -229,6 +230,7 @@
     <script src="mafia-role-assigner.js"></script>
     <script src="scenarios.js"></script>
     <script src="flow-configs/classic.js"></script>
+    <script src="flow-configs/devil.js"></script>
     <script src="flow-configs/pedarkhande.js"></script>
     <script src="flow-configs/zodiac.js"></script>
     <script src="flow-configs/kabo.js"></script>
@@ -244,6 +246,7 @@
     <script src="flow-configs/dawn.js"></script>
     <script src="flow-configs/dusk.js"></script>
     <script src="flow-configs/pedarkhande-renderers.js"></script>
+    <script src="flow-configs/devil-renderers.js"></script>
     <script>
         const $ = (id) => document.getElementById(id);
 
@@ -273,12 +276,50 @@
         const FAIRNESS_HISTORY_MAX_GAMES = 50;
         const GAME_HISTORY_KEY = "mafia_v2_game_history_v1";
         const GAME_HISTORY_MAX = 100;
+        const SAVE_TIMESTAMP_TIME_ZONE = "America/Los_Angeles";
         const TROLL_BROWSER_ID_KEY = "mafia_v2_troll_browser_id_v1";
         const TROLL_BROWSER_LOCK_KEY = "mafia_v2_troll_browser_lock_v1";
         const TROLL_BROWSER_LOCKS_REMOTE_PATH = "mafiaTrollBrowserLocks";
         const TROLL_SYSTEM_MODE = "assignment"; // "assignment", "device-lock", or "disabled"
         let appLang = "fa"; // "fa" | "en"
         let currentGameId = null;
+
+        function californiaTimestamp(date = new Date()) {
+          try {
+            const d = date instanceof Date ? date : new Date(date);
+            if (Number.isNaN(d.getTime())) return new Date().toISOString();
+            const fmt = new Intl.DateTimeFormat("en-US", {
+              timeZone: SAVE_TIMESTAMP_TIME_ZONE,
+              year: "numeric",
+              month: "2-digit",
+              day: "2-digit",
+              hour: "2-digit",
+              minute: "2-digit",
+              second: "2-digit",
+              hourCycle: "h23",
+            });
+            const parts = {};
+            fmt.formatToParts(d).forEach((part) => {
+              if (part.type !== "literal") parts[part.type] = part.value;
+            });
+            const year = String(parts.year || "0000").padStart(4, "0");
+            const month = String(parts.month || "00").padStart(2, "0");
+            const day = String(parts.day || "00").padStart(2, "0");
+            const hour = String(parts.hour === "24" ? "00" : (parts.hour || "00")).padStart(2, "0");
+            const minute = String(parts.minute || "00").padStart(2, "0");
+            const second = String(parts.second || "00").padStart(2, "0");
+            const millis = String(d.getMilliseconds()).padStart(3, "0");
+            const wallTimeUtc = Date.UTC(Number(year), Number(month) - 1, Number(day), Number(hour), Number(minute), Number(second));
+            const offsetMinutes = Math.round((wallTimeUtc - d.getTime()) / 60000);
+            const offsetSign = offsetMinutes >= 0 ? "+" : "-";
+            const offsetAbs = Math.abs(offsetMinutes);
+            const offsetHours = String(Math.floor(offsetAbs / 60)).padStart(2, "0");
+            const offsetMins = String(offsetAbs % 60).padStart(2, "0");
+            return `${year}-${month}-${day}T${hour}:${minute}:${second}.${millis}${offsetSign}${offsetHours}:${offsetMins}`;
+          } catch {
+            return new Date().toISOString();
+          }
+        }
 
         function isTestModeUrl() {
           try {
@@ -423,7 +464,7 @@
             userAgent: String(((typeof navigator !== "undefined" && navigator) ? navigator.userAgent : "") || ""),
             language: String(((typeof navigator !== "undefined" && navigator) ? navigator.language : "") || ""),
             platform: String(((typeof navigator !== "undefined" && navigator) ? navigator.platform : "") || ""),
-            lockedAt: new Date().toISOString(),
+            lockedAt: californiaTimestamp(),
             targetNames: targets.map((t) => t && t.name ? String(t.name) : "").filter(Boolean),
             triggerNames: triggers.map((t) => t && t.name ? String(t.name) : "").filter(Boolean),
           };
@@ -472,6 +513,11 @@
         const toggleDefs = [
           // mafia
           { key: "mafiaBoss", roleId: "mafiaBoss", group: "mafia" },
+          { key: "devilImp", roleId: "devilImp", group: "mafia" },
+          { key: "devilPoisoner", roleId: "devilPoisoner", group: "mafia" },
+          { key: "devilSpy", roleId: "devilSpy", group: "mafia" },
+          { key: "devilScarletWoman", roleId: "devilScarletWoman", group: "mafia" },
+          { key: "devilBaron", roleId: "devilBaron", group: "mafia" },
           { key: "godfather", roleId: "godfather", group: "mafia" },
           { key: "alcapone", roleId: "alcapone", group: "mafia" },
           { key: "danMafia", roleId: "danMafia", group: "mafia" },
@@ -512,6 +558,23 @@
           { key: "mistress", roleId: "mistress", group: "mafia" },
 
           // city
+          { key: "devilWasherwoman", roleId: "devilWasherwoman", group: "city" },
+          { key: "devilLibrarian", roleId: "devilLibrarian", group: "city" },
+          { key: "devilInvestigator", roleId: "devilInvestigator", group: "city" },
+          { key: "devilChef", roleId: "devilChef", group: "city" },
+          { key: "devilEmpath", roleId: "devilEmpath", group: "city" },
+          { key: "devilFortuneTeller", roleId: "devilFortuneTeller", group: "city" },
+          { key: "devilUndertaker", roleId: "devilUndertaker", group: "city" },
+          { key: "devilMonk", roleId: "devilMonk", group: "city" },
+          { key: "devilRavenkeeper", roleId: "devilRavenkeeper", group: "city" },
+          { key: "devilVirgin", roleId: "devilVirgin", group: "city" },
+          { key: "devilSlayer", roleId: "devilSlayer", group: "city" },
+          { key: "devilSoldier", roleId: "devilSoldier", group: "city" },
+          { key: "devilMayor", roleId: "devilMayor", group: "city" },
+          { key: "devilButler", roleId: "devilButler", group: "outsider" },
+          { key: "devilDrunk", roleId: "devilDrunk", group: "outsider" },
+          { key: "devilRecluse", roleId: "devilRecluse", group: "outsider" },
+          { key: "devilSaint", roleId: "devilSaint", group: "outsider" },
           { key: "detective", roleId: "detective", group: "city" },
           { key: "investigator", roleId: "investigator", group: "city" },
           { key: "doctor", roleId: "doctor", group: "city" },
@@ -591,6 +654,11 @@
         // Used to order roles in UI lists (cast + setup roles).
         const ROLE_RANK = {
           // --- mafia ---
+          devilImp: 0,
+          devilPoisoner: 1,
+          devilSpy: 2,
+          devilScarletWoman: 3,
+          devilBaron: 4,
           mafiaBoss: 1,
           godfather: 2,
           danMafia: 3,
@@ -615,6 +683,23 @@
           mafia: 999,
 
           // --- city ---
+          devilWasherwoman: 1,
+          devilLibrarian: 2,
+          devilInvestigator: 3,
+          devilChef: 4,
+          devilEmpath: 5,
+          devilFortuneTeller: 6,
+          devilUndertaker: 7,
+          devilMonk: 8,
+          devilRavenkeeper: 9,
+          devilVirgin: 10,
+          devilSlayer: 11,
+          devilSoldier: 12,
+          devilMayor: 13,
+          devilButler: 40,
+          devilDrunk: 41,
+          devilRecluse: 42,
+          devilSaint: 43,
           mayor: 1,
           judge: 2,
           commander: 3,
@@ -673,17 +758,38 @@
         }
 
         // ── Fair role assignment (localStorage history) ─────────────────────
+        function isFairnessRecord(rec) {
+          return !!rec && typeof rec === "object" && !Array.isArray(rec);
+        }
+        function getOwnFairnessRecord(history, name) {
+          if (!history || !name) return null;
+          return Object.prototype.hasOwnProperty.call(history, name) ? history[name] : null;
+        }
+        function normalizeFairnessHistory(raw) {
+          const clean = Object.create(null);
+          if (!raw || typeof raw !== "object" || Array.isArray(raw)) return clean;
+          Object.keys(raw).forEach((name) => {
+            const rec = raw[name];
+            const games = (isFairnessRecord(rec) && Array.isArray(rec.recentGames)) ? rec.recentGames : [];
+            clean[name] = {
+              recentGames: games
+                .map((g) => ({ roleId: String((g && g.roleId) || "citizen") }))
+                .slice(-FAIRNESS_HISTORY_MAX_GAMES),
+            };
+          });
+          return clean;
+        }
         function loadFairnessHistory() {
           try {
-            if (!shouldPersist()) return {};
+            if (!shouldPersist()) return Object.create(null);
             const raw = localStorage.getItem(FAIRNESS_HISTORY_KEY);
-            return raw ? JSON.parse(raw) : {};
-          } catch { return {}; }
+            return normalizeFairnessHistory(raw ? JSON.parse(raw) : {});
+          } catch { return Object.create(null); }
         }
         function saveFairnessHistory(h) {
           try {
             if (!shouldPersist()) return;
-            localStorage.setItem(FAIRNESS_HISTORY_KEY, JSON.stringify(h || {}));
+            localStorage.setItem(FAIRNESS_HISTORY_KEY, JSON.stringify(normalizeFairnessHistory(h)));
           } catch {}
         }
         function recordFairnessHistory(draw, playerNames) {
@@ -694,18 +800,24 @@
           for (let i = 0; i < n; i++) {
             const name = String((playerNames[i] || "")).trim() || ("__p" + (i + 1));
             const roleId = (draw.players[i] && draw.players[i].roleId) || "citizen";
-            if (!h[name]) {
+            if (!getOwnFairnessRecord(h, name)) {
               const num = String(i + 1);
               const legacyEn = "Player " + num;
               const legacyFa = "بازیکن " + (typeof toFarsiNum === "function" ? toFarsiNum(i + 1) : num);
-              const enGames = (h[legacyEn] && h[legacyEn].recentGames) || [];
-              const faGames = (h[legacyFa] && h[legacyFa].recentGames) || [];
+              const legacyEnRec = getOwnFairnessRecord(h, legacyEn);
+              const legacyFaRec = getOwnFairnessRecord(h, legacyFa);
+              const enGames = (legacyEnRec && Array.isArray(legacyEnRec.recentGames)) ? legacyEnRec.recentGames : [];
+              const faGames = (legacyFaRec && Array.isArray(legacyFaRec.recentGames)) ? legacyFaRec.recentGames : [];
               const merged = [...enGames, ...faGames].slice(-maxGames);
               h[name] = { recentGames: merged };
-              if (h[legacyEn]) delete h[legacyEn];
-              if (h[legacyFa]) delete h[legacyFa];
+              if (legacyEnRec) delete h[legacyEn];
+              if (legacyFaRec) delete h[legacyFa];
             }
-            const rec = h[name];
+            let rec = getOwnFairnessRecord(h, name);
+            if (!isFairnessRecord(rec)) {
+              rec = { recentGames: [] };
+              h[name] = rec;
+            }
             if (!Array.isArray(rec.recentGames)) rec.recentGames = [];
             rec.recentGames.push({ roleId });
             if (rec.recentGames.length > maxGames) rec.recentGames = rec.recentGames.slice(-maxGames);
@@ -732,14 +844,14 @@
         function getFairnessRecordForName(name) {
           const h = loadFairnessHistory();
           const nm = String((name || "")).trim() || "";
-          let rec = h[nm];
+          let rec = getOwnFairnessRecord(h, nm);
           if (!rec && nm.startsWith("__p")) {
             const num = nm.replace(/^__p/, "");
             const legacyEn = "Player " + num;
             const legacyFa = "بازیکن " + (typeof toFarsiNum === "function" ? toFarsiNum(parseInt(num, 10)) : num);
-            rec = h[legacyEn] || h[legacyFa];
+            rec = getOwnFairnessRecord(h, legacyEn) || getOwnFairnessRecord(h, legacyFa);
           }
-          return rec || { recentGames: [] };
+          return isFairnessRecord(rec) ? rec : { recentGames: [] };
         }
 
         MafiaFairAssign.init({ getLegacyRecord: getFairnessRecordForName });
@@ -803,6 +915,10 @@
 
           // enforce scenario availability even if state was loaded from storage
           const scenario = $("scenario") ? $("scenario").value : "";
+          const scenarioCfg = getScenarioConfig(scenario);
+          const baseRoles = (scenarioCfg && scenarioCfg.baseRoles) ? scenarioCfg.baseRoles : {};
+          const baseMafiaRole = baseRoles.mafia || "mafia";
+          const baseCitizenRole = baseRoles.citizen || "citizen";
           const safeToggles = normalizeTogglesForScenario(toggles, scenario);
 
           const mafiaSpecials = [];
@@ -812,7 +928,7 @@
           for (const def of toggleDefs) {
             if (!safeToggles[def.key]) continue;
             if (def.group === "mafia") mafiaSpecials.push(def.roleId);
-            else if (def.group === "city") citySpecials.push(def.roleId);
+            else if (def.group === "city" || def.group === "outsider") citySpecials.push(def.roleId);
             else independentSpecials.push(def.roleId);
           }
 
@@ -827,7 +943,7 @@
 
           const pool = [];
           pool.push(...mafiaSpecials);
-          pool.push(...Array(Math.max(0, mafiaCount - mafiaSpecials.length)).fill("mafia"));
+          pool.push(...Array(Math.max(0, mafiaCount - mafiaSpecials.length)).fill(baseMafiaRole));
           pool.push(...citySpecials);
           pool.push(...independentSpecials);
 
@@ -841,7 +957,7 @@
             };
           }
 
-          pool.push(...Array(remaining).fill("citizen"));
+          pool.push(...Array(remaining).fill(baseCitizenRole));
           shuffle(pool);
           return { ok: true, pool };
         }
@@ -915,7 +1031,7 @@
 
         function applyScenarioAvailability(scenario) {
           const allowed = getAllowedToggleKeysForScenario(scenario);
-          const visibleCounts = { mafia: 0, city: 0, independent: 0 };
+          const visibleCounts = { mafia: 0, city: 0, outsider: 0, independent: 0 };
           for (const def of toggleDefs) {
             const wrap = $("tgwrap_" + def.key);
             if (!wrap) continue;
@@ -934,6 +1050,7 @@
               wrap.removeAttribute("aria-disabled");
               if (def.group === "mafia") visibleCounts.mafia++;
               else if (def.group === "city") visibleCounts.city++;
+              else if (def.group === "outsider") visibleCounts.outsider++;
               else visibleCounts.independent++;
             }
           }
@@ -941,9 +1058,11 @@
           // Team headers: mafia/city always shown (base roles live there). Independent shown only if any role is visible.
           const hdrM = $("teamHdr_mafia");
           const hdrC = $("teamHdr_city");
+          const hdrO = $("teamHdr_outsider");
           const hdrI = $("teamHdr_independent");
           if (hdrM) hdrM.style.display = "flex";
           if (hdrC) hdrC.style.display = "flex";
+          if (hdrO) hdrO.style.display = visibleCounts.outsider ? "flex" : "none";
           if (hdrI) hdrI.style.display = visibleCounts.independent ? "flex" : "none";
         }
 
@@ -953,7 +1072,7 @@
 
           const teamClsForGroup = (g) => (
             g === "mafia" ? "team-mafia" :
-            g === "city" ? "team-city" : "team-ind"
+            (g === "city" || g === "outsider") ? "team-city" : "team-ind"
           );
           const addHdr = (id, label, teamCls) => {
             const h = document.createElement("div");
@@ -990,12 +1109,13 @@
             </span>
           `;
 
-          const groupOrder = ["mafia", "city", "independent"];
-          const groupLabel = { mafia: t("teams.mafiaTeam"), city: t("teams.cityTeam"), independent: t("teams.independent") };
-          const defsByGroup = { mafia: [], city: [], independent: [] };
+          const groupOrder = ["mafia", "city", "outsider", "independent"];
+          const groupLabel = { mafia: t("teams.mafiaTeam"), city: t("teams.cityTeam"), outsider: t("teams.outsiderTeam"), independent: t("teams.independent") };
+          const defsByGroup = { mafia: [], city: [], outsider: [], independent: [] };
           for (const def of toggleDefs) {
             if (def.group === "mafia") defsByGroup.mafia.push(def);
             else if (def.group === "city") defsByGroup.city.push(def);
+            else if (def.group === "outsider") defsByGroup.outsider.push(def);
             else defsByGroup.independent.push(def);
           }
           for (const g of groupOrder) {
@@ -1084,8 +1204,10 @@
           // update base role counters
           const cCitizen = $("cnt_citizen");
           const cMafia = $("cnt_mafia");
-          const nCitizen = sum.counts.citizen || 0;
-          const nMafia = sum.counts.mafia || 0;
+          const scenarioCfg = getScenarioConfig(s.scenario);
+          const baseRoles = (scenarioCfg && scenarioCfg.baseRoles) ? scenarioCfg.baseRoles : {};
+          const nCitizen = sum.counts[baseRoles.citizen || "citizen"] || 0;
+          const nMafia = sum.counts[baseRoles.mafia || "mafia"] || 0;
           const fmt = (appLang === "fa" && typeof toFarsiNum === "function") ? toFarsiNum : String;
           if (cCitizen) cCitizen.textContent = `× ${fmt(nCitizen)}`;
           if (cMafia) cMafia.textContent = `× ${fmt(nMafia)}`;
@@ -1165,7 +1287,7 @@
             entry.winnerTeam = winner.key;
             entry.winnerTeamLabelFa = winner.labelFa;
             entry.winnerTeamLabelEn = winner.labelEn;
-            if (!entry.finishedAt) entry.finishedAt = new Date().toISOString();
+            if (!entry.finishedAt) entry.finishedAt = californiaTimestamp();
           } else {
             delete entry.winnerTeam;
             delete entry.winnerTeamLabelFa;
@@ -1185,7 +1307,7 @@
           if (history.some((g) => g.id === gameId)) return;
           const entry = {
             id: gameId,
-            timestamp: new Date().toISOString(),
+            timestamp: californiaTimestamp(),
             scenario: (state.ui && state.ui.scenario) || "",
             players: (state.draw.players || []).map((p, i) => ({
               name: (state.ui && state.ui.playerNames && state.ui.playerNames[i]) || ("Player " + (i + 1)),
@@ -1220,7 +1342,7 @@
             history[idx].events = (state.god.flow.events || []).slice();
           }
           applyWinnerTeamToHistoryEntry(history[idx], state);
-          history[idx].lastUpdated = new Date().toISOString();
+          history[idx].lastUpdated = californiaTimestamp();
           saveGameHistory(history);
           syncEntryToFirebase(history[idx]);
         }

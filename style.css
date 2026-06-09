@@ -1041,7 +1041,8 @@ option:disabled{
   line-height:1.85;
   font-weight:850;
   color: var(--text);
-  text-align:center;
+  text-align:start;
+  white-space:pre-line;
 }
 /* Team tint for role reveal */
 .roleCard.roleReveal.team-mafia .rname,
